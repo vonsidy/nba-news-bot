@@ -64,13 +64,43 @@ monetizable instead of banned.
 - `composer.py` → `SYSTEM_PROMPT` — adjust the voice. Adding personality/humor
   is fine; the accuracy and attribution rules should stay.
 
+## Trade alert graphics
+
+When the bot detects a player trade, it auto-generates an original **TRADE
+ALERT** card (destination team's colors, player name, `OLD → NEW`) and attaches
+it to the tweet. No copyrighted photos or logos — just team colors + text
+rendered fresh, so nothing can get the account struck. See `card.py`.
+
+## Running it 24/7 in the cloud (free, no PC) — GitHub Actions
+
+The repo ships a scheduled workflow (`.github/workflows/bot.yml`) that runs the
+bot every ~10 minutes on GitHub's servers. Dedup state lives in Upstash Redis
+(shared with the dashboard) so runs pick up where the last left off.
+
+**Setup:**
+1. Push this repo to GitHub (already done if you followed above).
+2. In the repo: **Settings → Secrets and variables → Actions → New repository
+   secret**, and add:
+   - `ANTHROPIC_API_KEY`
+   - `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_SECRET`
+   - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+     (from the Upstash console, or Vercel's `KV_REST_API_URL` / `KV_REST_API_TOKEN`)
+3. **Actions** tab → enable workflows → open **NBA news bot** → **Run workflow**
+   to test immediately (or wait for the next 10-minute tick).
+
+> Note: Vercel's free cron only fires once/day, too slow for breaking news —
+> that's why the bot runs on GitHub Actions instead. The Vercel side is just
+> the dashboard.
+
 ## Files
 
 | File | Purpose |
 |---|---|
-| `bot.py` | Main loop: poll feeds → compose → post |
+| `bot.py` | Entry point. `python bot.py` (loop) or `--once` (single cron pass) |
 | `sources.py` | RSS fetching and normalization |
-| `composer.py` | Claude API call: classify + write the tweet |
-| `tweeter.py` | X API posting (tweepy), dry-run support |
+| `composer.py` | Claude API call: classify, write the tweet, extract trade info |
+| `card.py` | Generates the TRADE ALERT graphic (Pillow) |
+| `tweeter.py` | X API posting with optional image (tweepy), dry-run support |
+| `state.py` | Dedup + daily counter — Upstash Redis, or local file fallback |
 | `config.py` | Settings and feed list |
-| `state.json` | Dedup memory + daily post counter (auto-created) |
+| `.github/workflows/bot.yml` | Scheduled cloud runner (every ~10 min) |

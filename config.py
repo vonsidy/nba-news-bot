@@ -18,6 +18,11 @@ DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
 MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "15"))
 
+# Upstash Redis for cross-run state (shared with the dashboard). Accept both
+# the Upstash-native names and Vercel's KV_ prefixed names.
+UPSTASH_URL = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL", "")
+UPSTASH_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.getenv("KV_REST_API_TOKEN", "")
+
 STATE_FILE = os.path.join(os.path.dirname(__file__), "state.json")
 
 # Feeds ordered roughly by how fast they break news. Each entry:

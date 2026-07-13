@@ -18,7 +18,8 @@
       "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;$env:Path\"; Set-Location \"C:\\\\Users\\\\7devo\\\\New folder\\\\dashboard\"; npm run dev)",
       "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue)",
       "PowerShell(Stop-Process -Force -Confirm:$false)",
-      "PowerShell('dev server stopped')"
+      "PowerShell('dev server stopped')",
+      "mcp__claude-in-chrome__tabs_context_mcp"
     ]
   }
 }

@@ -28,7 +28,15 @@ Style:
 - Prefix by category: official -> "🚨 OFFICIAL:", report -> "📰 REPORT:", rumor -> "👀 RUMOR:"
 - Max 250 characters (a link gets appended after you, which costs 24).
 - At most one hashtag, only if it's a big story (e.g. #NBATrade). No hashtag spam.
-- No first person, no questions to the audience, no engagement-bait phrases."""
+- No first person, no questions to the audience, no engagement-bait phrases.
+
+Trade detection (for auto-generating a graphic):
+- Set is_trade=true only when a SPECIFIC named player is confirmed/reported to be
+  changing teams (traded, signed, waived-and-claimed). General trade rumors with no
+  named destination, or non-movement news, are is_trade=false.
+- When is_trade, fill player (full name), from_team, and to_team. Prefer the 3-letter
+  NBA abbreviation (e.g. BOS, PHI, LAL) but a nickname or city is fine. Leave from_team
+  empty if the origin team isn't stated."""
 
 TWEET_SCHEMA = {
     "type": "object",
@@ -42,8 +50,24 @@ TWEET_SCHEMA = {
             "type": "string",
             "description": "The tweet text, max 250 characters. Empty string if not newsworthy.",
         },
+        "is_trade": {
+            "type": "boolean",
+            "description": "true only if this item is about a specific player being traded, signed, or moving to a new team",
+        },
+        "player": {
+            "type": "string",
+            "description": "The player's full name if is_trade, else empty string",
+        },
+        "from_team": {
+            "type": "string",
+            "description": "The team the player is leaving (name, nickname, or 3-letter abbreviation) if known, else empty string",
+        },
+        "to_team": {
+            "type": "string",
+            "description": "The team the player is going to (name, nickname, or 3-letter abbreviation) if is_trade, else empty string",
+        },
     },
-    "required": ["newsworthy", "category", "tweet"],
+    "required": ["newsworthy", "category", "tweet", "is_trade", "player", "from_team", "to_team"],
     "additionalProperties": False,
 }
 

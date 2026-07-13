@@ -1,6 +1,7 @@
 # secrets & runtime state
 .env
 state.json
+sample_card.png
 
 # python
 __pycache__/
