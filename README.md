@@ -66,10 +66,18 @@ monetizable instead of banned.
 
 ## Trade alert graphics
 
-When the bot detects a player trade, it auto-generates an original **TRADE
-ALERT** card (destination team's colors, player name, `OLD → NEW`) and attaches
-it to the tweet. No copyrighted photos or logos — just team colors + text
-rendered fresh, so nothing can get the account struck. See `card.py`.
+When the bot detects a player trade, it auto-generates a **BREAKING NEWS** card
+and attaches it to the tweet (`card.py`).
+
+- It first tries to pull a **reuse-licensed player photo** (public domain or
+  Creative Commons) from Wikimedia Commons (`photos.py`), and renders the
+  required photographer credit on the card.
+- If the player has no free-licensed photo, it falls back to a **photo-free
+  design card** (destination team's colors + text).
+
+Either way there are **no copyrighted press photos, no team logos, and no
+fabricated reporter names** — so nothing on the card can get the account struck
+or demonetized. Copyrighted action shots (Getty/ESPN/NBAE) are never used.
 
 ## Running it 24/7 in the cloud (free, no PC) — GitHub Actions
 
@@ -100,6 +108,7 @@ bot every ~10 minutes on GitHub's servers. Dedup state lives in Upstash Redis
 | `sources.py` | RSS fetching and normalization |
 | `composer.py` | Claude API call: classify, write the tweet, extract trade info |
 | `card.py` | Generates the TRADE ALERT graphic (Pillow) |
+| `photos.py` | Fetches a CC/public-domain player photo + credit from Wikimedia |
 | `tweeter.py` | X API posting with optional image (tweepy), dry-run support |
 | `state.py` | Dedup + daily counter — Upstash Redis, or local file fallback |
 | `config.py` | Settings and feed list |

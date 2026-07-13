@@ -11,6 +11,7 @@ import time
 
 import card
 import config
+import photos
 import sources
 import state
 import tweeter
@@ -38,17 +39,26 @@ def process_item(item: sources.NewsItem) -> None:
     if item.link:
         text = f"{text}\n{item.link}"
 
-    # Auto-generate a TRADE ALERT graphic when the item is a player move
+    # Auto-generate a TRADE ALERT graphic when the item is a player move.
+    # Try a reuse-licensed (CC / public-domain) player photo from Wikimedia;
+    # fall back to the photo-free design card when none exists.
     image = None
     if result.get("is_trade") and result.get("player") and result.get("to_team"):
+        photo, credit = None, None
+        res = photos.get_player_photo(result["player"])
+        if res:
+            photo, credit = res
         image = card.make_trade_card(
             player=result["player"],
             to_team=result["to_team"],
             from_team=result.get("from_team") or None,
             source=item.source,
+            photo=photo,
+            credit=credit,
         )
         if image:
-            print(f"  generated trade card: {result['player']} -> {result['to_team']}")
+            kind = "photo" if photo else "design"
+            print(f"  generated {kind} trade card: {result['player']} -> {result['to_team']}")
 
     if tweeter.post(text, image=image):
         state.incr_posts()
