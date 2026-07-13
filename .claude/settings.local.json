@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "PowerShell(python --version)",
+      "PowerShell(pip --version)",
+      "PowerShell(winget install --id Python.Python.3.12 --silent --accept-package-agreements --accept-source-agreements)",
+      "PowerShell($py = \"$env:LOCALAPPDATA\\\\Programs\\\\Python\\\\Python312\\\\python.exe\"; & $py --version; & $py -m pip install -r requirements.txt --quiet --disable-pip-version-check)",
+      "PowerShell($py = \"$env:LOCALAPPDATA\\\\Programs\\\\Python\\\\Python312\\\\python.exe\"; & $py -c \"import sources; items = sources.fetch_all\\(\\); print\\(f'{len\\(items\\)} items fetched'\\); [print\\(f'[{i.source}] {i.title[:80]}'\\) for i in items[-8:]]\")",
+      "PowerShell($py = \"$env:LOCALAPPDATA\\\\Programs\\\\Python\\\\Python312\\\\python.exe\"; $env:PYTHONIOENCODING='utf-8'; & $py -c \"import bot, composer, tweeter, sources, config; print\\('all modules import OK'\\); print\\('DRY_RUN =', config.DRY_RUN\\)\")",
+      "PowerShell(gh auth status)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(winget install --id OpenJS.NodeJS.LTS --silent --accept-package-agreements --accept-source-agreements)",
+      "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;$env:Path\"; Set-Location \"C:\\\\Users\\\\7devo\\\\New folder\\\\dashboard\"; node --version; npm install --no-audit --no-fund 2>$null | Select-Object -Last 3)",
+      "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;$env:Path\"; Set-Location \"C:\\\\Users\\\\7devo\\\\New folder\\\\dashboard\"; npm run build 2>&1 | Select-Object -Last 30)",
+      "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;$env:Path\"; Set-Location \"C:\\\\Users\\\\7devo\\\\New folder\\\\dashboard\"; npm run dev)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force -Confirm:$false)",
+      "PowerShell('dev server stopped')"
+    ]
+  }
+}

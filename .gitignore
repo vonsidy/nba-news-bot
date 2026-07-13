@@ -1,0 +1,12 @@
+# secrets & runtime state
+.env
+state.json
+
+# python
+__pycache__/
+*.pyc
+
+# node / next
+node_modules/
+.next/
+.vercel
