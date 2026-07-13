@@ -45,6 +45,7 @@ def process_item(item: sources.NewsItem) -> None:
             player=result["player"],
             to_team=result["to_team"],
             from_team=result.get("from_team") or None,
+            source=item.source,
         )
         if image:
             print(f"  generated trade card: {result['player']} -> {result['to_team']}")
