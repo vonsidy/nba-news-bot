@@ -3,6 +3,17 @@
 state.json
 sample_card.png
 
+# youtube bot: creds + generated media
+youtube_bot/client_secret.json
+youtube_bot/yt_token.json
+output/*.mp4
+output/*.mp3
+output/*.ass
+backgrounds/*.mp4
+backgrounds/*.mov
+backgrounds/*.mkv
+backgrounds/*.webm
+
 # python
 __pycache__/
 *.pyc

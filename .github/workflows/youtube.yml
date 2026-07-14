@@ -1,0 +1,55 @@
+name: YouTube Shorts bot
+
+# Fully automated: once a day the cloud runner writes a story, narrates it,
+# renders it over your gameplay footage, and uploads it to YouTube as a Short.
+# No PC needed. Creds + footage come from repo Secrets (see setup below).
+
+on:
+  schedule:
+    - cron: "0 16 * * *"    # 16:00 UTC daily (~12pm ET / 9am PT). Change freely.
+  workflow_dispatch: {}      # manual "Run workflow" button in the Actions tab
+
+concurrency:
+  group: youtube-bot
+  cancel-in-progress: false
+
+jobs:
+  make-short:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+
+      - run: pip install -r youtube_bot/requirements.txt
+
+      # Restore Google OAuth files from base64 secrets (never committed).
+      - name: Restore YouTube credentials
+        run: |
+          echo "${{ secrets.YT_CLIENT_SECRET_B64 }}" | base64 -d > youtube_bot/client_secret.json
+          echo "${{ secrets.YT_TOKEN_B64 }}" | base64 -d > youtube_bot/yt_token.json
+
+      # Download the gameplay background (your own footage, hosted anywhere with
+      # a direct link — GitHub Release asset, Dropbox direct link, etc.).
+      - name: Fetch background footage
+        run: |
+          mkdir -p backgrounds
+          curl -L "${{ secrets.BACKGROUND_URL }}" -o backgrounds/gameplay.mp4
+          ls -la backgrounds
+
+      - name: Generate and upload one Short
+        env:
+          DRY_RUN: "false"
+          YT_PRIVACY: "unlisted"        # flip to "public" when you're happy
+          MAX_UPLOADS_PER_DAY: "1"
+          TTS_PROVIDER: "edge"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          STORY_THEME: ${{ vars.STORY_THEME }}
+        run: python -m youtube_bot.run --once
