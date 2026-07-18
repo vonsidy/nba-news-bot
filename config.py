@@ -32,10 +32,22 @@ STATE_FILE = os.path.join(os.path.dirname(__file__), "state.json")
 
 # Feeds ordered roughly by how fast they break news. Each entry:
 # (source name shown in attribution, feed URL)
+#
+# Google News search feeds are first because they aggregate EVERY outlet in
+# near real time and support a recency filter (when:1h) — so a story is caught
+# the moment any publisher posts it, instead of waiting for one outlet's own
+# feed to refresh. The per-item real publisher is resolved for attribution in
+# sources.fetch_all(). The remaining direct feeds are slower backfill.
+_GNEWS = "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q="
+
 FEEDS = [
+    # Trades / signings / roster moves — the highest-engagement breaking news.
+    ("Google News", _GNEWS + "NBA%20(trade%20OR%20traded%20OR%20signs%20OR%20%22agrees%20to%22%20OR%20waived%20OR%20claimed)%20when%3A1h"),
+    # Injuries / availability / discipline.
+    ("Google News", _GNEWS + "NBA%20(injury%20OR%20injured%20OR%20suspended%20OR%20%22ruled%20out%22%20OR%20%22out%20for%22)%20when%3A1h"),
+    ("RealGM", "https://basketball.realgm.com/rss/wiretap/0/0.xml"),
+    ("HoopsHype", "https://hoopshype.com/feed/"),
     ("ESPN", "https://www.espn.com/espn/rss/nba/news"),
     ("Yahoo Sports", "https://sports.yahoo.com/nba/rss.xml"),
-    ("HoopsHype", "https://hoopshype.com/feed/"),
-    ("RealGM", "https://basketball.realgm.com/rss/wiretap/0/0.xml"),
     ("CBS Sports", "https://www.cbssports.com/rss/headlines/nba/"),
 ]
