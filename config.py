@@ -18,6 +18,11 @@ DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
 MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "15"))
 
+# How recent (in minutes) an item must be to still be worth posting. Breaking
+# news lives or dies on latency — a story that's hours old gets no traction, so
+# keep this tight. Anything older is dropped instead of posted stale.
+FRESH_MAX_AGE_MIN = int(os.getenv("FRESH_MAX_AGE_MIN", "45"))
+
 # Upstash Redis for cross-run state (shared with the dashboard). Accept both
 # the Upstash-native names and Vercel's KV_ prefixed names.
 UPSTASH_URL = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL", "")

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import feedparser
 
-from config import FEEDS
+from config import FEEDS, FRESH_MAX_AGE_MIN
 
 
 @dataclass
@@ -51,14 +51,19 @@ def fetch_all() -> list[NewsItem]:
                     published_ts=_entry_ts(entry),
                 )
             )
-    # Oldest first so tweets go out in chronological order
-    items.sort(key=lambda i: i.published_ts)
+    # Newest first: on a breaking-news account the freshest item should go out
+    # first, and if we hit the daily cap it's the stale tail that gets dropped,
+    # never the latest story.
+    items.sort(key=lambda i: i.published_ts, reverse=True)
     return items
 
 
-def is_fresh(item: NewsItem, max_age_seconds: float = 6 * 3600) -> bool:
+def is_fresh(item: NewsItem, max_age_seconds: float | None = None) -> bool:
     """Only tweet items published recently — stale news gets no engagement.
-    Items with no timestamp are treated as fresh (dedup still protects us)."""
+    Defaults to config.FRESH_MAX_AGE_MIN. Items with no timestamp are treated
+    as fresh (dedup still protects us)."""
+    if max_age_seconds is None:
+        max_age_seconds = FRESH_MAX_AGE_MIN * 60
     if item.published_ts == 0:
         return True
     return (time.time() - item.published_ts) <= max_age_seconds
