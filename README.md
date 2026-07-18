@@ -1,4 +1,4 @@
-# NBA Breaking News Bot
+# TheNBASignal — NBA Breaking News Bot
 
 > 📊 **Engagement dashboard:** this repo also contains a Vercel web dashboard
 > (`dashboard/`) where you connect your X account with one click and get
