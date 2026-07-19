@@ -33,6 +33,22 @@ def _get_api_v1() -> tweepy.API:
     return _api_v1
 
 
+def creds_report() -> str:
+    """Report the shape of the X credentials WITHOUT revealing them — just
+    lengths and format, so a 401 can be traced to the specific malformed key.
+    Safe to print in public logs. Expected: API key ~25 chars, API secret ~50,
+    access token ~50 with a leading '<digits>-' , access secret ~45."""
+    at = config.X_ACCESS_TOKEN or ""
+    return (
+        "X creds shape — "
+        f"API_KEY:{len(config.X_API_KEY or '')} "
+        f"API_SECRET:{len(config.X_API_SECRET or '')} "
+        f"ACCESS_TOKEN:{len(at)}(dash={'-' in at},startsdigit={at[:1].isdigit()}) "
+        f"ACCESS_SECRET:{len(config.X_ACCESS_SECRET or '')}  "
+        "[expect API_KEY~25 API_SECRET~50 ACCESS_TOKEN~50+dash ACCESS_SECRET~45]"
+    )
+
+
 def post(text: str, image: bytes | None = None) -> bool:
     """Post a tweet, optionally with a PNG image. Returns True on success
     (or in dry-run mode)."""
@@ -48,19 +64,26 @@ def post(text: str, image: bytes | None = None) -> bool:
             print("[DRY RUN] wrote the graphic to sample_card.png\n")
         return True
 
-    try:
-        media_ids = None
-        if image:
+    media_ids = None
+    if image:
+        # Image upload uses the v1.1 endpoint. If it fails (e.g. API access
+        # tier), don't lose the whole story — fall back to a text-only tweet.
+        try:
             media = _get_api_v1().media_upload(
                 filename="trade.png", file=io.BytesIO(image)
             )
             media_ids = [media.media_id]
+        except tweepy.TweepyException as e:
+            print(f"  image upload failed ({e}); posting text-only")
+            media_ids = None
+
+    try:
         _get_client().create_tweet(text=text, media_ids=media_ids)
-        print(f"\nPosted ({len(text)} chars){' + image' if image else ''}:\n{text}\n")
+        print(f"\nPosted ({len(text)} chars){' + image' if media_ids else ''}:\n{text}\n")
         return True
     except tweepy.TooManyRequests:
         print("X API rate limited — will retry items next cycle")
         return False
     except tweepy.TweepyException as e:
-        print(f"X API error: {e}")
+        print(f"tweet create failed: {e}")
         return False
