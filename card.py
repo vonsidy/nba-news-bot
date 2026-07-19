@@ -184,15 +184,14 @@ def _cover(im, size, focus_y=0.5):
 
 
 def _breaking_box(d, W, y_top):
-    """Draw the red-outlined BREAKING NEWS box centered at y_top."""
+    """Draw the solid-red BREAKING NEWS banner centered at y_top."""
     bn_font = _font(90)
     bn = "BREAKING NEWS"
     box = d.textbbox((0, 0), bn, font=bn_font)
     bw = box[2] - box[0]
     bx0, bx1 = (W - bw) / 2 - 46, (W + bw) / 2 + 46
     by1 = y_top + (box[3] - box[1]) + 60
-    for i in range(7):
-        d.rounded_rectangle([bx0 - i, y_top - i, bx1 + i, by1 + i], radius=16, outline=(214, 20, 40))
+    d.rounded_rectangle([bx0, y_top, bx1, by1], radius=18, fill=(206, 17, 38))
     _center(d, W / 2, y_top + 18, bn, bn_font, (255, 255, 255))
     return by1
 
@@ -224,6 +223,39 @@ def _draw_route(d, W, y, from_abbr, to_abbr, to_name, prim, size=72):
         x += d.textbbox((0, 0), s, font=rf)[2]
 
 
+def _team_badge(d, cx, cy, r, abbr):
+    """A colored roundel 'badge' for a team — official team colors + abbreviation.
+    A trademark-safe stand-in for the real (copyrighted) team logo."""
+    prim = _hex(TEAMS[abbr][1])
+    sec = _hex(TEAMS[abbr][2])
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=sec)          # outer ring
+    ir = int(r * 0.86)
+    d.ellipse([cx - ir, cy - ir, cx + ir, cy + ir], fill=prim)     # inner disc
+    txt = (255, 255, 255) if _lum(prim) < 150 else (18, 18, 22)
+    f = _fit_font(d, abbr, int(ir * 1.5), int(ir * 1.05), min_size=28, step=4)
+    tb = d.textbbox((0, 0), abbr, font=f)
+    d.text((cx - (tb[2] - tb[0]) / 2 - tb[0], cy - (tb[3] - tb[1]) / 2 - tb[1]),
+           abbr, font=f, fill=txt)
+
+
+def _draw_team_badges(d, W, cy, from_abbr, to_abbr, r=58):
+    """Render the from -> to team badges centered on cy (or just the destination
+    badge when the origin team isn't known)."""
+    if from_abbr:
+        af = _font(72)
+        ab = d.textbbox((0, 0), "→", font=af)
+        aw = ab[2] - ab[0]
+        gap = 42
+        total = 2 * r + gap + aw + gap + 2 * r
+        x0 = W / 2 - total / 2
+        _team_badge(d, x0 + r, cy, r, from_abbr)
+        ax = x0 + 2 * r + gap
+        d.text((ax - ab[0], cy - (ab[3] - ab[1]) / 2 - ab[1]), "→", font=af, fill=(235, 235, 235))
+        _team_badge(d, ax + aw + gap + r, cy, r, to_abbr)
+    else:
+        _team_badge(d, W / 2, cy, r, to_abbr)
+
+
 def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
     """Photo-free cinematic card: dark base + team-color lighting."""
     W, H = 1080, 1080
@@ -243,7 +275,7 @@ def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
         f = _fit_font(d, line, W - 140, 132)
         _center(d, W / 2, y, line, f, (255, 255, 255))
         y += f.size + 8
-    _draw_route(d, W, y + 30, from_abbr, to_abbr, to_name, prim)
+    _draw_team_badges(d, W, y + 82, from_abbr, to_abbr, r=64)
 
     by1 = _breaking_box(d, W, 810)
     footer = f"via {source.upper()}" if source else "AUTOMATED NEWS BOT"
@@ -281,23 +313,22 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     _center(d, W / 2, 52, kt, kf, (225, 228, 235))
     _brand(d, W, 52, (235, 238, 245), shadow=True)
 
-    # Lay name -> route -> BREAKING box out bottom-up so the route always keeps
-    # a clear gap above the box (the fixed positions used to collide).
+    # Lay name -> team badges -> BREAKING box out bottom-up with clear gaps.
     breaking_top = 900
-    route_size = 64
-    route_gap = 34           # space between the route line and the BREAKING box
-    name_gap = 16            # space between the name block and the route line
+    badge_r = 58
+    badge_gap = 30           # space between the badges and the BREAKING box
+    name_gap = 18            # space between the name block and the badges
 
     lines = _wrap_name(player)
     fonts = [_fit_font(d, line, W - 120, 118) for line in lines]
     name_h = sum(f.size + 4 for f in fonts)
 
-    route_y = breaking_top - route_gap - route_size
-    y = route_y - name_gap - name_h  # top of the name block
+    badge_cy = breaking_top - badge_gap - badge_r
+    y = badge_cy - badge_r - name_gap - name_h  # top of the name block
     for line, f in zip(lines, fonts):
         _center(d, W / 2, y, line, f, (255, 255, 255))
         y += f.size + 4
-    _draw_route(d, W, route_y, from_abbr, to_abbr, to_name, prim, size=route_size)
+    _draw_team_badges(d, W, badge_cy, from_abbr, to_abbr, r=badge_r)
 
     _breaking_box(d, W, breaking_top)
 
