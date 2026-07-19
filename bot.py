@@ -44,6 +44,16 @@ def process_item(item: sources.NewsItem) -> None:
         print(f"  skipped: {item.title[:70]}")
         return
 
+    # Freshness by type: a trade/signing is still worth posting hours later, but
+    # any other news (a performance, a quote) is stale within the tight window.
+    # We only know which it is after Claude classifies it, so enforce it here.
+    if item.published_ts:
+        age_min = (time.time() - item.published_ts) / 60
+        max_age = config.TRADE_MAX_AGE_MIN if result.get("is_trade") else config.FRESH_MAX_AGE_MIN
+        if age_min > max_age:
+            print(f"  too stale ({int(age_min)}m old) for a non-trade, skipping: {item.title[:60]}")
+            return
+
     text = result["tweet"].strip()
     if item.link:
         text = f"{text}\n{item.link}"
@@ -76,9 +86,13 @@ def process_item(item: sources.NewsItem) -> None:
 
 
 def run_cycle() -> None:
+    # Pull candidates up to the widest window (trades stay newsworthy for hours);
+    # the tighter per-type freshness is enforced in process_item once Claude has
+    # told us whether the item is actually a trade.
+    candidate_age = max(config.FRESH_MAX_AGE_MIN, config.TRADE_MAX_AGE_MIN) * 60
     items = [
         i for i in sources.fetch_all()
-        if not state.is_seen(i.id) and sources.is_fresh(i)
+        if not state.is_seen(i.id) and sources.is_fresh(i, candidate_age)
     ]
     if not items:
         return
