@@ -18,6 +18,11 @@ DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
 MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "15"))
 
+# Standout-performance highlights (summer league + regular season) are capped
+# separately and only posted for genuine stars / top prospects, so they add
+# engagement without burying the breaking news.
+MAX_HIGHLIGHTS_PER_DAY = int(os.getenv("MAX_HIGHLIGHTS_PER_DAY", "10"))
+
 # How recent (in minutes) an item must be to still be worth posting. Breaking
 # news lives or dies on latency — a game score that's hours old gets no traction,
 # so keep this tight. Anything older is dropped instead of posted stale.
@@ -54,6 +59,9 @@ FEEDS = [
     ("Google News", _GNEWS + "NBA%20(trade%20OR%20traded%20OR%20signs%20OR%20%22agrees%20to%22%20OR%20waived%20OR%20claimed)%20when%3A6h"),
     # Injuries / availability / discipline.
     ("Google News", _GNEWS + "NBA%20(injury%20OR%20injured%20OR%20suspended%20OR%20%22ruled%20out%22%20OR%20%22out%20for%22)%20when%3A1h"),
+    # Star highlights / standout performances (summer league + regular season).
+    # The composer filters these down to genuine stars / top prospects.
+    ("Google News", _GNEWS + "NBA%20(%22career-high%22%20OR%20%22triple-double%22%20OR%20%22summer%20league%22%20OR%20%22game-winner%22%20OR%20%2240%20points%22%20OR%20%2250%20points%22)%20when%3A1h"),
     ("RealGM", "https://basketball.realgm.com/rss/wiretap/0/0.xml"),
     ("HoopsHype", "https://hoopshype.com/feed/"),
     ("ESPN", "https://www.espn.com/espn/rss/nba/news"),

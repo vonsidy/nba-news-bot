@@ -16,20 +16,24 @@ Editorial rules (non-negotiable):
   speculate beyond it. If the item is thin, that's fine — a short accurate tweet
   beats an embellished one.
 - Classify every item honestly:
-  * official — confirmed/announced by a team, the league, or the player
-  * report   — a reporter's sourced story ("per @ShamsCharania", "ESPN reports")
-  * rumor    — unconfirmed chatter, trade speculation, "sources say" aggregation
+  * official  — confirmed/announced by a team, the league, or the player
+  * report    — a reporter's sourced story ("per @ShamsCharania", "ESPN reports")
+  * rumor     — unconfirmed chatter, trade speculation, "sources say" aggregation
+  * highlight — a standout individual performance by a star/notable player (see below)
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
 - Skip items that aren't real NBA news: betting-odds content, listicles,
   "where to watch" guides, fantasy advice, sponsored posts.
-- Skip game recaps, final scores, box scores, and "highlights" writeups even
-  when they're recent — a finished game is not breaking news and gets no
-  traction on this account. Only forward-looking, just-happened news (trades,
-  signings, injuries, suspensions, official announcements, sourced reports).
+- Skip generic game recaps, final scores, and box scores.
+- HIGHLIGHT posts are allowed ONLY for a standout individual performance by a
+  genuine NBA STAR or a highly-touted prospect (e.g. a top summer-league rookie):
+  a big scoring night, a triple-double, a game-winner, a breakout game. A role
+  player's ordinary stat line is NOT newsworthy — skip it. Set is_star=true only
+  when the player is a widely-known star or a high draft pick / top prospect;
+  when in doubt whether they're a star, set is_star=false (the bot will skip it).
 
 Style:
 - Punchy and fast, like a breaking-news wire account with personality.
-- Prefix by category: official -> "🚨 OFFICIAL:", report -> "📰 REPORT:", rumor -> "👀 RUMOR:"
+- Prefix by category: official -> "🚨 OFFICIAL:", report -> "📰 REPORT:", rumor -> "👀 RUMOR:", highlight -> "🔥"
 - Max 250 characters (a link gets appended after you, which costs 24).
 - At most one hashtag, only if it's a big story (e.g. #NBATrade). No hashtag spam.
 - No first person, no questions to the audience, no engagement-bait phrases.
@@ -49,7 +53,7 @@ TWEET_SCHEMA = {
             "type": "boolean",
             "description": "false if the item should be skipped per the editorial rules",
         },
-        "category": {"type": "string", "enum": ["official", "report", "rumor", "skip"]},
+        "category": {"type": "string", "enum": ["official", "report", "rumor", "highlight", "skip"]},
         "tweet": {
             "type": "string",
             "description": "The tweet text, max 250 characters. Empty string if not newsworthy.",
@@ -58,9 +62,17 @@ TWEET_SCHEMA = {
             "type": "boolean",
             "description": "true only if this item is about a specific player being traded, signed, or moving to a new team",
         },
+        "is_highlight": {
+            "type": "boolean",
+            "description": "true if this is a standout individual game performance (highlight), not a transaction or injury",
+        },
+        "is_star": {
+            "type": "boolean",
+            "description": "true only if the player is a widely-known NBA star or a top prospect/high draft pick; false for role players or unknown names",
+        },
         "player": {
             "type": "string",
-            "description": "The player's full name if is_trade, else empty string",
+            "description": "The player's full name if is_trade or is_highlight, else empty string",
         },
         "from_team": {
             "type": "string",
@@ -71,7 +83,7 @@ TWEET_SCHEMA = {
             "description": "The team the player is going to (name, nickname, or 3-letter abbreviation) if is_trade, else empty string",
         },
     },
-    "required": ["newsworthy", "category", "tweet", "is_trade", "player", "from_team", "to_team"],
+    "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team"],
     "additionalProperties": False,
 }
 

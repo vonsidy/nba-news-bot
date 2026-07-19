@@ -35,6 +35,10 @@ def _post_key() -> str:
     return f"bot:posts:{_today()}"
 
 
+def _hl_key() -> str:
+    return f"bot:highlights:{_today()}"
+
+
 # ---- Redis-backed implementation ----
 
 def _redis_is_seen(item_id: str) -> bool:
@@ -57,6 +61,18 @@ def _redis_incr_posts() -> None:
         _redis.expire(key, 60 * 60 * 30)  # auto-clean after ~30h
 
 
+def _redis_highlights_today() -> int:
+    val = _redis.get(_hl_key())
+    return int(val) if val else 0
+
+
+def _redis_incr_highlights() -> None:
+    key = _hl_key()
+    n = _redis.incr(key)
+    if n == 1:
+        _redis.expire(key, 60 * 60 * 30)
+
+
 # ---- Local JSON fallback ----
 
 def _local_load() -> dict:
@@ -66,7 +82,7 @@ def _local_load() -> dict:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             pass
-    return {"seen": [], "post_day": "", "post_count": 0}
+    return {"seen": [], "post_day": "", "post_count": 0, "hl_count": 0}
 
 
 def _local_save(d: dict) -> None:
@@ -111,8 +127,26 @@ def incr_posts() -> None:
     else:
         d = _local_load()
         if d.get("post_day") != _today():
-            d["post_day"], d["post_count"] = _today(), 0
+            d["post_day"], d["post_count"], d["hl_count"] = _today(), 0, 0
         d["post_count"] += 1
+        _local_save(d)
+
+
+def highlights_today() -> int:
+    if _redis:
+        return _redis_highlights_today()
+    d = _local_load()
+    return d.get("hl_count", 0) if d.get("post_day") == _today() else 0
+
+
+def incr_highlights() -> None:
+    if _redis:
+        _redis_incr_highlights()
+    else:
+        d = _local_load()
+        if d.get("post_day") != _today():
+            d["post_day"], d["post_count"], d["hl_count"] = _today(), 0, 0
+        d["hl_count"] = d.get("hl_count", 0) + 1
         _local_save(d)
 
 
