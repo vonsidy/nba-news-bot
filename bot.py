@@ -116,6 +116,8 @@ def main() -> None:
     once = "--once" in sys.argv
     mode = "DRY RUN (printing only)" if config.DRY_RUN else "LIVE (posting to X)"
     print(f"NBA news bot — {mode} — state: {state.backend()}")
+    if not config.DRY_RUN:
+        print(tweeter.creds_report())
 
     # First run ever: baseline instead of posting the whole backlog
     if not state.has_any_seen():
