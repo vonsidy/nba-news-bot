@@ -24,7 +24,7 @@ from_team = sys.argv[3] if len(sys.argv) > 3 else "Lakers"
 res = photos.get_player_photo(player)
 photo, credit = res if res else (None, None)
 png = card.make_trade_card(player, to_team=to_team, from_team=from_team,
-                           source="", photo=photo, credit=credit)
+                           source="ESPN", photo=photo, credit=credit)
 
 # Shrink to keep the base64 blob a manageable size for the log.
 im = Image.open(io.BytesIO(png)).convert("RGB")
