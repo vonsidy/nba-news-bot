@@ -44,6 +44,17 @@ def process_item(item: sources.NewsItem) -> None:
         print(f"  skipped: {item.title[:70]}")
         return
 
+    # Highlights (standout performances) only post for genuine stars, and are
+    # capped separately per day so they add engagement without burying the news.
+    is_highlight = result.get("category") == "highlight" or result.get("is_highlight")
+    if is_highlight:
+        if not result.get("is_star"):
+            print(f"  non-star highlight, skipping: {item.title[:60]}")
+            return
+        if state.highlights_today() >= config.MAX_HIGHLIGHTS_PER_DAY:
+            print("  daily highlight cap reached; skipping highlight")
+            return
+
     # Freshness by type: a trade/signing is still worth posting hours later, but
     # any other news (a performance, a quote) is stale within the tight window.
     # We only know which it is after Claude classifies it, so enforce it here.
@@ -81,6 +92,8 @@ def process_item(item: sources.NewsItem) -> None:
 
     if tweeter.post(text, image=image):
         state.incr_posts()
+        if is_highlight:
+            state.incr_highlights()
         if sig:
             state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
 
