@@ -281,16 +281,25 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     _center(d, W / 2, 52, kt, kf, (225, 228, 235))
     _brand(d, W, 52, (235, 238, 245), shadow=True)
 
-    # name -> route -> BREAKING box, anchored in the lower third
+    # Lay name -> route -> BREAKING box out bottom-up so the route always keeps
+    # a clear gap above the box (the fixed positions used to collide).
+    breaking_top = 900
+    route_size = 64
+    route_gap = 34           # space between the route line and the BREAKING box
+    name_gap = 16            # space between the name block and the route line
+
     lines = _wrap_name(player)
-    y = 700 if len(lines) == 1 else 630
-    for line in lines:
-        f = _fit_font(d, line, W - 120, 118)
+    fonts = [_fit_font(d, line, W - 120, 118) for line in lines]
+    name_h = sum(f.size + 4 for f in fonts)
+
+    route_y = breaking_top - route_gap - route_size
+    y = route_y - name_gap - name_h  # top of the name block
+    for line, f in zip(lines, fonts):
         _center(d, W / 2, y, line, f, (255, 255, 255))
         y += f.size + 4
-    _draw_route(d, W, y + 18, from_abbr, to_abbr, to_name, prim, size=64)
+    _draw_route(d, W, route_y, from_abbr, to_abbr, to_name, prim, size=route_size)
 
-    _breaking_box(d, W, 900)
+    _breaking_box(d, W, breaking_top)
 
     # required attribution for the CC photo + source
     tag = credit or ""
