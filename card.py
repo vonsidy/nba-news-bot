@@ -186,17 +186,18 @@ def _cover(im, size, focus_y=0.5):
 def _breaking_box(d, W, y_top, source=None):
     """ESPN-style BREAKING NEWS: white text inside a red outline frame, with an
     optional 'VIA <source>' credit line underneath (their 'FROM SHAMS')."""
-    bn_font = _font(86)
+    bn_font = _font(90)
     bn = "BREAKING NEWS"
     box = d.textbbox((0, 0), bn, font=bn_font)
-    bw = box[2] - box[0]
-    bx0, bx1 = (W - bw) / 2 - 44, (W + bw) / 2 + 44
-    by1 = y_top + (box[3] - box[1]) + 52
-    for i in range(8):
-        d.rounded_rectangle([bx0 - i, y_top - i, bx1 + i, by1 + i], radius=16, outline=(214, 18, 40))
-    _center(d, W / 2, y_top + 16, bn, bn_font, (255, 255, 255))
+    bw, th = box[2] - box[0], box[3] - box[1]
+    pad_x, pad_y = 48, 30
+    bx0, bx1 = (W - bw) / 2 - pad_x, (W + bw) / 2 + pad_x
+    by0, by1 = y_top, y_top + th + 2 * pad_y
+    d.rounded_rectangle([bx0, by0, bx1, by1], radius=18, outline=(214, 18, 40), width=8)
+    # vertically center the text inside the box (offset out the bbox's top gap)
+    _center(d, W / 2, by0 + pad_y - box[1], bn, bn_font, (255, 255, 255))
     if source:
-        _center(d, W / 2, by1 + 16, f"VIA {source.upper()}", _font(30), (232, 232, 236))
+        _center(d, W / 2, by1 + 18, f"VIA {source.upper()}", _font(30), (232, 232, 236))
     return by1
 
 
@@ -314,15 +315,8 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     img = Image.alpha_composite(img, _glow((W, H), (W // 2, H - 120), 520, prim, 95)).convert("RGB")
     d = ImageDraw.Draw(img)
 
-    # (no top accent bar — the photo runs full-bleed to the top edge)
-
-    # kicker with a dark pill so it reads over the photo
-    kf, kt = _font(38), "TRADE ALERT"
-    kb = d.textbbox((0, 0), kt, font=kf)
-    kw = kb[2] - kb[0]
-    d.rounded_rectangle([W / 2 - kw / 2 - 22, 44, W / 2 + kw / 2 + 22, 44 + kb[3] - kb[1] + 26],
-                        radius=10, fill=(10, 10, 14))
-    _center(d, W / 2, 52, kt, kf, (225, 228, 235))
+    # (no top accent bar and no TRADE ALERT tag — photo runs full-bleed; the
+    # @handle stays as the only top mark)
     _brand(d, W, 52, (235, 238, 245), shadow=True)
 
     # No player name — the photo identifies them (like the ESPN card). Team
