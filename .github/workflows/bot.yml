@@ -29,6 +29,13 @@ jobs:
 
       - run: pip install -r requirements.txt
 
+      - name: Fetch display font (Anton) for the cards
+        run: |
+          mkdir -p assets
+          curl -sSL --retry 3 -o assets/font-bold.ttf \
+            https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf \
+            || echo "font download failed; card.py falls back to a system font"
+
       - name: Run one bot cycle
         env:
           DRY_RUN: "false"

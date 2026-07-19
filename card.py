@@ -238,19 +238,26 @@ def _team_badge(d, cx, cy, r, abbr):
            abbr, font=f, fill=txt)
 
 
+def _arrow(d, x, cy, w, color):
+    """A right-pointing arrow drawn as shapes (no font glyph needed, so it works
+    with display fonts like Anton that lack an arrow character)."""
+    hy = w * 0.16                       # half shaft thickness
+    d.rectangle([x, cy - hy, x + w * 0.62, cy + hy], fill=color)
+    d.polygon([(x + w * 0.5, cy - w * 0.32), (x + w, cy), (x + w * 0.5, cy + w * 0.32)],
+              fill=color)
+
+
 def _draw_team_badges(d, W, cy, from_abbr, to_abbr, r=58):
     """Render the from -> to team badges centered on cy (or just the destination
     badge when the origin team isn't known)."""
     if from_abbr:
-        af = _font(72)
-        ab = d.textbbox((0, 0), "→", font=af)
-        aw = ab[2] - ab[0]
-        gap = 42
+        aw = 64
+        gap = 40
         total = 2 * r + gap + aw + gap + 2 * r
         x0 = W / 2 - total / 2
         _team_badge(d, x0 + r, cy, r, from_abbr)
         ax = x0 + 2 * r + gap
-        d.text((ax - ab[0], cy - (ab[3] - ab[1]) / 2 - ab[1]), "→", font=af, fill=(235, 235, 235))
+        _arrow(d, ax, cy, aw, (238, 238, 238))
         _team_badge(d, ax + aw + gap + r, cy, r, to_abbr)
     else:
         _team_badge(d, W / 2, cy, r, to_abbr)
@@ -335,7 +342,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     # required attribution for the CC photo + source
     tag = credit or ""
     if source:
-        tag = f"{tag}   •   via {source}" if tag else f"via {source}"
+        tag = f"{tag}   |   via {source}" if tag else f"via {source}"
     _center(d, W / 2, H - 42, tag, _font(24), (200, 203, 210))
 
     out = io.BytesIO()
