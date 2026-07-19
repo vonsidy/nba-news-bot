@@ -30,6 +30,15 @@ def process_item(item: sources.NewsItem) -> None:
         print("Daily post cap reached; skipping remaining items")
         return
 
+    # Skip a story we've already posted from another outlet/feed. The Google
+    # News feeds aggregate every publisher, so the same trade surfaces many
+    # times with different links — dedup on the headline's meaning, and do it
+    # before the Claude call so duplicates cost nothing.
+    sig = sources.content_key(item.title)
+    if sig and state.is_seen(f"sig:{sig}"):
+        print(f"  duplicate story, skipping: {item.title[:60]}")
+        return
+
     result = compose(item)
     if not result or not result.get("newsworthy") or not result.get("tweet"):
         print(f"  skipped: {item.title[:70]}")
@@ -62,6 +71,8 @@ def process_item(item: sources.NewsItem) -> None:
 
     if tweeter.post(text, image=image):
         state.incr_posts()
+        if sig:
+            state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
 
 
 def run_cycle() -> None:

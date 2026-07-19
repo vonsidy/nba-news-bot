@@ -21,7 +21,11 @@ Editorial rules (non-negotiable):
   * rumor    — unconfirmed chatter, trade speculation, "sources say" aggregation
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
 - Skip items that aren't real NBA news: betting-odds content, listicles,
-  "where to watch" guides, fantasy advice, old recaps, sponsored posts.
+  "where to watch" guides, fantasy advice, sponsored posts.
+- Skip game recaps, final scores, box scores, and "highlights" writeups even
+  when they're recent — a finished game is not breaking news and gets no
+  traction on this account. Only forward-looking, just-happened news (trades,
+  signings, injuries, suspensions, official announcements, sourced reports).
 
 Style:
 - Punchy and fast, like a breaking-news wire account with personality.

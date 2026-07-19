@@ -10,6 +10,9 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
+# Account brand stamped on every card for attribution as they get reshared.
+BRAND = os.getenv("NBA_BOT_BRAND", "@TheNBASignal")
+
 # abbr -> (display name, primary hex, secondary hex)
 TEAMS = {
     "ATL": ("HAWKS", "#E03A3E", "#C1D32F"),
@@ -138,6 +141,16 @@ def _center(draw, cx, y, text, font, fill):
     draw.text((cx - (box[2] - box[0]) / 2, y), text, font=font, fill=fill)
 
 
+def _brand(draw, W, y, fill, shadow=False):
+    """Stamp the account handle in the top-right corner."""
+    bf = _font(30)
+    box = draw.textbbox((0, 0), BRAND, font=bf)
+    x = W - (box[2] - box[0]) - 40
+    if shadow:
+        draw.text((x + 2, y + 2), BRAND, font=bf, fill=(0, 0, 0))
+    draw.text((x, y), BRAND, font=bf, fill=fill)
+
+
 def _vgradient(size, top, bottom):
     w, h = size
     strip = Image.new("RGB", (1, h))
@@ -222,6 +235,7 @@ def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
     d = ImageDraw.Draw(img)
 
     d.rectangle([0, 0, W, 10], fill=_brighten(prim))
+    _brand(d, W, 44, (170, 175, 185))
     _center(d, W / 2, 150, "T R A D E   A L E R T", _font(40), (200, 205, 215))
 
     y = 240
@@ -265,6 +279,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     d.rounded_rectangle([W / 2 - kw / 2 - 22, 44, W / 2 + kw / 2 + 22, 44 + kb[3] - kb[1] + 26],
                         radius=10, fill=(10, 10, 14))
     _center(d, W / 2, 52, kt, kf, (225, 228, 235))
+    _brand(d, W, 52, (235, 238, 245), shadow=True)
 
     # name -> route -> BREAKING box, anchored in the lower third
     lines = _wrap_name(player)
