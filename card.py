@@ -299,12 +299,13 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     # Bias the crop toward the top so the player's face stays in frame
     base = _cover(Image.open(io.BytesIO(photo)).convert("RGB"), (W, H), focus_y=0.15)
 
-    # Darkening scrim — light overall, heavy toward the bottom for text
+    # Darkening scrim — keep the photo bright and full up top, and concentrate
+    # the dark wash in the lower third where the name/badges/banner sit.
     scrim = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     sd = ImageDraw.Draw(scrim)
     for y in range(H):
-        a = int(55 + 200 * ((y / H) ** 2.3))
-        sd.line([(0, y), (W, y)], fill=(8, 8, 12, min(a, 250)))
+        a = int(22 + 232 * ((y / H) ** 3.1))
+        sd.line([(0, y), (W, y)], fill=(8, 8, 12, min(a, 246)))
     img = Image.alpha_composite(base.convert("RGBA"), scrim)
     img = Image.alpha_composite(img, _glow((W, H), (W // 2, H - 120), 520, prim, 95)).convert("RGB")
     d = ImageDraw.Draw(img)
@@ -324,7 +325,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     breaking_top = 900
     badge_r = 58
     badge_gap = 30           # space between the badges and the BREAKING box
-    name_gap = 18            # space between the name block and the badges
+    name_gap = 46            # space between the name block and the badges (lifts the name)
 
     lines = _wrap_name(player)
     fonts = [_fit_font(d, line, W - 120, 118) for line in lines]
@@ -333,6 +334,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     badge_cy = breaking_top - badge_gap - badge_r
     y = badge_cy - badge_r - name_gap - name_h  # top of the name block
     for line, f in zip(lines, fonts):
+        _center(d, W / 2 + 3, y + 3, line, f, (0, 0, 0))   # soft shadow for legibility
         _center(d, W / 2, y, line, f, (255, 255, 255))
         y += f.size + 4
     _draw_team_badges(d, W, badge_cy, from_abbr, to_abbr, r=badge_r)
