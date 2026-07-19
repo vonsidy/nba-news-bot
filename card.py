@@ -183,16 +183,20 @@ def _cover(im, size, focus_y=0.5):
     return im.crop((x, y, x + tw, y + th))
 
 
-def _breaking_box(d, W, y_top):
-    """Draw the solid-red BREAKING NEWS banner centered at y_top."""
-    bn_font = _font(90)
+def _breaking_box(d, W, y_top, source=None):
+    """ESPN-style BREAKING NEWS: white text inside a red outline frame, with an
+    optional 'VIA <source>' credit line underneath (their 'FROM SHAMS')."""
+    bn_font = _font(86)
     bn = "BREAKING NEWS"
     box = d.textbbox((0, 0), bn, font=bn_font)
     bw = box[2] - box[0]
-    bx0, bx1 = (W - bw) / 2 - 46, (W + bw) / 2 + 46
-    by1 = y_top + (box[3] - box[1]) + 60
-    d.rounded_rectangle([bx0, y_top, bx1, by1], radius=18, fill=(206, 17, 38))
-    _center(d, W / 2, y_top + 18, bn, bn_font, (255, 255, 255))
+    bx0, bx1 = (W - bw) / 2 - 44, (W + bw) / 2 + 44
+    by1 = y_top + (box[3] - box[1]) + 52
+    for i in range(8):
+        d.rounded_rectangle([bx0 - i, y_top - i, bx1 + i, by1 + i], radius=16, outline=(214, 18, 40))
+    _center(d, W / 2, y_top + 16, bn, bn_font, (255, 255, 255))
+    if source:
+        _center(d, W / 2, by1 + 16, f"VIA {source.upper()}", _font(30), (232, 232, 236))
     return by1
 
 
@@ -310,7 +314,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     img = Image.alpha_composite(img, _glow((W, H), (W // 2, H - 120), 520, prim, 95)).convert("RGB")
     d = ImageDraw.Draw(img)
 
-    d.rectangle([0, 0, W, 10], fill=_brighten(prim))
+    # (no top accent bar — the photo runs full-bleed to the top edge)
 
     # kicker with a dark pill so it reads over the photo
     kf, kt = _font(38), "TRADE ALERT"
@@ -321,31 +325,18 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     _center(d, W / 2, 52, kt, kf, (225, 228, 235))
     _brand(d, W, 52, (235, 238, 245), shadow=True)
 
-    # Lay name -> team badges -> BREAKING box out bottom-up with clear gaps.
-    breaking_top = 900
+    # No player name — the photo identifies them (like the ESPN card). Team
+    # badges sit above the ESPN-style BREAKING NEWS banner, near the bottom.
+    breaking_top = 838
     badge_r = 58
-    badge_gap = 30           # space between the badges and the BREAKING box
-    name_gap = 46            # space between the name block and the badges (lifts the name)
-
-    lines = _wrap_name(player)
-    fonts = [_fit_font(d, line, W - 120, 118) for line in lines]
-    name_h = sum(f.size + 4 for f in fonts)
-
+    badge_gap = 34           # space between the badges and the BREAKING box
     badge_cy = breaking_top - badge_gap - badge_r
-    y = badge_cy - badge_r - name_gap - name_h  # top of the name block
-    for line, f in zip(lines, fonts):
-        _center(d, W / 2 + 3, y + 3, line, f, (0, 0, 0))   # soft shadow for legibility
-        _center(d, W / 2, y, line, f, (255, 255, 255))
-        y += f.size + 4
     _draw_team_badges(d, W, badge_cy, from_abbr, to_abbr, r=badge_r)
+    _breaking_box(d, W, breaking_top, source=source)
 
-    _breaking_box(d, W, breaking_top)
-
-    # required attribution for the CC photo + source
-    tag = credit or ""
-    if source:
-        tag = f"{tag}   |   via {source}" if tag else f"via {source}"
-    _center(d, W / 2, H - 42, tag, _font(24), (200, 203, 210))
+    # required CC photo attribution, small at the very bottom
+    if credit:
+        _center(d, W / 2, H - 32, credit, _font(22), (206, 209, 215))
 
     out = io.BytesIO()
     img.save(out, format="PNG")
