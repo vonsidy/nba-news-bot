@@ -62,9 +62,19 @@ FEEDS = [
     # Star highlights / standout performances (summer league + regular season).
     # The composer filters these down to genuine stars / top prospects.
     ("Google News", _GNEWS + "NBA%20(%22career-high%22%20OR%20%22triple-double%22%20OR%20%22summer%20league%22%20OR%20%22game-winner%22%20OR%20%2240%20points%22%20OR%20%2250%20points%22)%20when%3A1h"),
+    # Extensions / re-signings / buyouts — high-engagement roster moves the
+    # trade query's keywords (traded/signs/waived) don't catch.
+    ("Google News", _GNEWS + "NBA%20(%22extension%22%20OR%20%22re-signs%22%20OR%20%22re-signing%22%20OR%20%22buyout%22)%20when%3A1h"),
+    # Coaching + front-office moves (hirings, firings) — previously uncovered.
+    ("Google News", _GNEWS + "NBA%20(%22head%20coach%22%20OR%20%22coaching%20staff%22%20OR%20fired%20OR%20hired%20OR%20hires)%20when%3A1h"),
+    # Whatever the top insiders break, however it's phrased — their bylines are
+    # the most reliable marker of a real scoop, and this catches stories worded
+    # in ways the keyword queries miss ("finalizing a deal", "intends to sign").
+    ("Google News", _GNEWS + "(%22Shams%20Charania%22%20OR%20%22Marc%20Stein%22%20OR%20%22Chris%20Haynes%22%20OR%20%22Jake%20Fischer%22)%20when%3A1h"),
     ("RealGM", "https://basketball.realgm.com/rss/wiretap/0/0.xml"),
     ("HoopsHype", "https://hoopshype.com/feed/"),
     ("ESPN", "https://www.espn.com/espn/rss/nba/news"),
     ("Yahoo Sports", "https://sports.yahoo.com/nba/rss.xml"),
     ("CBS Sports", "https://www.cbssports.com/rss/headlines/nba/"),
+    ("SB Nation", "https://www.sbnation.com/rss/nba/index.xml"),
 ]
