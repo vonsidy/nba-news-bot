@@ -196,6 +196,15 @@ def process_item(item: sources.NewsItem) -> None:
     if trade_teams and _trade_already_posted(trade_teams):
         print(f"  same trade already posted today ({','.join(sorted(trade_teams))}), skipping")
         return
+
+    # HARD CAP: one post per player per day, across EVERY category (trade, rumor,
+    # report, highlight). The simplest possible rule — once a player's name goes
+    # out today, nothing else about that same player posts until tomorrow. This
+    # is the backstop behind all the wording/team dedup above.
+    pkey = _player_key(result.get("player"))
+    if pkey and state.is_seen(f"pday:{pkey}:{state.today_key()}"):
+        print(f"  {pkey} already posted today — one post per player per day, skipping")
+        return
     if is_final and not event_sig:
         print(f"  final with unresolvable teams, skipping: {item.title[:60]}")
         return
@@ -290,6 +299,8 @@ def process_item(item: sources.NewsItem) -> None:
             state.mark_seen(event_sig)  # block dupes of this event (any wording)
         for t in trade_teams:  # block the rest of this multi-player deal today
             state.mark_seen(f"tt:{t}:{state.today_key()}")
+        if pkey:  # hard one-post-per-player-per-day cap
+            state.mark_seen(f"pday:{pkey}:{state.today_key()}")
 
 
 def run_cycle() -> None:
