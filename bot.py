@@ -19,11 +19,6 @@ import tweeter
 from composer import compose
 
 
-def _norm(s: str) -> str:
-    """Collapse a name to a stable comparison key (lowercase, alnum only)."""
-    return re.sub(r"[^a-z0-9]+", "", (s or "").lower())
-
-
 # Generational suffixes aren't part of the identifying name.
 _SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
 
@@ -44,20 +39,19 @@ def _player_key(name: str) -> str:
 
 
 def _event_signature(result: dict) -> str | None:
-    """A signature for the underlying *event*, independent of how any one outlet
-    worded the headline OR the name form it used. Two stories about the same
-    player moving to the same team collapse to one key, so the bot posts that
-    move exactly once — while a DIFFERENT player from the same multi-player trade
-    gets his own key and still posts. Highlights are keyed per player per day."""
+    """A signature for the underlying *event*, independent of how any outlet
+    worded the headline, which name form it used, or which destination it named.
+    A player's trade posts AT MOST ONCE PER DAY — every wording ("Lu Dort to
+    Hawks", "Thunder send Luguentz Dort to Atlanta", a three-team-deal writeup)
+    collapses to one key, so the same player never spams the timeline. A
+    DIFFERENT player from the same multi-player trade has his own key and still
+    posts. Highlights are likewise one-per-player-per-day. No dependency on
+    resolving the team, so an unrecognized destination can't slip a dupe through."""
     player = _player_key(result.get("player"))
     if not player:
         return None
     if result.get("is_trade"):
-        to_team = result.get("to_team") or ""
-        dest = card.resolve_team(to_team) or _norm(to_team)
-        if not dest:
-            return None
-        return f"trade:{player}:{dest}"
+        return f"trade:{player}:{state.today_key()}"
     if result.get("category") == "highlight" or result.get("is_highlight"):
         return f"hl:{player}:{state.today_key()}"
     return None

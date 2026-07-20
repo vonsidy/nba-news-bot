@@ -266,8 +266,13 @@ def _team_logo(abbr):
 def _paste_logo(img, logo, cx, cy, box):
     """Paste a logo centered at (cx, cy), scaled to fit box×box, over a soft
     white halo (blurred silhouette) so dark logo art stays visible against the
-    dark photo scrim."""
+    dark photo scrim. The logo's transparent padding is trimmed first, so every
+    team's mark renders at the same visual size regardless of how much empty
+    space the source PNG carries around it."""
     logo = logo.copy()
+    bbox = logo.getbbox()          # tight bounds of the actual (opaque) art
+    if bbox:
+        logo = logo.crop(bbox)
     logo.thumbnail((box, box), Image.LANCZOS)
     lw, lh = logo.size
     x, y = int(cx - lw / 2), int(cy - lh / 2)

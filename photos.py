@@ -39,10 +39,19 @@ def _strip(s: str) -> str:
 # far better card than a posed headshot) vs. a static portrait (deprioritized).
 _ACTION_WORDS = ("dunk", "shoot", "shooting", "layup", "drive", "driving",
                  "defend", "defending", "dribbl", "game", " vs", "vs.", "vs ",
-                 "against", "court", "playing", "warmup", "warm-up", "practice",
-                 "free throw", "jump", "rebound")
+                 "against", "court", "playing", "jump", "rebound", "layup",
+                 "in action", "action")
 _BORING_WORDS = ("headshot", "head shot", "portrait", "mugshot", "cropped",
-                 "head)", "face")
+                 "head)", "face", "presser", "press conference", "interview",
+                 "podium", "draft", "combine", "warmup", "warm-up", "practice")
+# National-team / non-NBA contexts we do NOT want on an NBA card: a Team USA or
+# FIBA jersey is exactly the wrong look (the Curry-in-USA-kit problem). Matched
+# as whole words so "usa" can't hit random substrings.
+_NATIONAL_RE = re.compile(
+    r"\b(usa|u\.?s\.?a|fiba|olympics?|worldcup|world\s?cup|eurobasket|"
+    r"national\s?team|team\s?usa|u1[6789]|world\s?championship|"
+    r"pan\s?american|universiade|acc|ncaa|college|high\s?school)\b"
+)
 _SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
 
 
@@ -53,15 +62,17 @@ def _last_name(name: str) -> str:
 
 
 def _score(fname: str, name: str, lead: str | None) -> float:
-    """Rank a candidate photo filename. Action shots beat portraits; newer
-    photos beat old ones; the page's lead image gets a trust bonus (it is the
-    canonical photo of the right person)."""
+    """Rank a candidate photo filename. Real NBA game-action shots win; posed /
+    press / national-team photos lose hard; newer photos beat old ones; the
+    page's lead image gets a small trust bonus (it's the right person)."""
     f = fname.lower()
     s = 0.0
     if lead and fname == lead:
-        s += 5
+        s += 2  # trust it's the right player, but don't override a good NBA shot
     s += 4 * sum(1 for w in _ACTION_WORDS if w in f)
-    s -= 5 * sum(1 for w in _BORING_WORDS if w in f)
+    s -= 6 * sum(1 for w in _BORING_WORDS if w in f)
+    if _NATIONAL_RE.search(f):
+        s -= 12  # a Team USA / FIBA / college shot is the wrong jersey entirely
     years = [int(y) for y in re.findall(r"(20[0-2]\d)", f)]
     if years:
         s += max(0, (max(years) - 2015)) * 0.5  # recency: newer jersey/team
