@@ -32,6 +32,13 @@ MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "0"))
 # lowest-value posts, so they're kept few to save X API writes.
 MAX_HIGHLIGHTS_PER_DAY = int(os.getenv("MAX_HIGHLIGHTS_PER_DAY", "4"))
 
+# Backstop, not a throttle: the most items about ONE player that may post in a
+# day. There is no total post cap by design, so this is what bounds a story that
+# slips past the semantic dedup — four outlets rewriting the same signing cost
+# two posts instead of a timeline. Legitimate coverage is unaffected: distinct
+# players are never in competition for this.
+MAX_POSTS_PER_PLAYER = int(os.getenv("MAX_POSTS_PER_PLAYER", "2"))
+
 # Evergreen debate cards ("What team is one move away?", "Keep 3, cut the rest").
 # Off by owner's call 2026-07-20: they read as filler on the timeline and weren't
 # earning replies, which was the whole reason for posting them. The generator is

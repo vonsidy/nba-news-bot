@@ -264,6 +264,18 @@ def process_item(item: sources.NewsItem) -> None:
         print(f"  duplicate event, skipping: {event_sig}")
         return
 
+    # BACKSTOP — deliberately not clever, and independent of how the model
+    # classified the item. Every semantic dedup above depends on the model
+    # filling the right fields; when it doesn't (a signing arriving as "chooses
+    # Lakers in free agency" with is_trade unset), the feed fills with one story.
+    # No single player is worth more than MAX_POSTS_PER_PLAYER items a day, so
+    # the worst a future classification gap can cost is that, not a timeline.
+    subject = _player_key(result.get("player"))
+    if subject and state.player_posts_today(subject) >= config.MAX_POSTS_PER_PLAYER:
+        print(f"  already posted {config.MAX_POSTS_PER_PLAYER} items about "
+              f"{subject} today, skipping")
+        return
+
     # CONFIRMED-TRADE dedup: post a deal ONCE and never let it resurface. A
     # 3-team blockbuster (Dort + Risacher + picks) surfaces for DAYS from every
     # outlet naming a different player — collapse on the set of teams involved,
@@ -374,6 +386,8 @@ def process_item(item: sources.NewsItem) -> None:
             state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
         if event_sig:
             state.mark_seen(event_sig)  # highlight: one per player per day
+        if subject:
+            state.incr_player_posts(subject)
         if _is_player_move(result):
             # persistent flags: this move never resurfaces (any outlet/wording/day)
             _mark_trade_posted(trade_teams, trade_pflag)

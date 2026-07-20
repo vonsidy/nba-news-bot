@@ -140,6 +140,36 @@ def incr_posts() -> None:
         _local_save(d)
 
 
+def _player_key_name(pkey: str) -> str:
+    return f"bot:player:{_today()}:{pkey}"
+
+
+def player_posts_today(pkey: str) -> int:
+    """How many items naming this player as the primary subject posted today.
+    Backstop against one story dominating the feed when the semantic dedup
+    misses a phrasing — see bot.process_item."""
+    if _redis:
+        val = _redis.get(_player_key_name(pkey))
+        return int(val) if val else 0
+    d = _local_load()
+    return (d.get("players") or {}).get(_player_key_name(pkey), 0)
+
+
+def incr_player_posts(pkey: str) -> None:
+    if _redis:
+        key = _player_key_name(pkey)
+        n = _redis.incr(key)
+        if n == 1:
+            _redis.expire(key, 60 * 60 * 30)  # auto-clean after ~30h
+        return
+    d = _local_load()
+    players = d.get("players") or {}
+    k = _player_key_name(pkey)
+    players[k] = players.get(k, 0) + 1
+    d["players"] = players
+    _local_save(d)
+
+
 def highlights_today() -> int:
     if _redis:
         return _redis_highlights_today()
