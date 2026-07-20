@@ -124,27 +124,36 @@ def compose(item: NewsItem) -> dict | None:
         f"Headline: {item.title}\n"
         f"Summary: {item.summary}\n"
     )
-    try:
-        response = client.messages.create(
-            model=ANTHROPIC_MODEL,
-            max_tokens=1024,
-            # Speed matters for breaking news; "low" keeps latency down and is
-            # plenty for a classification + 250-char rewrite task.
-            output_config={
-                "effort": "low",
-                "format": {"type": "json_schema", "schema": TWEET_SCHEMA},
-            },
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_msg}],
-        )
-    except anthropic.RateLimitError:
-        print("  Claude API rate limited — skipping this cycle's item")
-        return None
-    except anthropic.APIStatusError as e:
-        print(f"  Claude API error {e.status_code}: {e.message}")
-        return None
-    except anthropic.APIConnectionError:
-        print("  Network error reaching the Claude API")
+    # "low" effort keeps latency/cost down and is plenty for classify + rewrite.
+    # Not every model accepts the effort hint, so if the request is rejected for
+    # it we retry once without it — otherwise a model swap could silently stop
+    # the whole bot (every compose returning None = nothing ever posts).
+    fmt = {"type": "json_schema", "schema": TWEET_SCHEMA}
+    configs = [{"effort": "low", "format": fmt}, {"format": fmt}]
+    response = None
+    for i, output_config in enumerate(configs):
+        try:
+            response = client.messages.create(
+                model=ANTHROPIC_MODEL,
+                max_tokens=1024,
+                output_config=output_config,
+                system=SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": user_msg}],
+            )
+            break
+        except anthropic.RateLimitError:
+            print("  Claude API rate limited — skipping this cycle's item")
+            return None
+        except anthropic.APIStatusError as e:
+            # On the first try, a 4xx may just be the effort hint — retry lean.
+            if i == 0 and 400 <= e.status_code < 500:
+                continue
+            print(f"  Claude API error {e.status_code}: {e.message}")
+            return None
+        except anthropic.APIConnectionError:
+            print("  Network error reaching the Claude API")
+            return None
+    if response is None:
         return None
 
     if response.stop_reason == "refusal":
