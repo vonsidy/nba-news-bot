@@ -3,6 +3,9 @@
 state.json
 sample_card.png
 
+# runtime-fetched assets (font + any logos are pulled at run time, never committed)
+assets/
+
 # python
 __pycache__/
 *.pyc
