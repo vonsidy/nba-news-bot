@@ -87,7 +87,7 @@ TWEET_SCHEMA = {
         },
         "player": {
             "type": "string",
-            "description": "The player's full name if is_trade or is_highlight, else empty string",
+            "description": "The PRIMARY player this item is about (full name), for ANY category — trade, rumor, report, or highlight (e.g. the star reportedly deciding, the player being traded, the standout performer). Empty ONLY if the item isn't centered on one specific player.",
         },
         "from_team": {
             "type": "string",

@@ -1,0 +1,30 @@
+name: Demo debate card
+
+# Manually render a sample daily debate/engagement card to preview it.
+# Prints the image base64-encoded to the log. Does NOT post anything.
+on:
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "Date seed (YYYY-MM-DD) — picks the theme + players"
+        default: "2026-07-20"
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Fetch display font (Anton) for the cards
+        run: |
+          mkdir -p assets
+          curl -sSL --retry 3 -o assets/font-bold.ttf \
+            https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf \
+            || echo "font download failed; card.py falls back to a system font"
+      - name: Render demo debate card
+        run: python tools/demo_debate.py "${{ github.event.inputs.day }}"
