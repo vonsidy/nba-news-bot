@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-20T19:41:57Z",
+  "updated": "2026-07-20T23:35:19Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -9,105 +9,130 @@
     "avg_impressions": 0,
     "engagement_rate": 0
   },
-  "recent": [],
+  "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: Nets and Michael Porter Jr. are set to engage in contract extension talks, per roundtable.io",
+      "cat": "Report",
+      "ts": 1784583612.8112798,
+      "media": false
+    },
+    {
+      "text": "\ud83d\udc40 LeBron James hasn't made a decision yet on his future. Cleveland remains in the race per Fear The Sword.",
+      "cat": "Rumor",
+      "ts": 1784583608.0575142,
+      "media": false
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Ryan Nembhard traded to the Hawks after his rookie season with Dallas, per SWX Local Sports.",
+      "cat": "Report",
+      "ts": 1784583587.173965,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Lakers agree to one-year deal with former All-Defensive wing Matisse Thybulle",
+      "cat": "Official",
+      "ts": 1784582243.2949235,
+      "media": true
+    }
+  ],
   "sources": [
     {
       "label": "Trades & signings",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784587903
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 5,
+      "newest_ts": 1784590020
     },
     {
       "label": "Star highlights",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 14,
+      "newest_ts": 1784590372
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 3,
+      "newest_ts": 1784589435
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 4,
+      "newest_ts": 1784588416
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 5,
+      "newest_ts": 1784590062
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784590226
     },
     {
       "label": "Game finals",
       "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 4,
+      "newest_ts": 1784589600
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784571896
     },
     {
       "label": "HoopsHype",
       "publisher": "HoopsHype",
-      "status": "stale",
+      "status": "down",
       "count": 0,
-      "newest_ts": 0
+      "newest_ts": 0.0
     },
     {
       "label": "ESPN",
       "publisher": "ESPN",
       "status": "stale",
       "count": 0,
-      "newest_ts": 0
+      "newest_ts": 0.0
     },
     {
       "label": "Yahoo Sports",
       "publisher": "Yahoo Sports",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784583491
     },
     {
       "label": "CBS Sports",
       "publisher": "CBS Sports",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784581117
     },
     {
       "label": "SB Nation",
       "publisher": "SB Nation",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0
+      "status": "ok",
+      "count": 10,
+      "newest_ts": 1784558165
     }
   ],
   "content": [],
@@ -159,6 +184,6 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 6,
-  "cap": 6
+  "posts_today": 10,
+  "cap": null
 }
