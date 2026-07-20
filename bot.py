@@ -83,6 +83,37 @@ def _final_signature(result: dict) -> str | None:
         return None
     return f"final:{':'.join(sorted((a, h)))}:{state.today_key()}"
 
+
+def _trade_team_set(result: dict, title: str) -> set:
+    """Every NBA team this trade touches, resolved from the structured fields
+    AND scanned out of the headline (so a 3-team deal is recognized as ONE deal
+    however an article frames it). Used to post a blockbuster once, not once per
+    player it moves."""
+    teams = set()
+    for f in (result.get("to_team"), result.get("from_team")):
+        a = card.resolve_team(f or "")
+        if a:
+            teams.add(a)
+    toks = re.findall(r"[A-Za-z.'-]+", title or "")
+    for i, w in enumerate(toks):
+        a = card.resolve_team(w)
+        if a:
+            teams.add(a)
+        if i + 1 < len(toks):
+            a2 = card.resolve_team(f"{w} {toks[i + 1]}")
+            if a2:
+                teams.add(a2)
+    return teams
+
+
+def _trade_already_posted(teams: set) -> bool:
+    """True if a trade sharing >=2 teams with `teams` already went out today —
+    i.e. it's the same deal, just a different player or a different outlet's
+    wording. Two teams of overlap is the reliable signal: distinct trades rarely
+    involve the same pair on the same day."""
+    day = state.today_key()
+    return sum(1 for t in teams if state.is_seen(f"tt:{t}:{day}")) >= 2
+
 # Windows consoles default to cp1252, which crashes on emoji in headlines/tweets
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -119,6 +150,16 @@ def process_item(item: sources.NewsItem) -> None:
     event_sig = _final_signature(result) if is_final else _event_signature(result)
     if event_sig and state.is_seen(event_sig):
         print(f"  duplicate event, skipping: {event_sig}")
+        return
+
+    # Trade-level dedup: post a deal ONCE, not once per player it moves. A
+    # 3-team blockbuster (Dort + Risacher + picks) surfaces for days from every
+    # outlet naming a different player — the per-player key above lets each
+    # through, so collapse on the set of teams involved instead.
+    trade_teams = (_trade_team_set(result, f"{item.title} {item.summary}")
+                   if result.get("is_trade") else set())
+    if trade_teams and _trade_already_posted(trade_teams):
+        print(f"  same trade already posted today ({','.join(sorted(trade_teams))}), skipping")
         return
     if is_final and not event_sig:
         print(f"  final with unresolvable teams, skipping: {item.title[:60]}")
@@ -212,6 +253,8 @@ def process_item(item: sources.NewsItem) -> None:
             state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
         if event_sig:
             state.mark_seen(event_sig)  # block dupes of this event (any wording)
+        for t in trade_teams:  # block the rest of this multi-player deal today
+            state.mark_seen(f"tt:{t}:{state.today_key()}")
 
 
 def run_cycle() -> None:
