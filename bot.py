@@ -6,6 +6,7 @@ Run modes:
   python bot.py --once   # single pass, then exit (used by GitHub Actions cron)
 """
 
+import re
 import sys
 import time
 
@@ -16,6 +17,31 @@ import sources
 import state
 import tweeter
 from composer import compose
+
+
+def _norm(s: str) -> str:
+    """Collapse a name to a stable comparison key (lowercase, alnum only)."""
+    return re.sub(r"[^a-z0-9]+", "", (s or "").lower())
+
+
+def _event_signature(result: dict) -> str | None:
+    """A signature for the underlying *event*, independent of how any one outlet
+    worded the headline. Two stories about the same player moving to the same
+    team collapse to one key, so the bot posts that move exactly once — while a
+    DIFFERENT player from the same multi-player trade gets his own key and still
+    posts. Highlights are keyed per player per day."""
+    player = _norm(result.get("player"))
+    if not player:
+        return None
+    if result.get("is_trade"):
+        to_team = result.get("to_team") or ""
+        dest = card.resolve_team(to_team) or _norm(to_team)
+        if not dest:
+            return None
+        return f"trade:{player}:{dest}"
+    if result.get("category") == "highlight" or result.get("is_highlight"):
+        return f"hl:{player}:{state.today_key()}"
+    return None
 
 # Windows consoles default to cp1252, which crashes on emoji in headlines/tweets
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -42,6 +68,15 @@ def process_item(item: sources.NewsItem) -> None:
     result = compose(item)
     if not result or not result.get("newsworthy") or not result.get("tweet"):
         print(f"  skipped: {item.title[:70]}")
+        return
+
+    # Semantic dedup: block a repeat of the SAME event even when the headline is
+    # worded differently by another outlet. content_key above only catches near-
+    # identical titles; this catches "Lu Dort traded to Hawks" vs "Thunder send
+    # Dort to Atlanta" — same player, same destination -> posted once.
+    event_sig = _event_signature(result)
+    if event_sig and state.is_seen(event_sig):
+        print(f"  duplicate event, skipping: {event_sig}")
         return
 
     # Highlights (standout performances) only post for genuine stars, and are
@@ -96,6 +131,8 @@ def process_item(item: sources.NewsItem) -> None:
             state.incr_highlights()
         if sig:
             state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
+        if event_sig:
+            state.mark_seen(event_sig)  # block dupes of this event (any wording)
 
 
 def run_cycle() -> None:

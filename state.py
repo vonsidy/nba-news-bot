@@ -31,6 +31,11 @@ def _today() -> str:
     return datetime.now(timezone.utc).date().isoformat()
 
 
+def today_key() -> str:
+    """Public UTC date string, used to scope per-day dedup keys."""
+    return _today()
+
+
 def _post_key() -> str:
     return f"bot:posts:{_today()}"
 
