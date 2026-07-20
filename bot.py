@@ -13,11 +13,46 @@ import unicodedata
 
 import card
 import config
+import engage
 import photos
 import sources
 import state
 import tweeter
 from composer import compose
+
+
+def _et_hour() -> int:
+    """Current hour in US Eastern (where NBA Twitter peaks in the evening)."""
+    from datetime import datetime
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York")).hour
+    except Exception:
+        from datetime import timezone
+        return (datetime.now(timezone.utc).hour - 4) % 24  # rough EDT fallback
+
+
+def maybe_post_engagement() -> None:
+    """Post one evergreen debate card per day, in the evening ET peak window —
+    keeps the feed alive on slow news days and drives replies. Capped at one a
+    day via a Redis day-key; separate from the news post cap."""
+    day = state.today_key()
+    if state.is_seen(f"engage:{day}"):
+        return
+    if _et_hour() < 18:  # hold until 6pm ET so it lands in prime time
+        return
+    post = engage.pick_daily(day)
+    players = []
+    for name, abbr in post["players"]:
+        res = photos.get_any_photo(name)
+        players.append((name, abbr, res[0] if res else None))
+    if sum(1 for p in players if p[2]) < 4:
+        print("  engagement: fewer than 4 player photos available; skipping today")
+        return
+    image = card.make_debate_card(post["title"], players)
+    if image and tweeter.post(post["caption"], image=image):
+        state.mark_seen(f"engage:{day}")
+        print(f"  posted daily debate card: {' '.join(post['title'])}")
 
 
 # Generational suffixes aren't part of the identifying name.
@@ -258,6 +293,13 @@ def process_item(item: sources.NewsItem) -> None:
 
 
 def run_cycle() -> None:
+    # Evergreen debate post (once/day, evening ET) — runs even when there's no
+    # news, which is the whole point: it fills the quiet stretches.
+    try:
+        maybe_post_engagement()
+    except Exception as e:
+        print(f"engagement post error (continuing): {e}")
+
     # Pull candidates up to the widest window (trades stay newsworthy for hours);
     # the tighter per-type freshness is enforced in process_item once Claude has
     # told us whether the item is actually a trade.

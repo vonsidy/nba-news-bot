@@ -533,6 +533,91 @@ def make_score_card(away_team: str, home_team: str, away_score: int,
     return out.getvalue()
 
 
+def _tile_name(d, name, font_size, box_w):
+    """Fit a player's name into a tile, wrapping to two lines if needed."""
+    f = _fit_font(d, name, box_w - 12, font_size, min_size=17, step=2)
+    if d.textbbox((0, 0), name, font=f)[2] <= box_w - 12:
+        return [name], f
+    parts = name.split()
+    if len(parts) >= 2:
+        return [parts[0], " ".join(parts[1:])], _font(max(17, font_size - 6))
+    return [name], f
+
+
+def make_debate_card(title: list[str], players: list) -> bytes | None:
+    """Evergreen engagement card: a bold theme title over a grid of player
+    tiles (photo + name + team-color accent). `players` is a list of
+    (name, abbr, photo_bytes_or_None); tiles without a photo get a team-color
+    plate. Returns PNG bytes, or None if fewer than 4 usable players."""
+    players = [p for p in players if p and p[0]][:8]
+    if len(players) < 4:
+        return None
+    W, H = 1080, 1080
+    n = len(players)
+    cols = 4 if n >= 7 else (3 if n >= 5 else n)
+    rows = (n + cols - 1) // cols
+
+    img = _vgradient((W, H), (10, 10, 14), (22, 20, 28)).convert("RGBA")
+    img = Image.alpha_composite(img, _glow((W, H), (W - 160, 180), 460, (249, 115, 22), 90))
+    img = Image.alpha_composite(img, _glow((W, H), (160, 180), 420, (88, 120, 255), 70)).convert("RGB")
+    d = ImageDraw.Draw(img)
+
+    _brand(d, W, 40, (210, 214, 222))
+    # title (bold, up to 2 lines) top-left-ish, centered
+    ty = 44
+    for i, line in enumerate(title):
+        tf = _fit_font(d, line, W - 120, 108 if i == 0 else 96)
+        _center(d, W / 2, ty, line, tf, (255, 255, 255) if i == 0 else (249, 179, 60))
+        ty += tf.size + 2
+    # red underline accent
+    d.rectangle([W / 2 - 150, ty + 6, W / 2 + 150, ty + 16], fill=(214, 18, 40))
+
+    grid_top = ty + 44
+    margin, gap = 44, 16
+    foot = 58
+    tile_w = (W - 2 * margin - gap * (cols - 1)) / cols
+    tile_h = (H - grid_top - foot - gap * (rows - 1) - margin) / rows
+
+    for idx, p in enumerate(players):
+        name, abbr = p[0], p[1]
+        photo = p[2] if len(p) > 2 else None
+        r, c = divmod(idx, cols)
+        x0 = margin + c * (tile_w + gap)
+        y0 = grid_top + r * (tile_h + gap)
+        prim = _hex(TEAMS[abbr][1]) if abbr in TEAMS else (60, 60, 70)
+
+        tile = Image.new("RGB", (int(tile_w), int(tile_h)), prim)
+        if photo:
+            try:
+                tile = _cover(Image.open(io.BytesIO(photo)).convert("RGB"),
+                              (int(tile_w), int(tile_h)), focus_y=0.12)
+            except Exception:
+                pass
+        # bottom scrim for the name
+        sc = Image.new("RGBA", tile.size, (0, 0, 0, 0))
+        sd = ImageDraw.Draw(sc)
+        th = tile.size[1]
+        for yy in range(th):
+            a = int(235 * max(0, (yy / th - 0.5) / 0.5) ** 1.5)
+            sd.line([(0, yy), (tile.size[0], yy)], fill=(6, 8, 12, min(a, 230)))
+        tile = Image.alpha_composite(tile.convert("RGBA"), sc).convert("RGB")
+        td = ImageDraw.Draw(tile)
+        td.rectangle([0, th - 6, tile.size[0], th], fill=_brighten(prim))
+        lines, nf = _tile_name(td, name.upper(), 30, tile.size[0])
+        ny = th - 16 - len(lines) * (nf.size + 1)
+        for ln in lines:
+            _center(td, tile.size[0] / 2, ny, ln, nf, (255, 255, 255))
+            ny += nf.size + 1
+        img.paste(tile, (int(x0), int(y0)))
+
+    _center(d, W / 2, H - 48, "@TheNBASignal  ·  who you got?", _font(26), (150, 155, 165))
+    _center(d, W / 2, H - 22, "photos: Wikimedia Commons (CC)", _font(16), (110, 114, 124))
+
+    out = io.BytesIO()
+    img.save(out, format="PNG")
+    return out.getvalue()
+
+
 def make_trade_card(player: str, to_team: str, from_team: str | None = None,
                     source: str | None = None, photo: bytes | None = None,
                     credit: str | None = None) -> bytes | None:
