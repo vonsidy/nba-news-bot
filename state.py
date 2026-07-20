@@ -25,6 +25,8 @@ except ImportError:
     _redis = None
 
 _SEEN_KEY = "bot:seen"
+_RECENT_KEY = "bot:recent"   # last posts the bot made (for the dashboard's "recent posts")
+_FEEDS_KEY = "bot:feeds"     # last feed-health snapshot (for the dashboard's "sources")
 _LOCAL = config.STATE_FILE
 
 
@@ -179,6 +181,83 @@ def set_flag(key: str, ttl_seconds: int) -> None:
     flags[key] = now + ttl_seconds
     d["flags"] = flags
     _local_save(d)
+
+
+def record_post(text: str, category: str = "", has_media: bool = False) -> None:
+    """Remember a post the bot just made, so the dashboard can show a live
+    'most recent posts' list. Keeps the newest ~20; oldest fall off."""
+    entry = {"t": text, "ts": time.time(), "cat": category or "", "media": bool(has_media)}
+    if _redis:
+        try:
+            _redis.lpush(_RECENT_KEY, json.dumps(entry))
+            _redis.ltrim(_RECENT_KEY, 0, 19)
+        except Exception:
+            pass
+    else:
+        d = _local_load()
+        r = d.get("recent") or []
+        r.insert(0, entry)
+        d["recent"] = r[:20]
+        _local_save(d)
+
+
+def recent_posts(n: int = 15) -> list:
+    """The most recent posts the bot made (newest first)."""
+    if _redis:
+        try:
+            raw = _redis.lrange(_RECENT_KEY, 0, n - 1) or []
+        except Exception:
+            return []
+        out = []
+        for x in raw:
+            try:
+                out.append(json.loads(x) if isinstance(x, str) else x)
+            except Exception:
+                pass
+        return out
+    return (_local_load().get("recent") or [])[:n]
+
+
+def set_feed_health(feeds: list) -> None:
+    """Store the latest per-feed health snapshot (list of dicts) for the dashboard."""
+    if _redis:
+        try:
+            _redis.set(_FEEDS_KEY, json.dumps(feeds))
+        except Exception:
+            pass
+    else:
+        d = _local_load()
+        d["feeds"] = feeds
+        _local_save(d)
+
+
+def get_feed_health() -> list:
+    if _redis:
+        try:
+            s = _redis.get(_FEEDS_KEY)
+            return json.loads(s) if s else []
+        except Exception:
+            return []
+    return _local_load().get("feeds") or []
+
+
+def redis_get_json(key: str):
+    """Read a JSON value the dashboard wrote to the SAME shared Redis
+    (x:user / x:tweets / x:history). Returns None when absent or Redis is off."""
+    if not _redis:
+        return None
+    try:
+        v = _redis.get(key)
+    except Exception:
+        return None
+    if v is None:
+        return None
+    if isinstance(v, (dict, list)):
+        return v
+    try:
+        return json.loads(v)
+    except Exception:
+        return v
 
 
 def backend() -> str:
