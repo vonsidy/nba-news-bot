@@ -35,6 +35,52 @@ def _strip(s: str) -> str:
     return html.unescape(re.sub(r"<[^>]+>", "", s or "")).strip()
 
 
+# ---- Official headshot fallback (every player, incl. rookies with no free
+# Wikimedia photo). ESPN's search returns an NBA athlete id (uid ...l:46~a:<id>)
+# and the headshot CDN serves a clean transparent-background portrait for it.
+# Same CDN family as the team logos; used only when no free photo exists so
+# nobody lands on the bare text card.
+_ESPN_SEARCH = "https://site.web.api.espn.com/apis/search/v2?limit=10&query="
+_ESPN_HEADSHOT = "https://a.espncdn.com/i/headshots/nba/players/full/{id}.png"
+
+
+def _espn_athlete_id(name: str) -> str | None:
+    try:
+        url = _ESPN_SEARCH + urllib.parse.quote(name)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=12) as r:
+            blob = json.dumps(json.load(r))
+        # First NBA athlete (league 46) referenced anywhere in the response.
+        m = re.search(r"l:46~a:(\d+)", blob)
+        return m.group(1) if m else None
+    except Exception:
+        return None
+
+
+def get_headshot(name: str):
+    """Return (png_bytes, None) for a player's official NBA headshot, or None.
+    No attribution line — it's a headshot, not a CC-licensed photo."""
+    aid = _espn_athlete_id(name)
+    if not aid:
+        return None
+    try:
+        data = _get_bytes(_ESPN_HEADSHOT.format(id=aid))
+        # ESPN serves a tiny silhouette placeholder when it has no headshot;
+        # require a real image so we fall through to the design card instead.
+        if not data or len(data) < 4000:
+            return None
+        return data, None
+    except Exception:
+        return None
+
+
+def get_any_photo(name: str):
+    """Best available photo for a player: a free-licensed Wikimedia game shot if
+    one exists (preferred — real NBA action), otherwise the official headshot so
+    EVERY player gets a photo. Returns (bytes, credit_or_None) or None."""
+    return get_player_photo(name) or get_headshot(name)
+
+
 # Filename words that suggest an in-game / action shot (preferred — they make a
 # far better card than a posed headshot) vs. a static portrait (deprioritized).
 _ACTION_WORDS = ("dunk", "shoot", "shooting", "layup", "drive", "driving",

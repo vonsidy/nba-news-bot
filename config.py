@@ -16,12 +16,15 @@ X_ACCESS_SECRET = os.getenv("X_ACCESS_SECRET", "")
 
 DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
-MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "15"))
+# Every post is an X API write (tweet + media upload). Keep the daily cap modest
+# so the bot posts the highest-value news without running up X API usage; raise
+# MAX_POSTS_PER_DAY in the environment if you move to a bigger X plan.
+MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "8"))
 
 # Standout-performance highlights (summer league + regular season) are capped
-# separately and only posted for genuine stars / top prospects, so they add
-# engagement without burying the breaking news.
-MAX_HIGHLIGHTS_PER_DAY = int(os.getenv("MAX_HIGHLIGHTS_PER_DAY", "10"))
+# separately and only posted for genuine stars / top prospects. They're the
+# lowest-value posts, so they're kept few to save X API writes.
+MAX_HIGHLIGHTS_PER_DAY = int(os.getenv("MAX_HIGHLIGHTS_PER_DAY", "4"))
 
 # How recent (in minutes) an item must be to still be worth posting. Breaking
 # news lives or dies on latency — a game score that's hours old gets no traction,

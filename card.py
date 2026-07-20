@@ -336,29 +336,38 @@ def _draw_team_badges(img, d, W, cy, from_abbr, to_abbr, r=58):
 
 
 def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
-    """Photo-free cinematic card: dark base + team-color lighting."""
+    """Photo-free card for a player with no free-licensed photo (rookies, deep
+    bench). The big real team logo(s) carry the visual weight instead of a photo,
+    under a soft team-color wash, with the player's name and the BREAKING NEWS
+    banner — built to look intentional, not empty."""
     W, H = 1080, 1080
-    img = _vgradient((W, H), (14, 14, 18), (30, 30, 36)).convert("RGBA")
-    img = Image.alpha_composite(img, _glow((W, H), (W - 200, 300), 520, prim, 150))
+    img = _vgradient((W, H), (13, 13, 17), (26, 27, 33)).convert("RGBA")
+    img = Image.alpha_composite(img, _glow((W, H), (W - 170, 360), 560, prim, 165))
     if from_abbr:
-        img = Image.alpha_composite(img, _glow((W, H), (200, 300), 460, _hex(TEAMS[from_abbr][1]), 110))
+        img = Image.alpha_composite(img, _glow((W, H), (170, 360), 500, _hex(TEAMS[from_abbr][1]), 125))
     img = img.convert("RGB")
     d = ImageDraw.Draw(img)
 
-    d.rectangle([0, 0, W, 10], fill=_brighten(prim))
-    _brand(d, W, 44, (170, 175, 185))
-    _center(d, W / 2, 150, "T R A D E   A L E R T", _font(40), (200, 205, 215))
+    _brand(d, W, 52, (214, 218, 226))
 
-    y = 240
-    for line in _wrap_name(player):
-        f = _fit_font(d, line, W - 140, 132)
-        _center(d, W / 2, y, line, f, (255, 255, 255))
+    # Big real logo(s) as the hero: FROM -> TO when the origin is known, else a
+    # single large destination logo. _draw_team_badges falls back to the roundel
+    # only if a logo can't be fetched.
+    _draw_team_badges(img, d, W, 330, from_abbr, to_abbr, r=112)
+
+    # Player name, sized to fit and vertically centered in the band between the
+    # logo and the banner — a two-line name is scaled down so it never collides
+    # with the BREAKING NEWS box.
+    lines = _wrap_name(player)
+    cap = 124 if len(lines) == 1 else 92
+    fonts = [_fit_font(d, ln, W - 150, cap, min_size=46) for ln in lines]
+    block_h = sum(f.size for f in fonts) + 8 * (len(lines) - 1)
+    y = 632 - block_h / 2
+    for ln, f in zip(lines, fonts):
+        _center(d, W / 2, y, ln, f, (255, 255, 255))
         y += f.size + 8
-    _draw_team_badges(img, d, W, y + 82, from_abbr, to_abbr, r=64)
 
-    by1 = _breaking_box(d, W, 810)
-    footer = f"via {source.upper()}" if source else "AUTOMATED NEWS BOT"
-    _center(d, W / 2, by1 + 26, footer, _font(34), (150, 155, 165))
+    _breaking_box(d, W, 824, source=source)
 
     out = io.BytesIO()
     img.save(out, format="PNG")
