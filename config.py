@@ -25,7 +25,9 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
 # requests/day against reads in the hundreds. Capping posts was throttling
 # coverage to save money that posting was never spending.
 # Set MAX_POSTS_PER_DAY to a positive number to put the cap back.
-MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "0"))
+# `or 0` not a default: an unset GitHub Actions variable arrives as an EMPTY
+# STRING, not as absent, and int("") raises. Empty means uncapped.
+MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY") or 0)
 
 # Standout-performance highlights (summer league + regular season) are capped
 # separately and only posted for genuine stars / top prospects. They're the

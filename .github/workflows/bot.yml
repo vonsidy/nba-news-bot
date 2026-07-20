@@ -49,10 +49,14 @@ jobs:
       - name: Run the bot continuously until just before the job ceiling
         env:
           DRY_RUN: "false"
-          # No MAX_POSTS_PER_DAY — this used to pin it to 6 here, which silently
-          # overrode the uncapped default in config.py. Duplicate protection is
-          # the per-story dedup and the per-subject daily backstop, not a
-          # blanket cap that throttles real news along with the noise.
+          # Reads a repo VARIABLE (Settings > Secrets and variables > Actions >
+          # Variables), so the ceiling can be raised, lowered, or removed without
+          # touching code. Unset/empty = uncapped, which is the intended
+          # steady state: duplicate protection is the per-story dedup and the
+          # per-subject daily backstop, not a blanket cap that throttles real
+          # news along with the noise. This used to be hardcoded to "6" here,
+          # silently overriding config.py.
+          MAX_POSTS_PER_DAY: ${{ vars.MAX_POSTS_PER_DAY }}
           POLL_SECONDS: "90"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY: ${{ secrets.X_API_KEY }}
