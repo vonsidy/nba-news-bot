@@ -1,17 +1,24 @@
 """Generate original 'BREAKING NEWS' trade graphics for trade tweets.
 
-No copyrighted photos, no team logos, no fabricated reporter names — just
-team colors, lighting, and text rendered fresh each time. Safe to post from a
-monetized automated account.
+Real team logos are fetched at runtime from ESPN's public CDN (owner's
+explicit choice, accepting the trademark exposure) — they are never committed
+to the repo. If a logo can't be fetched, or NBA_BOT_LOGOS=false is set, the
+card falls back to the original trademark-safe color-roundel badges, so a CDN
+hiccup never breaks a post and the safe mode is one env var away.
 """
 
 import io
 import os
+import urllib.request
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # Account brand stamped on every card for attribution as they get reshared.
 BRAND = os.getenv("NBA_BOT_BRAND", "@TheNBASignal")
+
+# Kill switch: set NBA_BOT_LOGOS=false to go back to the roundel badges
+# (e.g. after a trademark complaint) without touching code.
+USE_TEAM_LOGOS = os.getenv("NBA_BOT_LOGOS", "true").strip().lower() != "false"
 
 # abbr -> (display name, primary hex, secondary hex)
 TEAMS = {
@@ -228,9 +235,54 @@ def _draw_route(d, W, y, from_abbr, to_abbr, to_name, prim, size=72):
         x += d.textbbox((0, 0), s, font=rf)[2]
 
 
+# ESPN's team-page slugs differ from the standard NBA abbreviations for a few
+# teams; everything else is just the abbreviation lowercased.
+_LOGO_CDN = "https://a.espncdn.com/i/teamlogos/nba/500/{slug}.png"
+_LOGO_SLUGS = {"GSW": "gs", "NOP": "no", "NYK": "ny", "SAS": "sa",
+               "UTA": "utah", "WAS": "wsh"}
+_logo_cache: dict[str, Image.Image | None] = {}
+
+
+def _team_logo(abbr):
+    """Fetch a team's logo from ESPN's CDN (cached per process). Returns an
+    RGBA image or None — callers fall back to the roundel badge on None, so a
+    network failure degrades the card instead of killing the post."""
+    if not USE_TEAM_LOGOS:
+        return None
+    if abbr in _logo_cache:
+        return _logo_cache[abbr]
+    logo = None
+    try:
+        url = _LOGO_CDN.format(slug=_LOGO_SLUGS.get(abbr, abbr.lower()))
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            logo = Image.open(io.BytesIO(r.read())).convert("RGBA")
+    except Exception:
+        logo = None
+    _logo_cache[abbr] = logo
+    return logo
+
+
+def _paste_logo(img, logo, cx, cy, box):
+    """Paste a logo centered at (cx, cy), scaled to fit box×box, over a soft
+    white halo (blurred silhouette) so dark logo art stays visible against the
+    dark photo scrim."""
+    logo = logo.copy()
+    logo.thumbnail((box, box), Image.LANCZOS)
+    lw, lh = logo.size
+    x, y = int(cx - lw / 2), int(cy - lh / 2)
+    pad = 30
+    halo = Image.new("L", (lw + 2 * pad, lh + 2 * pad), 0)
+    halo.paste(logo.getchannel("A"), (pad, pad))
+    halo = halo.filter(ImageFilter.GaussianBlur(9)).point(lambda a: int(a * 0.55))
+    img.paste((255, 255, 255), (x - pad, y - pad), halo)
+    img.paste(logo, (x, y), logo)
+
+
 def _team_badge(d, cx, cy, r, abbr):
     """A colored roundel 'badge' for a team — official team colors + abbreviation.
-    A trademark-safe stand-in for the real (copyrighted) team logo."""
+    The trademark-safe fallback when the real logo can't be fetched (or logos
+    are disabled via NBA_BOT_LOGOS=false)."""
     prim = _hex(TEAMS[abbr][1])
     sec = _hex(TEAMS[abbr][2])
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=sec)          # outer ring
@@ -252,20 +304,30 @@ def _arrow(d, x, cy, w, color):
               fill=color)
 
 
-def _draw_team_badges(d, W, cy, from_abbr, to_abbr, r=58):
-    """Render the from -> to team badges centered on cy (or just the destination
-    badge when the origin team isn't known)."""
+def _draw_team_badges(img, d, W, cy, from_abbr, to_abbr, r=58):
+    """Render the from -> to team marks centered on cy (or just the destination
+    when the origin team isn't known). Real logo when fetchable, roundel badge
+    otherwise."""
+    box = int(r * 2.35)  # logo art carries internal padding — draw a bit larger
+
+    def mark(cx, abbr):
+        logo = _team_logo(abbr)
+        if logo:
+            _paste_logo(img, logo, cx, cy, box)
+        else:
+            _team_badge(d, cx, cy, r, abbr)
+
     if from_abbr:
         aw = 64
         gap = 40
         total = 2 * r + gap + aw + gap + 2 * r
         x0 = W / 2 - total / 2
-        _team_badge(d, x0 + r, cy, r, from_abbr)
+        mark(x0 + r, from_abbr)
         ax = x0 + 2 * r + gap
         _arrow(d, ax, cy, aw, (238, 238, 238))
-        _team_badge(d, ax + aw + gap + r, cy, r, to_abbr)
+        mark(ax + aw + gap + r, to_abbr)
     else:
-        _team_badge(d, W / 2, cy, r, to_abbr)
+        mark(W / 2, to_abbr)
 
 
 def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
@@ -287,7 +349,7 @@ def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
         f = _fit_font(d, line, W - 140, 132)
         _center(d, W / 2, y, line, f, (255, 255, 255))
         y += f.size + 8
-    _draw_team_badges(d, W, y + 82, from_abbr, to_abbr, r=64)
+    _draw_team_badges(img, d, W, y + 82, from_abbr, to_abbr, r=64)
 
     by1 = _breaking_box(d, W, 810)
     footer = f"via {source.upper()}" if source else "AUTOMATED NEWS BOT"
@@ -325,7 +387,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     badge_r = 58
     badge_gap = 34           # space between the badges and the BREAKING box
     badge_cy = breaking_top - badge_gap - badge_r
-    _draw_team_badges(d, W, badge_cy, from_abbr, to_abbr, r=badge_r)
+    _draw_team_badges(img, d, W, badge_cy, from_abbr, to_abbr, r=badge_r)
     _breaking_box(d, W, breaking_top, source=source)
 
     # required CC photo attribution, small at the very bottom
