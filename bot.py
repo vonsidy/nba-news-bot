@@ -142,14 +142,16 @@ def process_item(item: sources.NewsItem) -> None:
             print("  daily highlight cap reached; skipping highlight")
             return
 
-    # Freshness by type: a trade/signing is still worth posting hours later, but
-    # any other news (a performance, a quote) is stale within the tight window.
-    # We only know which it is after Claude classifies it, so enforce it here.
+    # Freshness by type: transactions AND the trade/free-agency chatter around
+    # them (rumors, reports — "star deciding today", "weighing offers") stay
+    # worth posting for hours, so they get the wide window. Time-sensitive stuff
+    # (a performance, a score, a quote) is stale within the tight window.
     if item.published_ts:
         age_min = (time.time() - item.published_ts) / 60
-        max_age = config.TRADE_MAX_AGE_MIN if result.get("is_trade") else config.FRESH_MAX_AGE_MIN
+        wide = result.get("is_trade") or result.get("category") in ("rumor", "report")
+        max_age = config.TRADE_MAX_AGE_MIN if wide else config.FRESH_MAX_AGE_MIN
         if age_min > max_age:
-            print(f"  too stale ({int(age_min)}m old) for a non-trade, skipping: {item.title[:60]}")
+            print(f"  too stale ({int(age_min)}m old), skipping: {item.title[:60]}")
             return
 
     text = result["tweet"].strip()
