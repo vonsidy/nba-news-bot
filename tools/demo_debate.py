@@ -24,7 +24,7 @@ print(f"THEME={' '.join(post['title'])}  CAPTION={post['caption']}")
 players = []
 found = 0
 for name, abbr in post["players"]:
-    res = photos.get_any_photo(name)
+    res = photos.get_headshot(name)
     if res:
         found += 1
     players.append((name, abbr, res[0] if res else None))

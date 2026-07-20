@@ -586,11 +586,31 @@ def make_debate_card(title: list[str], players: list) -> bytes | None:
         y0 = grid_top + r * (tile_h + gap)
         prim = _hex(TEAMS[abbr][1]) if abbr in TEAMS else (60, 60, 70)
 
-        tile = Image.new("RGB", (int(tile_w), int(tile_h)), prim)
+        tw_i, th_i = int(tile_w), int(tile_h)
+        # team-color base (subtle top->dark gradient) so a cut-out headshot sits
+        # ON the player's team color, like a broadcast card
+        tile = _vgradient((tw_i, th_i), prim, tuple(int(c * 0.42) for c in prim))
         if photo:
             try:
-                tile = _cover(Image.open(io.BytesIO(photo)).convert("RGB"),
-                              (int(tile_w), int(tile_h)), focus_y=0.12)
+                im = Image.open(io.BytesIO(photo))
+                transparent = im.mode in ("RGBA", "LA") or (
+                    im.mode == "P" and "transparency" in im.info)
+                if transparent:
+                    # official headshot cut-out: scale to tile width, anchor at
+                    # the bottom so head+shoulders rise off the team color
+                    im = im.convert("RGBA")
+                    scale = tw_i / im.width
+                    im = im.resize((tw_i, max(1, int(im.height * scale))), Image.LANCZOS)
+                    if im.height > th_i:
+                        im = im.crop((0, im.height - th_i, tw_i, im.height))
+                        oy = 0
+                    else:
+                        oy = th_i - im.height
+                    base = tile.convert("RGBA")
+                    base.alpha_composite(im, (0, oy))
+                    tile = base.convert("RGB")
+                else:
+                    tile = _cover(im.convert("RGB"), (tw_i, th_i), focus_y=0.12)
             except Exception:
                 pass
         # bottom scrim for the name
@@ -610,8 +630,7 @@ def make_debate_card(title: list[str], players: list) -> bytes | None:
             ny += nf.size + 1
         img.paste(tile, (int(x0), int(y0)))
 
-    _center(d, W / 2, H - 48, "@TheNBASignal  ·  who you got?", _font(26), (150, 155, 165))
-    _center(d, W / 2, H - 22, "photos: Wikimedia Commons (CC)", _font(16), (110, 114, 124))
+    _center(d, W / 2, H - 40, "@TheNBASignal  ·  who you got?", _font(28), (150, 155, 165))
 
     out = io.BytesIO()
     img.save(out, format="PNG")

@@ -83,7 +83,9 @@ def maybe_post_engagement() -> None:
     post = engage.pick_daily(day)
     players = []
     for name, abbr in post["players"]:
-        res = photos.get_any_photo(name)
+        # official current-NBA-team headshot (clean cut-out) so every tile is the
+        # player in the RIGHT jersey — not a random Wikimedia/national-team shot
+        res = photos.get_headshot(name)
         players.append((name, abbr, res[0] if res else None))
     if sum(1 for p in players if p[2]) < 4:
         print("  engagement: fewer than 4 player photos available; skipping today")
