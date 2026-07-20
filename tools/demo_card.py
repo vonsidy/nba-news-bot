@@ -21,7 +21,7 @@ player = sys.argv[1] if len(sys.argv) > 1 else "LeBron James"
 to_team = sys.argv[2] if len(sys.argv) > 2 else "Warriors"
 from_team = sys.argv[3] if len(sys.argv) > 3 else "Lakers"
 
-res = photos.get_player_photo(player)
+res = photos.get_any_photo(player)  # Wikimedia action shot, else official headshot
 photo, credit = res if res else (None, None)
 png = card.make_trade_card(player, to_team=to_team, from_team=from_team,
                            source="ESPN", photo=photo, credit=credit)

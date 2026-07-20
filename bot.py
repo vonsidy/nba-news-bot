@@ -168,7 +168,10 @@ def process_item(item: sources.NewsItem) -> None:
                   f" @ {result.get('home_team')} {result.get('home_score')}")
     elif result.get("is_trade") and result.get("player") and result.get("to_team"):
         photo, credit = None, None
-        res = photos.get_player_photo(result["player"])
+        # Every traded/signed player gets a photo: a free Wikimedia action shot
+        # when one exists, else the player's official headshot. Only a total
+        # miss (name unresolvable at ESPN too) falls to the logo design card.
+        res = photos.get_any_photo(result["player"])
         if res:
             photo, credit = res
         image = card.make_trade_card(
