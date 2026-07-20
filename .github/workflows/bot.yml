@@ -7,7 +7,10 @@ name: NBA news bot
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    # Offset minutes (:04, :14, ...) instead of */10: GitHub's scheduler is
+    # most congested at round minutes (:00, :10) and silently drops jobs
+    # queued then — off-peak minutes fire noticeably more reliably.
+    - cron: "4,14,24,34,44,54 * * * *"
   workflow_dispatch: {}   # lets you trigger a run manually from the Actions tab
 
 # Prevent overlapping runs if one takes longer than the interval
