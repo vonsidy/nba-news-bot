@@ -30,6 +30,12 @@ MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "6"))
 # lowest-value posts, so they're kept few to save X API writes.
 MAX_HIGHLIGHTS_PER_DAY = int(os.getenv("MAX_HIGHLIGHTS_PER_DAY", "4"))
 
+# Evergreen debate cards ("What team is one move away?", "Keep 3, cut the rest").
+# Off by owner's call 2026-07-20: they read as filler on the timeline and weren't
+# earning replies, which was the whole reason for posting them. The generator is
+# untouched — set ENABLE_DEBATE_POSTS=1 to bring them back.
+ENABLE_DEBATE_POSTS = os.getenv("ENABLE_DEBATE_POSTS", "0").strip().lower() in ("1", "true", "yes")
+
 # How recent (in minutes) an item must be to still be worth posting. Breaking
 # news lives or dies on latency — a game score that's hours old gets no traction,
 # so keep this tight. Anything older is dropped instead of posted stale.

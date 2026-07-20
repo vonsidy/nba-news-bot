@@ -74,7 +74,12 @@ def _et_hour() -> int:
 def maybe_post_engagement() -> None:
     """Post one evergreen debate card per day, in the evening ET peak window —
     keeps the feed alive on slow news days and drives replies. Capped at one a
-    day via a Redis day-key; separate from the news post cap."""
+    day via a Redis day-key; separate from the news post cap.
+
+    Disabled by default (config.ENABLE_DEBATE_POSTS); the owner found these read
+    as filler and weren't earning the replies they exist for."""
+    if not config.ENABLE_DEBATE_POSTS:
+        return
     day = state.today_key()
     if state.is_seen(f"engage:{day}"):
         return
