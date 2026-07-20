@@ -12,6 +12,7 @@ import time
 import unicodedata
 
 import card
+import composer
 import config
 import engage
 import photos
@@ -19,6 +20,44 @@ import sources
 import state
 import tweeter
 from composer import compose
+
+
+# ---- Free prefilter: drop obvious non-news BEFORE paying for a Claude call ----
+# Conservative by design: a false negative silently loses a real story, so we
+# only drop on POSITIVE junk signals (never merely for lacking a team name — that
+# would kill player-only headlines like "LeBron reportedly deciding today").
+
+_JUNK_RE = re.compile(
+    r"(?i)\b(promo code|betting|sportsbook|casinos?|parlay|prop bets?|odds\b"
+    r"|fantasy (basketball|football|hockey)|where to watch|how to watch"
+    r"|live stream|recruiting|preseason schedule|schedule release"
+    r"|power rankings?|mock draft|way-too-early|offseason grades"
+    r"|reasons why|winners and losers|(top|best) \d+ .*this week"
+    r"|summer league (recap|grades|review|takeaways|standings))\b"
+)
+_OTHER_SPORT_RE = re.compile(
+    r"(?i)\b(NFL|NHL|MLB|MLS|WNBA|cricket|rugby|premier league|la liga|bundesliga"
+    r"|euroleague|serie a|formula 1|nascar|pga|ufc|maple leafs|canadiens"
+    r"|\bjets\b|yankees|dodgers|red sox|packers|cowboys)\b"
+)
+# NBA signal = the word "NBA" or any team city/nickname (>=4 chars to avoid noise).
+_NBA_TOKENS = sorted(
+    {a for a in card._ALIASES if len(a) >= 4} | {t.lower() for t in card.TEAMS},
+    key=len, reverse=True,
+)
+_NBA_RE = re.compile(r"(?i)\b(nba|" + "|".join(re.escape(x) for x in _NBA_TOKENS) + r")\b")
+
+
+def _worth_composing(item: sources.NewsItem) -> bool:
+    """True if the item is worth a paid Claude call. Drops clear junk (betting,
+    fantasy, listicles, schedules) and other-sports items that carry no NBA
+    signal. Everything else goes to Claude — when in doubt, let it through."""
+    t = f"{item.title} {item.summary}"
+    if _JUNK_RE.search(t):
+        return False
+    if _OTHER_SPORT_RE.search(t) and not _NBA_RE.search(t):
+        return False
+    return True
 
 
 def _et_hour() -> int:
@@ -324,16 +363,36 @@ def run_cycle() -> None:
     # the tighter per-type freshness is enforced in process_item once Claude has
     # told us whether the item is actually a trade.
     candidate_age = max(config.FRESH_MAX_AGE_MIN, config.TRADE_MAX_AGE_MIN) * 60
-    items = [
-        i for i in sources.fetch_all()
-        if not state.is_seen(i.id) and sources.is_fresh(i, candidate_age)
-    ]
-    if not items:
+    # is_fresh (local, free) is checked BEFORE is_seen (a Redis read), so we only
+    # hit Redis for items new enough to matter — far fewer Redis commands.
+    fresh = [i for i in sources.fetch_all()
+             if sources.is_fresh(i, candidate_age) and not state.is_seen(i.id)]
+
+    # Collapse the same story arriving from multiple feeds into ONE item BEFORE
+    # any Claude call — Google-News queries overlap heavily, and each duplicate
+    # was its own paid request.
+    seen_keys, deduped = set(), []
+    for i in fresh:
+        k = sources.content_key(i.title)
+        if k and k in seen_keys:
+            continue
+        seen_keys.add(k)
+        deduped.append(i)
+
+    # Free prefilter: junk never reaches Claude.
+    worth = [i for i in deduped if _worth_composing(i)]
+    if not fresh:
         return
-    print(f"{len(items)} new item(s)")
-    for item in items:
+    print(f"{len(fresh)} fresh | -{len(fresh) - len(deduped)} cross-feed dupes | "
+          f"-{len(deduped) - len(worth)} prefiltered junk | {len(worth)} -> Claude")
+    for item in worth:
         process_item(item)
         time.sleep(2)  # small gap between posts, looks less bot-bursty
+
+    u = composer.USAGE
+    print(f"Claude usage this cycle: {u['calls']} calls, {u['input']} in / "
+          f"{u['output']} out tokens (cache: {u['cache_read']} read, "
+          f"{u['cache_creation']} created)")
 
 
 def baseline() -> None:

@@ -9,6 +9,21 @@ from sources import NewsItem
 
 client = anthropic.Anthropic()
 
+# Per-process token accounting so a run can report exactly what it spent on
+# Claude (each `--once` cron invocation is a fresh process, so this is per-cycle).
+USAGE = {"calls": 0, "input": 0, "output": 0, "cache_read": 0, "cache_creation": 0}
+
+
+def _account(resp) -> None:
+    u = getattr(resp, "usage", None)
+    if not u:
+        return
+    USAGE["calls"] += 1
+    USAGE["input"] += getattr(u, "input_tokens", 0) or 0
+    USAGE["output"] += getattr(u, "output_tokens", 0) or 0
+    USAGE["cache_read"] += getattr(u, "cache_read_input_tokens", 0) or 0
+    USAGE["cache_creation"] += getattr(u, "cache_creation_input_tokens", 0) or 0
+
 SYSTEM_PROMPT = """You write tweets for an automated NBA breaking-news account.
 
 Editorial rules (non-negotiable):
@@ -136,6 +151,11 @@ def compose(item: NewsItem) -> dict | None:
     # the whole bot (every compose returning None = nothing ever posts).
     fmt = {"type": "json_schema", "schema": TWEET_SCHEMA}
     configs = [{"effort": "low", "format": fmt}, {"format": fmt}]
+    # SYSTEM_PROMPT is byte-identical every call, so mark a cache breakpoint.
+    # NOTE: Haiku 4.5's minimum cacheable prefix is 2048 tokens; this prompt is
+    # ~700, so this is likely a no-op (cache_creation stays 0) — USAGE logging
+    # tells us empirically. Harmless either way.
+    system = [{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}]
     response = None
     for i, output_config in enumerate(configs):
         try:
@@ -143,9 +163,10 @@ def compose(item: NewsItem) -> dict | None:
                 model=ANTHROPIC_MODEL,
                 max_tokens=1024,
                 output_config=output_config,
-                system=SYSTEM_PROMPT,
+                system=system,
                 messages=[{"role": "user", "content": user_msg}],
             )
+            _account(response)
             break
         except anthropic.RateLimitError:
             print("  Claude API rate limited — skipping this cycle's item")
