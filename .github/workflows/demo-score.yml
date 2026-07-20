@@ -1,0 +1,39 @@
+name: Demo score card
+
+# Manually generate a sample FINAL score card to preview the design.
+# Prints the image base64-encoded to the log. Does NOT post anything.
+on:
+  workflow_dispatch:
+    inputs:
+      away:
+        description: "Away team (abbr or name)"
+        default: "ATL"
+      home:
+        description: "Home team (abbr or name)"
+        default: "WAS"
+      away_score:
+        description: "Away final score"
+        default: "83"
+      home_score:
+        description: "Home final score"
+        default: "91"
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Fetch display font (Anton) for the cards
+        run: |
+          mkdir -p assets
+          curl -sSL --retry 3 -o assets/font-bold.ttf \
+            https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf \
+            || echo "font download failed; card.py falls back to a system font"
+      - name: Render demo score card
+        run: python tools/demo_score.py "${{ github.event.inputs.away }}" "${{ github.event.inputs.home }}" "${{ github.event.inputs.away_score }}" "${{ github.event.inputs.home_score }}"
