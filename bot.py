@@ -62,6 +62,17 @@ def _event_signature(result: dict) -> str | None:
         return f"hl:{player}:{state.today_key()}"
     return None
 
+
+def _final_signature(result: dict) -> str | None:
+    """One key per game per day, whichever team the headline led with — the
+    matchup is sorted so 'Hawks lose to Wizards' and 'Wizards beat Hawks'
+    collapse to the same event."""
+    a = card.resolve_team(result.get("away_team") or "")
+    h = card.resolve_team(result.get("home_team") or "")
+    if not a or not h:
+        return None
+    return f"final:{':'.join(sorted((a, h)))}:{state.today_key()}"
+
 # Windows consoles default to cp1252, which crashes on emoji in headlines/tweets
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -92,11 +103,23 @@ def process_item(item: sources.NewsItem) -> None:
     # Semantic dedup: block a repeat of the SAME event even when the headline is
     # worded differently by another outlet. content_key above only catches near-
     # identical titles; this catches "Lu Dort traded to Hawks" vs "Thunder send
-    # Dort to Atlanta" — same player, same destination -> posted once.
-    event_sig = _event_signature(result)
+    # Dort to Atlanta" — same player, same destination -> posted once. Finals
+    # dedup on the matchup, so each game's score posts exactly once.
+    is_final = result.get("category") == "final"
+    event_sig = _final_signature(result) if is_final else _event_signature(result)
     if event_sig and state.is_seen(event_sig):
         print(f"  duplicate event, skipping: {event_sig}")
         return
+    if is_final and not event_sig:
+        print(f"  final with unresolvable teams, skipping: {item.title[:60]}")
+        return
+    if is_final:
+        a_s, h_s = int(result.get("away_score") or 0), int(result.get("home_score") or 0)
+        # even summer-league teams clear 50; equal or tiny scores mean the model
+        # couldn't actually read a final score out of the item
+        if a_s < 50 or h_s < 50 or a_s == h_s:
+            print(f"  final with implausible score ({a_s}-{h_s}), skipping")
+            return
 
     # Highlights (standout performances) only post for genuine stars, and are
     # capped separately per day so they add engagement without burying the news.
@@ -123,11 +146,22 @@ def process_item(item: sources.NewsItem) -> None:
     if item.link:
         text = f"{text}\n{item.link}"
 
-    # Auto-generate a TRADE ALERT graphic when the item is a player move.
-    # Try a reuse-licensed (CC / public-domain) player photo from Wikimedia;
-    # fall back to the photo-free design card when none exists.
+    # Auto-generate a graphic: a FINAL score card for game results (attaching
+    # our own media also stops X from showing the linked article's ugly
+    # auto-scoreboard preview), or a trade card for player moves.
     image = None
-    if result.get("is_trade") and result.get("player") and result.get("to_team"):
+    if is_final:
+        image = card.make_score_card(
+            away_team=result.get("away_team") or "",
+            home_team=result.get("home_team") or "",
+            away_score=int(result.get("away_score") or 0),
+            home_score=int(result.get("home_score") or 0),
+            source=item.source,
+        )
+        if image:
+            print(f"  generated score card: {result.get('away_team')} {result.get('away_score')}"
+                  f" @ {result.get('home_team')} {result.get('home_score')}")
+    elif result.get("is_trade") and result.get("player") and result.get("to_team"):
         photo, credit = None, None
         res = photos.get_player_photo(result["player"])
         if res:

@@ -71,6 +71,9 @@ FEEDS = [
     # the most reliable marker of a real scoop, and this catches stories worded
     # in ways the keyword queries miss ("finalizing a deal", "intends to sign").
     ("Google News", _GNEWS + "(%22Shams%20Charania%22%20OR%20%22Marc%20Stein%22%20OR%20%22Chris%20Haynes%22%20OR%20%22Jake%20Fischer%22)%20when%3A1h"),
+    # Just-finished games — result headlines carry the final score, which feeds
+    # the FINAL score card. Tight window: a score is only fresh at the buzzer.
+    ("Google News", _GNEWS + "NBA%20(beat%20OR%20beats%20OR%20defeats%20OR%20%22final%20score%22%20OR%20%22holds%20off%22)%20when%3A1h"),
     ("RealGM", "https://basketball.realgm.com/rss/wiretap/0/0.xml"),
     ("HoopsHype", "https://hoopshype.com/feed/"),
     ("ESPN", "https://www.espn.com/espn/rss/nba/news"),

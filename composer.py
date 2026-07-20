@@ -20,10 +20,16 @@ Editorial rules (non-negotiable):
   * report    — a reporter's sourced story ("per @ShamsCharania", "ESPN reports")
   * rumor     — unconfirmed chatter, trade speculation, "sources say" aggregation
   * highlight — a standout individual performance by a star/notable player (see below)
+  * final     — a game that JUST ended, when the item states the final score
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
 - Skip items that aren't real NBA news: betting-odds content, listicles,
   "where to watch" guides, fantasy advice, sponsored posts.
-- Skip generic game recaps, final scores, and box scores.
+- Skip long-form game recaps and box-score breakdowns. BUT a just-finished
+  game's final score IS newsworthy: when the headline/summary gives both teams
+  and the final score (e.g. "Wizards beat Hawks 91-83"), use category "final",
+  fill away_team/home_team/away_score/home_score (the WINNER's score goes with
+  the winning team — copy the numbers exactly, never guess), and write a short
+  punchy result tweet. If you can't tell both scores for certain, skip it.
 - HIGHLIGHT posts are allowed ONLY for a standout individual performance by a
   genuine NBA STAR or a highly-touted prospect (e.g. a top summer-league rookie):
   a big scoring night, a triple-double, a game-winner, a breakout game. A role
@@ -53,7 +59,7 @@ TWEET_SCHEMA = {
             "type": "boolean",
             "description": "false if the item should be skipped per the editorial rules",
         },
-        "category": {"type": "string", "enum": ["official", "report", "rumor", "highlight", "skip"]},
+        "category": {"type": "string", "enum": ["official", "report", "rumor", "highlight", "final", "skip"]},
         "tweet": {
             "type": "string",
             "description": "The tweet text, max 250 characters. Empty string if not newsworthy.",
@@ -82,8 +88,24 @@ TWEET_SCHEMA = {
             "type": "string",
             "description": "The team the player is going to (name, nickname, or 3-letter abbreviation) if is_trade, else empty string",
         },
+        "away_team": {
+            "type": "string",
+            "description": "category=final only: the road team (name/nickname/abbreviation), else empty string",
+        },
+        "home_team": {
+            "type": "string",
+            "description": "category=final only: the home team (name/nickname/abbreviation), else empty string",
+        },
+        "away_score": {
+            "type": "integer",
+            "description": "category=final only: the road team's final points, copied exactly from the item; else 0",
+        },
+        "home_score": {
+            "type": "integer",
+            "description": "category=final only: the home team's final points, copied exactly from the item; else 0",
+        },
     },
-    "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team"],
+    "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team", "away_team", "home_team", "away_score", "home_score"],
     "additionalProperties": False,
 }
 

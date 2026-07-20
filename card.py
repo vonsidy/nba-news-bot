@@ -399,6 +399,89 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     return out.getvalue()
 
 
+def _arena_bg(W, H, away_prim, home_prim, seed: str):
+    """A procedural 'blurred game photo' backdrop: dark court gradient, warm
+    crowd-bokeh lights, and a team-color glow on each side, all heavily blurred.
+    Reads like an arena shot without using anyone's copyrighted game photo.
+    Deterministic per matchup so re-renders of the same game look identical."""
+    import random
+    rng = random.Random(seed)
+    img = _vgradient((W, H), (12, 12, 16), (28, 26, 32)).convert("RGBA")
+    # hardwood hint: a warm band across the lower third
+    wood = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    wd = ImageDraw.Draw(wood)
+    wd.rectangle([0, int(H * 0.68), W, H], fill=(96, 64, 34, 90))
+    img = Image.alpha_composite(img, wood.filter(ImageFilter.GaussianBlur(60)))
+    # crowd bokeh: soft warm dots scattered through the upper two thirds
+    bokeh = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    bd = ImageDraw.Draw(bokeh)
+    for _ in range(90):
+        x, y = rng.randint(0, W), rng.randint(0, int(H * 0.66))
+        r = rng.randint(6, 26)
+        warm = rng.choice([(255, 226, 180), (255, 244, 220), (200, 210, 255)])
+        bd.ellipse([x - r, y - r, x + r, y + r], fill=warm + (rng.randint(28, 80),))
+    img = Image.alpha_composite(img, bokeh.filter(ImageFilter.GaussianBlur(14)))
+    # each team's color bleeding in from its side
+    img = Image.alpha_composite(img, _glow((W, H), (180, 430), 430, away_prim, 110))
+    img = Image.alpha_composite(img, _glow((W, H), (W - 180, 430), 430, home_prim, 110))
+    return img.filter(ImageFilter.GaussianBlur(6)).convert("RGB")
+
+
+def make_score_card(away_team: str, home_team: str, away_score: int,
+                    home_score: int, source: str | None = None) -> bytes | None:
+    """FINAL score card: blurred arena backdrop + two broadcast-style score
+    lines (logo, team, score), winner bright / loser dimmed. Returns PNG bytes
+    or None when either team can't be resolved."""
+    away = resolve_team(away_team)
+    home = resolve_team(home_team)
+    if not away or not home:
+        return None
+    W, H = 1080, 1080
+    img = _arena_bg(W, H, _hex(TEAMS[away][1]), _hex(TEAMS[home][1]),
+                    seed=f"{away}{home}{away_score}{home_score}")
+    d = ImageDraw.Draw(img)
+    _brand(d, W, 52, (235, 238, 245), shadow=True)
+
+    # FINAL header, ESPN-red underline bar
+    fh = _font(120)
+    _center(d, W / 2, 96, "FINAL", fh, (255, 255, 255))
+    fb = d.textbbox((0, 0), "FINAL", font=fh)
+    d.rectangle([W / 2 - 130, 96 + fb[3] + 18, W / 2 + 130, 96 + fb[3] + 30],
+                fill=(214, 18, 40))
+
+    # score lines
+    rows = [(away, away_score), (home, home_score)]
+    row_x0, row_x1 = 120, W - 120
+    logo_box, name_x = 150, row_x0 + 190
+    score_f = _font(150)
+    for i, (abbr, pts) in enumerate(rows):
+        cy = 430 + i * 250
+        won = pts > rows[1 - i][1]
+        col = (255, 255, 255) if won else (148, 153, 163)
+        logo = _team_logo(abbr)
+        if logo:
+            _paste_logo(img, logo, row_x0 + logo_box / 2, cy, logo_box)
+        else:
+            _team_badge(d, row_x0 + logo_box / 2, cy, 66, abbr)
+        sw = d.textbbox((0, 0), str(pts), font=score_f)
+        max_name_w = (row_x1 - (sw[2] - sw[0]) - 40) - name_x
+        nf = _fit_font(d, TEAMS[abbr][0], max_name_w, 84, min_size=48)
+        nb = d.textbbox((0, 0), TEAMS[abbr][0], font=nf)
+        d.text((name_x, cy - (nb[3] - nb[1]) / 2 - nb[1]), TEAMS[abbr][0], font=nf, fill=col)
+        d.text((row_x1 - (sw[2] - sw[0]) - sw[0], cy - (sw[3] - sw[1]) / 2 - sw[1]),
+               str(pts), font=score_f, fill=col)
+        if i == 0:
+            # thin divider between the two lines
+            d.rectangle([row_x0, cy + 125 - 1, row_x1, cy + 125 + 1], fill=(255, 255, 255, 40))
+
+    if source:
+        _center(d, W / 2, H - 90, f"VIA {source.upper()}", _font(30), (200, 204, 212))
+
+    out = io.BytesIO()
+    img.save(out, format="PNG")
+    return out.getvalue()
+
+
 def make_trade_card(player: str, to_team: str, from_team: str | None = None,
                     source: str | None = None, photo: bytes | None = None,
                     credit: str | None = None) -> bytes | None:
