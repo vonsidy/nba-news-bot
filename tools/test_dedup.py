@@ -109,7 +109,47 @@ def test_backstop_bounds_damage():
     print(f"backstop: bounded to {survived} per player  OK")
 
 
+def test_non_player_news_is_bounded():
+    """News with no player in it — coaching hires, front-office moves — has no
+    player key to dedup on. Without a team fallback it was completely
+    unprotected, which is the same failure shape as the Thybulle signing."""
+    counts = {}
+    state.player_posts_today = lambda p: counts.get(p, 0)
+    state.incr_player_posts = lambda p: counts.__setitem__(p, counts.get(p, 0) + 1)
+
+    coach_story = {"player": "", "to_team": "", "from_team": "", "is_trade": False}
+    headlines = [
+        "Lakers hire Mike Brown as head coach",
+        "Mike Brown named Lakers head coach, per sources",
+        "Lakers finalize deal with Mike Brown to lead the bench",
+        "Report: Lakers land Mike Brown as next head coach",
+    ]
+
+    survived = 0
+    for headline in headlines:
+        subject = bot._subject_key(coach_story, headline)
+        assert subject, f"no subject derived for: {headline}"
+        if state.player_posts_today(subject) >= config.MAX_POSTS_PER_PLAYER:
+            continue
+        survived += 1
+        state.incr_player_posts(subject)
+
+    assert survived == config.MAX_POSTS_PER_PLAYER, (
+        f"coaching news let {survived} through, cap is {config.MAX_POSTS_PER_PLAYER}")
+
+    # A different team's coaching news is unaffected.
+    other = bot._subject_key(coach_story, "Suns hire a new head coach")
+    assert state.player_posts_today(other) == 0, "team backstop must be per-team"
+
+    # Player and team keys must not share an allowance.
+    player_subj = bot._subject_key({"player": "Matisse Thybulle"}, "Lakers sign Thybulle")
+    team_subj = bot._subject_key(coach_story, "Lakers hire Mike Brown")
+    assert player_subj != team_subj, "player and team keys must be distinct"
+    print(f"non-player news: bounded to {survived} per team  OK")
+
+
 if __name__ == "__main__":
     test_semantic_dedup()
     test_backstop_bounds_damage()
+    test_non_player_news_is_bounded()
     print("\nPASS")

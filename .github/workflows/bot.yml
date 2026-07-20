@@ -7,10 +7,17 @@ name: NBA news bot
 
 on:
   schedule:
-    # Offset minutes (:04, :14, ...) instead of */10: GitHub's scheduler is
-    # most congested at round minutes (:00, :10) and silently drops jobs
-    # queued then — off-peak minutes fire noticeably more reliably.
-    - cron: "4,14,24,34,44,54 * * * *"
+    # ONE hourly trigger, not 144 ten-minute ones. GitHub's scheduler is
+    # best-effort and silently drops scheduled jobs under load — asking for 144
+    # runs/day delivered TWO on 2026-07-20. So the job no longer does a single
+    # cycle and exit; it starts the bot's own polling loop and stays alive for
+    # just under GitHub's 6h job ceiling.
+    #
+    # The hourly trigger is a relay, not the poller: `concurrency` below keeps
+    # one run alive and one queued, so whenever the live run ends (timeout,
+    # crash, or a dropped trigger) the queued one takes over within the hour.
+    # Coverage no longer depends on the scheduler firing on time.
+    - cron: "7 * * * *"
   workflow_dispatch: {}   # lets you trigger a run manually from the Actions tab
 
 # Prevent overlapping runs if one takes longer than the interval
@@ -21,7 +28,7 @@ concurrency:
 jobs:
   tick:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 355   # hard backstop; the `timeout` below exits first
     steps:
       - uses: actions/checkout@v4
 
@@ -39,10 +46,14 @@ jobs:
             https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf \
             || echo "font download failed; card.py falls back to a system font"
 
-      - name: Run one bot cycle
+      - name: Run the bot continuously until just before the job ceiling
         env:
           DRY_RUN: "false"
-          MAX_POSTS_PER_DAY: "6"
+          # No MAX_POSTS_PER_DAY — this used to pin it to 6 here, which silently
+          # overrode the uncapped default in config.py. Duplicate protection is
+          # the per-story dedup and the per-subject daily backstop, not a
+          # blanket cap that throttles real news along with the noise.
+          POLL_SECONDS: "90"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY: ${{ secrets.X_API_KEY }}
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
@@ -50,4 +61,7 @@ jobs:
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
-        run: python bot.py --once
+        # 5h45m, comfortably inside GitHub's 6h job ceiling. `timeout` exits 124
+        # when it fires, which is the expected path — treat only a real crash as
+        # a failure so the Actions tab stays honest.
+        run: timeout 20700 python bot.py || [ $? -eq 124 ]

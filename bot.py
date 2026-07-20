@@ -200,6 +200,25 @@ def _trade_player_flag(result: dict) -> str | None:
     return f"moved:{p}" if p else None
 
 
+def _subject_key(result: dict, title: str) -> str:
+    """The thing a story is *about*, for the daily backstop.
+
+    Prefers the player, but falls back to the teams involved so news with no
+    player in it is bounded too — coaching hires, front-office moves, cap and
+    roster mechanics. The composer leaves `player` empty whenever an item isn't
+    centred on one player, so without this fallback that whole class of story had
+    no duplicate protection at all: five outlets covering one coaching hire meant
+    five posts, exactly the shape of the Thybulle failure.
+
+    Player and team keys live in separate namespaces, so a team's player news and
+    its coaching news never compete for the same daily allowance."""
+    p = _player_key(result.get("player"))
+    if p:
+        return f"p:{p}"
+    teams = _trade_team_set(result, title)
+    return "t:" + "+".join(sorted(teams)) if teams else ""
+
+
 def _is_player_move(result: dict) -> bool:
     """Is this item about a specific player changing teams? Broader than the
     model's is_trade flag on purpose — a free-agent signing arrives as "chooses
@@ -270,7 +289,7 @@ def process_item(item: sources.NewsItem) -> None:
     # Lakers in free agency" with is_trade unset), the feed fills with one story.
     # No single player is worth more than MAX_POSTS_PER_PLAYER items a day, so
     # the worst a future classification gap can cost is that, not a timeline.
-    subject = _player_key(result.get("player"))
+    subject = _subject_key(result, f"{item.title} {item.summary}")
     if subject and state.player_posts_today(subject) >= config.MAX_POSTS_PER_PLAYER:
         print(f"  already posted {config.MAX_POSTS_PER_PLAYER} items about "
               f"{subject} today, skipping")
