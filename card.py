@@ -427,18 +427,52 @@ def _arena_bg(W, H, away_prim, home_prim, seed: str):
     return img.filter(ImageFilter.GaussianBlur(6)).convert("RGB")
 
 
+def _photo_bg(photo, W, H, away_prim, home_prim):
+    """Blurred real-player photo as the backdrop: fill the frame, blur it so it
+    reads as game atmosphere behind the scoreboard, then a dark scrim so the
+    white/dimmed score text stays legible, plus a subtle team-color glow from
+    each side. Uses the same CC/public-domain Wikimedia photo the trade cards
+    use — real NBA players, no copyrighted game photography."""
+    base = _cover(Image.open(io.BytesIO(photo)).convert("RGB"), (W, H), focus_y=0.2)
+    base = base.filter(ImageFilter.GaussianBlur(11))
+    img = base.convert("RGBA")
+    # top + bottom darker than the middle so FINAL and the source credit read,
+    # with a solid overall wash to hold the score lines
+    scrim = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(scrim)
+    for y in range(H):
+        t = abs((y / H) - 0.5) * 2          # 0 at middle -> 1 at top/bottom
+        a = int(120 + 110 * (t ** 1.6))
+        sd.line([(0, y), (W, y)], fill=(6, 8, 12, min(a, 235)))
+    img = Image.alpha_composite(img, scrim)
+    img = Image.alpha_composite(img, _glow((W, H), (150, 430), 420, away_prim, 80))
+    img = Image.alpha_composite(img, _glow((W, H), (W - 150, 430), 420, home_prim, 80))
+    return img.convert("RGB")
+
+
 def make_score_card(away_team: str, home_team: str, away_score: int,
-                    home_score: int, source: str | None = None) -> bytes | None:
-    """FINAL score card: blurred arena backdrop + two broadcast-style score
-    lines (logo, team, score), winner bright / loser dimmed. Returns PNG bytes
-    or None when either team can't be resolved."""
+                    home_score: int, source: str | None = None,
+                    photo: bytes | None = None, credit: str | None = None) -> bytes | None:
+    """FINAL score card: two broadcast-style score lines (logo, team, score),
+    winner bright / loser dimmed. Backdrop is a blurred real-player photo when
+    `photo` is supplied (with `credit`), else the procedural blurred arena.
+    Returns PNG bytes, or None when either team can't be resolved."""
     away = resolve_team(away_team)
     home = resolve_team(home_team)
     if not away or not home:
         return None
     W, H = 1080, 1080
-    img = _arena_bg(W, H, _hex(TEAMS[away][1]), _hex(TEAMS[home][1]),
-                    seed=f"{away}{home}{away_score}{home_score}")
+    away_prim, home_prim = _hex(TEAMS[away][1]), _hex(TEAMS[home][1])
+    img = None
+    if photo:
+        try:
+            img = _photo_bg(photo, W, H, away_prim, home_prim)
+        except Exception:
+            img = None  # bad/undecodable image -> procedural arena
+    if img is None:
+        credit = None
+        img = _arena_bg(W, H, away_prim, home_prim,
+                        seed=f"{away}{home}{away_score}{home_score}")
     d = ImageDraw.Draw(img)
     _brand(d, W, 52, (235, 238, 245), shadow=True)
 
@@ -476,6 +510,9 @@ def make_score_card(away_team: str, home_team: str, away_score: int,
 
     if source:
         _center(d, W / 2, H - 90, f"VIA {source.upper()}", _font(30), (200, 204, 212))
+    if credit:
+        # required CC photo attribution, small at the very bottom
+        _center(d, W / 2, H - 40, credit, _font(20), (170, 174, 182))
 
     out = io.BytesIO()
     img.save(out, format="PNG")

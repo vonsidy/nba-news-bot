@@ -151,15 +151,26 @@ def process_item(item: sources.NewsItem) -> None:
     # auto-scoreboard preview), or a trade card for player moves.
     image = None
     if is_final:
+        # Real player from the game as a blurred backdrop when we can find a
+        # free-licensed photo of the named standout; else the procedural arena.
+        photo, credit = None, None
+        star = result.get("star_player")
+        if star:
+            res = photos.get_player_photo(star)
+            if res:
+                photo, credit = res
         image = card.make_score_card(
             away_team=result.get("away_team") or "",
             home_team=result.get("home_team") or "",
             away_score=int(result.get("away_score") or 0),
             home_score=int(result.get("home_score") or 0),
             source=item.source,
+            photo=photo,
+            credit=credit,
         )
         if image:
-            print(f"  generated score card: {result.get('away_team')} {result.get('away_score')}"
+            bg = f"photo:{star}" if photo else "arena"
+            print(f"  generated score card ({bg}): {result.get('away_team')} {result.get('away_score')}"
                   f" @ {result.get('home_team')} {result.get('home_score')}")
     elif result.get("is_trade") and result.get("player") and result.get("to_team"):
         photo, credit = None, None

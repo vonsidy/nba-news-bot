@@ -30,6 +30,9 @@ Editorial rules (non-negotiable):
   fill away_team/home_team/away_score/home_score (the WINNER's score goes with
   the winning team — copy the numbers exactly, never guess), and write a short
   punchy result tweet. If you can't tell both scores for certain, skip it.
+  Also set star_player to the game's standout/leading player if the item names
+  one (e.g. the player with the big stat line), else a well-known star on the
+  winning team, else empty — it's used to pull a photo for the card backdrop.
 - HIGHLIGHT posts are allowed ONLY for a standout individual performance by a
   genuine NBA STAR or a highly-touted prospect (e.g. a top summer-league rookie):
   a big scoring night, a triple-double, a game-winner, a breakout game. A role
@@ -104,8 +107,12 @@ TWEET_SCHEMA = {
             "type": "integer",
             "description": "category=final only: the home team's final points, copied exactly from the item; else 0",
         },
+        "star_player": {
+            "type": "string",
+            "description": "category=final only: the game's standout/leading player (full name) for the card backdrop photo, else empty string",
+        },
     },
-    "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team", "away_team", "home_team", "away_score", "home_score"],
+    "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team", "away_team", "home_team", "away_score", "home_score", "star_player"],
     "additionalProperties": False,
 }
 

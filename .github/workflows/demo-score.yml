@@ -17,6 +17,9 @@ on:
       home_score:
         description: "Home final score"
         default: "91"
+      star:
+        description: "Standout player (photo backdrop; blank = arena)"
+        default: "Alexandre Sarr"
 
 jobs:
   demo:
@@ -36,4 +39,4 @@ jobs:
             https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf \
             || echo "font download failed; card.py falls back to a system font"
       - name: Render demo score card
-        run: python tools/demo_score.py "${{ github.event.inputs.away }}" "${{ github.event.inputs.home }}" "${{ github.event.inputs.away_score }}" "${{ github.event.inputs.home_score }}"
+        run: python tools/demo_score.py "${{ github.event.inputs.away }}" "${{ github.event.inputs.home }}" "${{ github.event.inputs.away_score }}" "${{ github.event.inputs.home_score }}" "${{ github.event.inputs.star }}"
