@@ -1,0 +1,164 @@
+{
+  "updated": "2026-07-20T19:41:57Z",
+  "handle": "TheNBASignal",
+  "account": {
+    "followers": 0,
+    "posts": 0,
+    "impressions": 0,
+    "likes": 0,
+    "avg_impressions": 0,
+    "engagement_rate": 0
+  },
+  "recent": [],
+  "sources": [
+    {
+      "label": "Trades & signings",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Injuries & availability",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Star highlights",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Extensions & buyouts",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Coaching & front office",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Insider bylines",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Free agency & rumors",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Game finals",
+      "publisher": "Google News",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "RealGM",
+      "publisher": "RealGM",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "HoopsHype",
+      "publisher": "HoopsHype",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "ESPN",
+      "publisher": "ESPN",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "Yahoo Sports",
+      "publisher": "Yahoo Sports",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "CBS Sports",
+      "publisher": "CBS Sports",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    },
+    {
+      "label": "SB Nation",
+      "publisher": "SB Nation",
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0
+    }
+  ],
+  "content": [],
+  "posts_per_day": [],
+  "learning": {
+    "status": "WARMING UP",
+    "notes": [
+      "evening posts (7-11pm ET) outperform mornings"
+    ]
+  },
+  "best_windows": [
+    {
+      "label": "8-11pm ET",
+      "note": "evening game window"
+    },
+    {
+      "label": "12-2pm ET",
+      "note": "lunch spike"
+    },
+    {
+      "label": "10pm-1am ET",
+      "note": "post-game, West Coast"
+    }
+  ],
+  "hourly": [
+    0.55,
+    0.4,
+    0.25,
+    0.15,
+    0.1,
+    0.1,
+    0.2,
+    0.35,
+    0.5,
+    0.6,
+    0.6,
+    0.65,
+    0.75,
+    0.7,
+    0.6,
+    0.6,
+    0.65,
+    0.7,
+    0.8,
+    0.95,
+    1.0,
+    1.0,
+    0.95,
+    0.8
+  ],
+  "growth": [],
+  "posts_today": 6,
+  "cap": 6
+}
