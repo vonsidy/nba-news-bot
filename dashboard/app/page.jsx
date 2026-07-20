@@ -11,6 +11,13 @@ function fmt(n) {
   return String(n);
 }
 
+function fmtDuration(seconds) {
+  if (seconds == null || !Number.isFinite(Number(seconds))) return "—";
+  const value = Number(seconds);
+  if (value < 60) return `${Math.round(value)}s`;
+  return `${Math.floor(value / 60)}m ${Math.round(value % 60)}s`;
+}
+
 export default async function Dashboard({ searchParams }) {
   const params = await searchParams;
 
@@ -26,13 +33,23 @@ export default async function Dashboard({ searchParams }) {
     );
   }
 
-  const [user, tweets, lastSync] = await Promise.all([
+  const [user, tweets, lastSync, signals] = await Promise.all([
     redis.get(K.user),
     redis.get(K.tweets),
     redis.get(K.lastSync),
+    redis.get(K.signals),
   ]);
   const connected = !!user;
   const tweetList = tweets || [];
+  const signalList = Array.isArray(signals) ? signals : [];
+  const timedSignals = signalList.filter((s) => Number.isFinite(Number(s.sourceLatencySeconds)));
+  const processedSignals = signalList.filter((s) => Number.isFinite(Number(s.processingSeconds)));
+  const averageSourceLatency = timedSignals.length
+    ? timedSignals.reduce((sum, s) => sum + Number(s.sourceLatencySeconds), 0) / timedSignals.length
+    : null;
+  const averageProcessing = processedSignals.length
+    ? processedSignals.reduce((sum, s) => sum + Number(s.processingSeconds), 0) / processedSignals.length
+    : null;
 
   const scores = hourlyScores(tweetList);
   const maxScore = Math.max(...scores.map((s) => s.score));
@@ -80,7 +97,34 @@ export default async function Dashboard({ searchParams }) {
           <div className="tile"><div className="value">{tweetList.length}</div><div className="label">Posts tracked</div></div>
           <div className="tile"><div className="value">{fmt(Math.round(avgImpressions))}</div><div className="label">Avg impressions</div></div>
           <div className="tile"><div className="value">{(avgRate * 100).toFixed(2)}%</div><div className="label">Avg engagement rate</div></div>
+          <div className="tile"><div className="value">{fmtDuration(averageSourceLatency)}</div><div className="label">Avg source-to-post</div></div>
+          <div className="tile"><div className="value">{fmtDuration(averageProcessing)}</div><div className="label">Avg processing</div></div>
         </div>
+      )}
+
+      <h2>Speed telemetry <span className="muted">(recorded after posting — never delays news)</span></h2>
+      {signalList.length ? (
+        <table>
+          <thead>
+            <tr>
+              <th>Story</th><th>Source</th><th>Category</th>
+              <th className="num">Source-to-post</th><th className="num">Processing</th>
+            </tr>
+          </thead>
+          <tbody>
+            {signalList.slice(0, 10).map((s, index) => (
+              <tr key={`${s.postedAt || "signal"}-${index}`}>
+                <td className="tweet-text" title={s.headline}>{s.headline || "—"}</td>
+                <td>{s.source || "—"}</td>
+                <td>{s.category || "news"}</td>
+                <td className="num">{fmtDuration(s.sourceLatencySeconds)}</td>
+                <td className="num">{fmtDuration(s.processingSeconds)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div className="banner">Speed data will appear after the next successful post.</div>
       )}
 
       <h2>Best posting windows {tweetList.length < 20 && <span className="muted">(NBA baseline — refines as your data grows)</span>}</h2>

@@ -73,6 +73,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 
 
 def process_item(item: sources.NewsItem) -> None:
+    process_started = time.time()
     # Mark seen first — a bad item shouldn't be retried forever
     state.mark_seen(item.id)
 
@@ -187,6 +188,7 @@ def process_item(item: sources.NewsItem) -> None:
             print(f"  generated {kind} trade card: {result['player']} -> {result['to_team']}")
 
     if tweeter.post(text, image=image):
+        posted_at = time.time()
         state.incr_posts()
         if is_highlight:
             state.incr_highlights()
@@ -194,6 +196,25 @@ def process_item(item: sources.NewsItem) -> None:
             state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
         if event_sig:
             state.mark_seen(event_sig)  # block dupes of this event (any wording)
+        # Record latency only after X confirms the post. This cannot slow the
+        # breaking-news path; at worst a telemetry failure happens after posting.
+        try:
+            state.record_signal({
+                "postedAt": posted_at,
+                "publishedAt": item.published_ts or None,
+                "sourceLatencySeconds": (
+                    round(max(0, posted_at - item.published_ts), 1)
+                    if item.published_ts else None
+                ),
+                "processingSeconds": round(posted_at - process_started, 1),
+                "source": item.source,
+                "category": result.get("category") or "news",
+                "isTrade": bool(result.get("is_trade")),
+                "hasImage": image is not None,
+                "headline": item.title[:180],
+            })
+        except Exception as error:  # noqa: BLE001 - post is already live
+            print(f"  (post telemetry skipped: {error})")
 
 
 def run_cycle() -> None:
