@@ -9,6 +9,7 @@ Run modes:
 import re
 import sys
 import time
+import unicodedata
 
 import card
 import config
@@ -22,14 +23,29 @@ from composer import compose
 # Generational suffixes aren't part of the identifying name.
 _SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
 
+# Letters that don't decompose under NFKD (so combining-mark stripping misses
+# them) — mapped to their plain-ASCII equivalent by hand.
+_TRANSLIT = str.maketrans({
+    "ø": "o", "đ": "d", "ð": "d", "ł": "l", "ħ": "h", "ı": "i",
+    "ß": "s", "æ": "a", "œ": "o", "þ": "t",
+})
+
+
+def _deaccent(s: str) -> str:
+    """Fold accents to plain ASCII so 'Jokić' and 'Jokic', 'Dončić' and
+    'Doncic' become the same — different outlets spell them both ways."""
+    s = (s or "").translate(_TRANSLIT)
+    return "".join(c for c in unicodedata.normalize("NFKD", s)
+                   if not unicodedata.combining(c))
+
 
 def _player_key(name: str) -> str:
-    """A stable per-player key that survives name-form differences between
-    outlets. Keyed on first initial + last name, so "Lu Dort" and "Luguentz
-    Dort" collapse to one player (l+dort) while Jrue and Aaron Holiday stay
-    distinct (j+holiday vs a+holiday). Suffixes like Jr./III are dropped so
-    "Jaren Jackson Jr." and "Jaren Jackson" match."""
-    parts = [p for p in re.sub(r"[^a-z ]+", " ", (name or "").lower()).split()
+    """A stable per-player key that survives name-form AND accent differences
+    between outlets. Keyed on first initial + last name, so "Lu Dort" and
+    "Luguentz Dort" collapse (l+dort), and "Luka Dončić" and "Luka Doncic"
+    collapse (l+doncic), while Jrue and Aaron Holiday stay distinct. Suffixes
+    like Jr./III are dropped so "Jaren Jackson Jr." and "Jaren Jackson" match."""
+    parts = [p for p in re.sub(r"[^a-z ]+", " ", _deaccent(name).lower()).split()
              if p and p not in _SUFFIXES]
     if not parts:
         return ""
