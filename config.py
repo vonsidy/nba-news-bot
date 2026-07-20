@@ -20,10 +20,12 @@ X_ACCESS_SECRET = os.getenv("X_ACCESS_SECRET", "")
 
 DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
-# Every post is an X API write (tweet + media upload). Keep the daily cap modest
-# so the bot posts the highest-value news without running up X API usage; raise
-# MAX_POSTS_PER_DAY in the environment if you move to a bigger X plan.
-MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "6"))
+# Daily post cap. 0 = uncapped, which is the default: the X bill turned out to be
+# ~99% reads (the dashboard's 100-post sync), not writes — posting ran 5-14
+# requests/day against reads in the hundreds. Capping posts was throttling
+# coverage to save money that posting was never spending.
+# Set MAX_POSTS_PER_DAY to a positive number to put the cap back.
+MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "0"))
 
 # Standout-performance highlights (summer league + regular season) are capped
 # separately and only posted for genuine stars / top prospects. They're the

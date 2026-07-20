@@ -220,7 +220,8 @@ def process_item(item: sources.NewsItem) -> None:
     # Mark seen first — a bad item shouldn't be retried forever
     state.mark_seen(item.id)
 
-    if state.posts_today() >= config.MAX_POSTS_PER_DAY:
+    # A cap of 0 means uncapped (the default) — see config.MAX_POSTS_PER_DAY.
+    if config.MAX_POSTS_PER_DAY and state.posts_today() >= config.MAX_POSTS_PER_DAY:
         print("Daily post cap reached; skipping remaining items")
         return
 
@@ -438,8 +439,8 @@ def main() -> None:
         run_cycle()
         return
 
-    print(f"Polling {len(config.FEEDS)} feeds every {config.POLL_SECONDS}s, "
-          f"max {config.MAX_POSTS_PER_DAY} posts/day\n")
+    cap = f"max {config.MAX_POSTS_PER_DAY} posts/day" if config.MAX_POSTS_PER_DAY else "no daily post cap"
+    print(f"Polling {len(config.FEEDS)} feeds every {config.POLL_SECONDS}s, {cap}\n")
     while True:
         try:
             run_cycle()

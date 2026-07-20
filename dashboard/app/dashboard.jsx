@@ -274,7 +274,12 @@ export default function Dashboard({ user, tweets, history, lastSync, botStats, c
         <div className="row">
           {connected ? (
             <>
-              <form action="/api/stats/refresh" method="post"><button className="btn" type="submit">Refresh</button></form>
+              {/* The "Refresh" button is gone on purpose. Each sync pulls 100
+                  posts from the X API, so one click cost more than a full day
+                  of the bot's posting — and pressing it repeatedly (which is
+                  what you do when the numbers look wrong) was the single
+                  largest line on the X bill. The weekly cron is the only
+                  scheduled sync now. */}
               <form action="/api/auth/x/disconnect" method="post"><button className="btn secondary" type="submit">Disconnect</button></form>
             </>
           ) : <a className="btn" href="/api/auth/x/login">Connect X account</a>}

@@ -209,7 +209,8 @@ def build() -> dict:
         "hourly": _HOURLY,
         "growth": growth,
         "posts_today": state.posts_today(),
-        "cap": MAX_POSTS_PER_DAY,
+        # null when uncapped, so the dashboard doesn't render "0 posts/day"
+        "cap": MAX_POSTS_PER_DAY or None,
     }
 
 
