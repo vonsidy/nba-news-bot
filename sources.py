@@ -56,17 +56,30 @@ def content_key(title: str) -> str:
     return " ".join(sorted(set(toks))[:10])
 
 
+# Per-feed health from the most recent fetch_all() call: a list of
+# {source, url, ok, count, newest_ts, error}. The dashboard shows this as the
+# "sources" list so you can see at a glance which feeds are live vs. quiet/down.
+LAST_HEALTH: list[dict] = []
+
+
 def fetch_all() -> list[NewsItem]:
     """Fetch every configured feed. Feeds that error are skipped silently
-    (one dead feed shouldn't stall the loop)."""
+    (one dead feed shouldn't stall the loop). Records per-feed health in
+    LAST_HEALTH as a side effect."""
     items: list[NewsItem] = []
+    health: list[dict] = []
     for source, url in FEEDS:
+        ok, err, entries = True, "", []
         try:
             feed = feedparser.parse(url)
-        except Exception:
-            continue
+            entries = feed.entries[:20]
+            if getattr(feed, "bozo", 0) and not entries:
+                ok, err = False, "parse error"
+        except Exception as e:
+            ok, err, entries = False, str(e)[:80], []
+        count, newest = 0, 0.0
         is_gnews = "news.google.com" in url
-        for entry in feed.entries[:20]:
+        for entry in entries:
             eid = _entry_id(entry)
             if not eid:
                 continue
@@ -84,6 +97,9 @@ def fetch_all() -> list[NewsItem]:
                     src = title.rsplit(" - ", 1)[1].strip()
                 if " - " in title:
                     title = title.rsplit(" - ", 1)[0].strip()
+            ts = _entry_ts(entry)
+            count += 1
+            newest = max(newest, ts)
             items.append(
                 NewsItem(
                     id=eid,
@@ -91,9 +107,13 @@ def fetch_all() -> list[NewsItem]:
                     title=title,
                     summary=_clean(entry.get("summary") or "")[:1500],
                     link=entry.get("link") or "",
-                    published_ts=_entry_ts(entry),
+                    published_ts=ts,
                 )
             )
+        health.append({"source": source, "url": url, "ok": ok,
+                       "count": count, "newest_ts": newest, "error": err})
+    global LAST_HEALTH
+    LAST_HEALTH = health
     # Newest first: on a breaking-news account the freshest item should go out
     # first, and if we hit the daily cap it's the stale tail that gets dropped,
     # never the latest story.

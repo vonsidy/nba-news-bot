@@ -93,6 +93,7 @@ def maybe_post_engagement() -> None:
     image = card.make_debate_card(post["title"], players)
     if image and tweeter.post(post["caption"], image=image):
         state.mark_seen(f"engage:{day}")
+        state.record_post(post["caption"], "debate", True)
         print(f"  posted daily debate card: {' '.join(post['title'])}")
 
 
@@ -342,6 +343,7 @@ def process_item(item: sources.NewsItem) -> None:
 
     if tweeter.post(text, image=image):
         state.incr_posts()
+        state.record_post(result["tweet"].strip(), result.get("category", ""), bool(image))
         if is_highlight:
             state.incr_highlights()
         if sig:
@@ -367,7 +369,13 @@ def run_cycle() -> None:
     candidate_age = max(config.FRESH_MAX_AGE_MIN, config.TRADE_MAX_AGE_MIN) * 60
     # is_fresh (local, free) is checked BEFORE is_seen (a Redis read), so we only
     # hit Redis for items new enough to matter — far fewer Redis commands.
-    fresh = [i for i in sources.fetch_all()
+    all_items = sources.fetch_all()
+    # Snapshot which feeds are live/quiet/down for the dashboard's "sources" view.
+    try:
+        state.set_feed_health(sources.LAST_HEALTH)
+    except Exception as e:
+        print(f"feed-health snapshot error (continuing): {e}")
+    fresh = [i for i in all_items
              if sources.is_fresh(i, candidate_age) and not state.is_seen(i.id)]
 
     # Collapse the same story arriving from multiple feeds into ONE item BEFORE
