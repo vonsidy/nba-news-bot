@@ -78,6 +78,12 @@ FEEDS = [
     # the most reliable marker of a real scoop, and this catches stories worded
     # in ways the keyword queries miss ("finalizing a deal", "intends to sign").
     ("Google News", _GNEWS + "(%22Shams%20Charania%22%20OR%20%22Marc%20Stein%22%20OR%20%22Chris%20Haynes%22%20OR%20%22Jake%20Fischer%22)%20when%3A1h"),
+    # Free-agency / trade chatter / decision-watch — the speculation that drives
+    # the most engagement ("star reportedly deciding today", "weighing offers",
+    # "requested a trade", "suitors"). The keyword feeds above only catch DONE
+    # deals; this catches the build-up. The composer still requires a named
+    # source and never invents a rumor. Wider when: since chatter lives all day.
+    ("Google News", _GNEWS + "NBA%20(%22free%20agency%22%20OR%20%22expected%20to%20sign%22%20OR%20%22expected%20to%20decide%22%20OR%20%22trade%20request%22%20OR%20%22requested%20a%20trade%22%20OR%20%22meeting%20with%22%20OR%20%22in%20talks%22%20OR%20suitors%20OR%20%22market%20for%22)%20when%3A2h"),
     # Just-finished games — result headlines carry the final score, which feeds
     # the FINAL score card. Tight window: a score is only fresh at the buzzer.
     ("Google News", _GNEWS + "NBA%20(beat%20OR%20beats%20OR%20defeats%20OR%20%22final%20score%22%20OR%20%22holds%20off%22)%20when%3A1h"),

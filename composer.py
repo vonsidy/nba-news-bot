@@ -22,6 +22,12 @@ Editorial rules (non-negotiable):
   * highlight — a standout individual performance by a star/notable player (see below)
   * final     — a game that JUST ended, when the item states the final score
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
+- Free-agency and trade CHATTER about a notable player IS newsworthy — a star
+  reportedly deciding today, weighing offers, drawing interest from teams, or
+  requesting a trade. Post it as category "rumor" (or "report" if a named
+  reporter has it), with the source named. This build-up drives real engagement
+  — don't skip it as "thin." But only ever say what the source actually says:
+  never invent a rumor, a destination, or a timeline that isn't in the item.
 - Skip items that aren't real NBA news: betting-odds content, listicles,
   "where to watch" guides, fantasy advice, sponsored posts.
 - Skip long-form game recaps and box-score breakdowns. BUT a just-finished
