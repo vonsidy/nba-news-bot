@@ -24,6 +24,7 @@ except ImportError:
     _redis = None
 
 _SEEN_KEY = "bot:seen"
+_SIGNALS_KEY = "bot:signals"
 _LOCAL = config.STATE_FILE
 
 
@@ -87,7 +88,8 @@ def _local_load() -> dict:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             pass
-    return {"seen": [], "post_day": "", "post_count": 0, "hl_count": 0}
+    return {"seen": [], "post_day": "", "post_count": 0, "hl_count": 0,
+            "signals": []}
 
 
 def _local_save(d: dict) -> None:
@@ -153,6 +155,26 @@ def incr_highlights() -> None:
             d["post_day"], d["post_count"], d["hl_count"] = _today(), 0, 0
         d["hl_count"] = d.get("hl_count", 0) + 1
         _local_save(d)
+
+
+def record_signal(signal: dict) -> None:
+    """Store post-pipeline telemetry after a post is already live.
+
+    This call is deliberately made after tweeter.post() succeeds, so telemetry
+    can never delay breaking news. Keep only a small rolling window.
+    """
+    item = dict(signal)
+    if _redis:
+        history = _redis.get(_SIGNALS_KEY) or []
+        if not isinstance(history, list):
+            history = []
+        history.insert(0, item)
+        _redis.set(_SIGNALS_KEY, history[:200])
+        return
+    d = _local_load()
+    d.setdefault("signals", []).insert(0, item)
+    d["signals"] = d["signals"][:200]
+    _local_save(d)
 
 
 def backend() -> str:

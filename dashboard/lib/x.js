@@ -10,6 +10,7 @@ export const K = {
   tweets: "x:tweets",     // [{id, text, created_at, metrics}]
   history: "x:history",   // [{date, followers, impressions, engagements}] daily snapshots
   lastSync: "x:last_sync",
+  signals: "bot:signals", // post-publication latency/processing telemetry
 };
 
 function basicAuth() {
