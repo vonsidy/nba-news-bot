@@ -77,6 +77,81 @@ function fmtHour(h) {
   return `${hr}${ampm}`;
 }
 
+/** Aggregate totals across every tracked tweet. */
+export function totals(tweets) {
+  return tweets.reduce(
+    (a, t) => {
+      const m = t.metrics || {};
+      a.impressions += m.impressions || 0;
+      a.likes += m.likes || 0;
+      a.retweets += m.retweets || 0;
+      a.replies += m.replies || 0;
+      a.quotes += m.quotes || 0;
+      a.engagements += (m.likes || 0) + (m.retweets || 0) + (m.replies || 0) + (m.quotes || 0);
+      a.posts += 1;
+      return a;
+    },
+    { impressions: 0, likes: 0, retweets: 0, replies: 0, quotes: 0, engagements: 0, posts: 0 }
+  );
+}
+
+// Tweet category from the composer's prefix convention.
+const CATS = [
+  { key: "Trade", test: (t) => /traded|trade|acquire|deal|sign|waive|claim|extension|re-sign/i.test(t) && !/🔥/.test(t) && !/^\s*FINAL/i.test(t) },
+  { key: "Rumor", test: (t) => /👀|RUMOR/i.test(t) },
+  { key: "Report", test: (t) => /📰|REPORT/i.test(t) },
+  { key: "Official", test: (t) => /🚨|OFFICIAL/i.test(t) },
+  { key: "Highlight", test: (t) => /🔥/.test(t) },
+  { key: "Final", test: (t) => /\bFINAL\b|\bbeat\b|\bdefeat/i.test(t) },
+];
+
+export function categoryOf(text) {
+  const order = ["Rumor", "Report", "Official", "Highlight", "Final", "Trade"];
+  for (const key of order) {
+    const c = CATS.find((c) => c.key === key);
+    if (c && c.test(text || "")) return key;
+  }
+  return "Other";
+}
+
+/** Per-category counts + average engagement rate, sorted by post count. */
+export function categoryBreakdown(tweets) {
+  const map = {};
+  for (const t of tweets) {
+    const c = categoryOf(t.text);
+    (map[c] ||= { key: c, count: 0, impressions: 0, engagements: 0 });
+    const m = t.metrics || {};
+    map[c].count += 1;
+    map[c].impressions += m.impressions || 0;
+    map[c].engagements += (m.likes || 0) + (m.retweets || 0) + (m.replies || 0) + (m.quotes || 0);
+  }
+  return Object.values(map)
+    .map((c) => ({ ...c, rate: c.impressions ? c.engagements / c.impressions : 0 }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/** Top posts by a metric ("impressions" or "rate"). */
+export function topPosts(tweets, by = "impressions", n = 10) {
+  const withData = tweets.filter((t) => (t.metrics?.impressions || 0) > 0);
+  const score = (t) => (by === "rate" ? engagementRate(t.metrics) : t.metrics.impressions);
+  return [...withData].sort((a, b) => score(b) - score(a)).slice(0, n);
+}
+
+/** Daily follower / impressions / engagement series from history snapshots. */
+export function growthSeries(history) {
+  return [...(history || [])].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Change in a history field over the last `days` snapshots. */
+export function delta(history, field, days = 7) {
+  const s = growthSeries(history);
+  if (s.length < 2) return null;
+  const last = s[s.length - 1];
+  const prior = s[Math.max(0, s.length - 1 - days)];
+  if (last[field] == null || prior[field] == null) return null;
+  return last[field] - prior[field];
+}
+
 /** Volume + strategy advice based on the account's actual numbers. */
 export function postingAdvice(tweets, user) {
   const advice = [];
