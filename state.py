@@ -7,6 +7,7 @@ JSON file for local development when Redis env vars are absent.
 
 import json
 import os
+import time
 from datetime import date, timezone, datetime
 
 import config
@@ -153,6 +154,31 @@ def incr_highlights() -> None:
             d["post_day"], d["post_count"], d["hl_count"] = _today(), 0, 0
         d["hl_count"] = d.get("hl_count", 0) + 1
         _local_save(d)
+
+
+def get_flag(key: str) -> bool:
+    """True if a self-expiring flag is currently set. Used for trade dedup that
+    must persist for DAYS (not reset at midnight) so a confirmed deal posts once
+    and never resurfaces from follow-up articles."""
+    if _redis:
+        return bool(_redis.get(key))
+    d = _local_load()
+    exp = (d.get("flags") or {}).get(key)
+    return bool(exp and exp > time.time())
+
+
+def set_flag(key: str, ttl_seconds: int) -> None:
+    """Set a flag that auto-expires after ttl_seconds (so old keys clean up and
+    the same teams can trade again later)."""
+    if _redis:
+        _redis.set(key, "1", ex=ttl_seconds)
+        return
+    d = _local_load()
+    now = time.time()
+    flags = {k: v for k, v in (d.get("flags") or {}).items() if v > now}
+    flags[key] = now + ttl_seconds
+    d["flags"] = flags
+    _local_save(d)
 
 
 def backend() -> str:

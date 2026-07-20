@@ -90,21 +90,14 @@ def _player_key(name: str) -> str:
 
 
 def _event_signature(result: dict) -> str | None:
-    """A signature for the underlying *event*, independent of how any outlet
-    worded the headline, which name form it used, or which destination it named.
-    A player's trade posts AT MOST ONCE PER DAY — every wording ("Lu Dort to
-    Hawks", "Thunder send Luguentz Dort to Atlanta", a three-team-deal writeup)
-    collapses to one key, so the same player never spams the timeline. A
-    DIFFERENT player from the same multi-player trade has his own key and still
-    posts. Highlights are likewise one-per-player-per-day. No dependency on
-    resolving the team, so an unrecognized destination can't slip a dupe through."""
-    player = _player_key(result.get("player"))
-    if not player:
-        return None
-    if result.get("is_trade"):
-        return f"trade:{player}:{state.today_key()}"
+    """Highlight dedup: one standout-performance post per player per day.
+    (Confirmed TRADES are deduped separately by the persistent flags below —
+    they must not resurface across day boundaries. Rumors/reports are NOT
+    capped here, so ongoing chatter about a player can keep posting.)"""
     if result.get("category") == "highlight" or result.get("is_highlight"):
-        return f"hl:{player}:{state.today_key()}"
+        player = _player_key(result.get("player"))
+        if player:
+            return f"hl:{player}:{state.today_key()}"
     return None
 
 
@@ -141,13 +134,35 @@ def _trade_team_set(result: dict, title: str) -> set:
     return teams
 
 
-def _trade_already_posted(teams: set) -> bool:
-    """True if a trade sharing >=2 teams with `teams` already went out today —
-    i.e. it's the same deal, just a different player or a different outlet's
-    wording. Two teams of overlap is the reliable signal: distinct trades rarely
-    involve the same pair on the same day."""
-    day = state.today_key()
-    return sum(1 for t in teams if state.is_seen(f"tt:{t}:{day}")) >= 2
+# A confirmed trade is deduped for this long — DAYS, not until midnight — so
+# follow-up articles that keep a fresh timestamp can't re-post the same deal a
+# day later. Auto-expires so the same teams can trade again down the line.
+_TRADE_TTL = 6 * 24 * 3600
+
+
+def _trade_player_flag(result: dict) -> str | None:
+    """Persistent per-player-move key: this player, to this team, posts once."""
+    p = _player_key(result.get("player"))
+    if not p:
+        return None
+    dest = card.resolve_team(result.get("to_team") or "")
+    return f"traded:{p}:{dest or 'x'}"
+
+
+def _trade_already_posted(teams: set, player_flag: str | None) -> bool:
+    """True if this exact player-move already posted, OR a deal sharing >=2 teams
+    already posted in the last few days (same blockbuster, different player /
+    wording / outlet / day). Persistent, so a trade never resurfaces."""
+    if player_flag and state.get_flag(player_flag):
+        return True
+    return sum(1 for t in teams if state.get_flag(f"tt:{t}")) >= 2
+
+
+def _mark_trade_posted(teams: set, player_flag: str | None) -> None:
+    for t in teams:
+        state.set_flag(f"tt:{t}", _TRADE_TTL)
+    if player_flag:
+        state.set_flag(player_flag, _TRADE_TTL)
 
 # Windows consoles default to cp1252, which crashes on emoji in headlines/tweets
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -187,24 +202,19 @@ def process_item(item: sources.NewsItem) -> None:
         print(f"  duplicate event, skipping: {event_sig}")
         return
 
-    # Trade-level dedup: post a deal ONCE, not once per player it moves. A
-    # 3-team blockbuster (Dort + Risacher + picks) surfaces for days from every
-    # outlet naming a different player — the per-player key above lets each
-    # through, so collapse on the set of teams involved instead.
-    trade_teams = (_trade_team_set(result, f"{item.title} {item.summary}")
-                   if result.get("is_trade") else set())
-    if trade_teams and _trade_already_posted(trade_teams):
-        print(f"  same trade already posted today ({','.join(sorted(trade_teams))}), skipping")
-        return
+    # CONFIRMED-TRADE dedup: post a deal ONCE and never let it resurface. A
+    # 3-team blockbuster (Dort + Risacher + picks) surfaces for DAYS from every
+    # outlet naming a different player — collapse on the set of teams involved,
+    # and the flags persist for days (not until midnight) so the same deal can't
+    # come back a day later. Rumors/reports are deliberately NOT capped here.
+    trade_teams, trade_pflag = set(), None
+    if result.get("is_trade"):
+        trade_teams = _trade_team_set(result, f"{item.title} {item.summary}")
+        trade_pflag = _trade_player_flag(result)
+        if _trade_already_posted(trade_teams, trade_pflag):
+            print(f"  trade already posted ({','.join(sorted(trade_teams)) or trade_pflag}), skipping")
+            return
 
-    # HARD CAP: one post per player per day, across EVERY category (trade, rumor,
-    # report, highlight). The simplest possible rule — once a player's name goes
-    # out today, nothing else about that same player posts until tomorrow. This
-    # is the backstop behind all the wording/team dedup above.
-    pkey = _player_key(result.get("player"))
-    if pkey and state.is_seen(f"pday:{pkey}:{state.today_key()}"):
-        print(f"  {pkey} already posted today — one post per player per day, skipping")
-        return
     if is_final and not event_sig:
         print(f"  final with unresolvable teams, skipping: {item.title[:60]}")
         return
@@ -296,11 +306,10 @@ def process_item(item: sources.NewsItem) -> None:
         if sig:
             state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
         if event_sig:
-            state.mark_seen(event_sig)  # block dupes of this event (any wording)
-        for t in trade_teams:  # block the rest of this multi-player deal today
-            state.mark_seen(f"tt:{t}:{state.today_key()}")
-        if pkey:  # hard one-post-per-player-per-day cap
-            state.mark_seen(f"pday:{pkey}:{state.today_key()}")
+            state.mark_seen(event_sig)  # highlight: one per player per day
+        if result.get("is_trade"):
+            # persistent flags: this deal never resurfaces (any player/wording/day)
+            _mark_trade_posted(trade_teams, trade_pflag)
 
 
 def run_cycle() -> None:

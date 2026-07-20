@@ -23,7 +23,7 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
 # Every post is an X API write (tweet + media upload). Keep the daily cap modest
 # so the bot posts the highest-value news without running up X API usage; raise
 # MAX_POSTS_PER_DAY in the environment if you move to a bigger X plan.
-MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "8"))
+MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "6"))
 
 # Standout-performance highlights (summer league + regular season) are capped
 # separately and only posted for genuine stars / top prospects. They're the
