@@ -32,12 +32,17 @@ MAX_POSTS_PER_DAY = int(os.getenv("MAX_POSTS_PER_DAY", "0"))
 # lowest-value posts, so they're kept few to save X API writes.
 MAX_HIGHLIGHTS_PER_DAY = int(os.getenv("MAX_HIGHLIGHTS_PER_DAY", "4"))
 
-# Backstop, not a throttle: the most items about ONE player that may post in a
-# day. There is no total post cap by design, so this is what bounds a story that
-# slips past the semantic dedup — four outlets rewriting the same signing cost
-# two posts instead of a timeline. Legitimate coverage is unaffected: distinct
-# players are never in competition for this.
-MAX_POSTS_PER_PLAYER = int(os.getenv("MAX_POSTS_PER_PLAYER", "2"))
+# Backstop, not a throttle: the most items about ONE subject (player, or the
+# teams involved when no player is named) that may post in a day. There is no
+# total post cap by design, so this is what bounds a story that slips past the
+# semantic dedup.
+#
+# ONE, not two. Set at 2 initially and that was wrong: six outlets rewriting the
+# Thybulle signing still produced two posts, and two duplicates is still
+# duplicates. A second item about the same subject on the same day is almost
+# always another outlet's rewrite, not new information. Distinct players and
+# teams never compete for this, so real coverage is untouched.
+MAX_POSTS_PER_PLAYER = int(os.getenv("MAX_POSTS_PER_PLAYER", "1"))
 
 # Evergreen debate cards ("What team is one move away?", "Keep 3, cut the rest").
 # Off by owner's call 2026-07-20: they read as filler on the timeline and weren't
