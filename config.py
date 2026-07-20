@@ -7,7 +7,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL = "claude-opus-4-8"
+# The tweet-writer only classifies an item and rewrites it to <=250 chars —
+# Haiku handles that easily at a fraction of Opus's cost (this is the bot's
+# only pay-per-use API, so the model choice is essentially the whole bill).
+# Override with ANTHROPIC_MODEL in the environment to go back to a bigger model.
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 X_API_KEY = os.getenv("X_API_KEY", "")
 X_API_SECRET = os.getenv("X_API_SECRET", "")
