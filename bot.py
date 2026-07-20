@@ -24,13 +24,32 @@ def _norm(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", (s or "").lower())
 
 
+# Generational suffixes aren't part of the identifying name.
+_SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
+
+
+def _player_key(name: str) -> str:
+    """A stable per-player key that survives name-form differences between
+    outlets. Keyed on first initial + last name, so "Lu Dort" and "Luguentz
+    Dort" collapse to one player (l+dort) while Jrue and Aaron Holiday stay
+    distinct (j+holiday vs a+holiday). Suffixes like Jr./III are dropped so
+    "Jaren Jackson Jr." and "Jaren Jackson" match."""
+    parts = [p for p in re.sub(r"[^a-z ]+", " ", (name or "").lower()).split()
+             if p and p not in _SUFFIXES]
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return parts[0]
+    return parts[0][0] + parts[-1]
+
+
 def _event_signature(result: dict) -> str | None:
     """A signature for the underlying *event*, independent of how any one outlet
-    worded the headline. Two stories about the same player moving to the same
-    team collapse to one key, so the bot posts that move exactly once — while a
-    DIFFERENT player from the same multi-player trade gets his own key and still
-    posts. Highlights are keyed per player per day."""
-    player = _norm(result.get("player"))
+    worded the headline OR the name form it used. Two stories about the same
+    player moving to the same team collapse to one key, so the bot posts that
+    move exactly once — while a DIFFERENT player from the same multi-player trade
+    gets his own key and still posts. Highlights are keyed per player per day."""
+    player = _player_key(result.get("player"))
     if not player:
         return None
     if result.get("is_trade"):
