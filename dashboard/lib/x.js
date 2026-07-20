@@ -99,12 +99,20 @@ export async function syncStats() {
   };
   await redis.set(K.user, user);
 
+  // X bills per POST returned, not per request — so max_results was the whole
+  // cost of this sync. Pulling the full 100 every time re-bought posts whose
+  // metrics had long since settled. Fetch a small recent window instead and
+  // MERGE it into what's stored: totals and charts still cover every post the
+  // bot has ever made (more than the old 100-post ceiling, in fact), while each
+  // sync bills for a fraction of that. The window must comfortably exceed the
+  // busiest day's posting — the cron runs daily, so 25 is generous.
+  const WINDOW = Math.min(100, Math.max(5, Number(process.env.X_SYNC_WINDOW) || 25));
   const tl = await xGet(
-    `/users/${user.id}/tweets?max_results=100&exclude=retweets` +
+    `/users/${user.id}/tweets?max_results=${WINDOW}&exclude=retweets` +
     `&tweet.fields=public_metrics,created_at`,
     token
   );
-  const tweets = (tl.data || []).map((t) => ({
+  const fresh = (tl.data || []).map((t) => ({
     id: t.id,
     text: t.text,
     created_at: t.created_at,
@@ -116,6 +124,14 @@ export async function syncStats() {
       quotes: t.public_metrics.quote_count,
     },
   }));
+
+  // Newly fetched metrics win; anything older keeps its last-known values.
+  const stored = (await redis.get(K.tweets)) || [];
+  const byId = new Map(stored.map((t) => [t.id, t]));
+  for (const t of fresh) byId.set(t.id, t);
+  const tweets = [...byId.values()]
+    .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
+    .slice(0, 400);
   await redis.set(K.tweets, tweets);
 
   // Append a daily history point (keep ~90 days)
