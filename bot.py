@@ -188,12 +188,26 @@ _TRADE_TTL = 6 * 24 * 3600
 
 
 def _trade_player_flag(result: dict) -> str | None:
-    """Persistent per-player-move key: this player, to this team, posts once."""
+    """Persistent per-player-move key: this player moved, so post it once.
+
+    Deliberately NOT keyed on the destination. Outlets fill to_team differently
+    for the same event — "LAL" / "Lakers" / empty for a free agent who "chooses"
+    a team — and a destination-keyed flag silently fails to collapse those: the
+    `dest or 'x'` fallback used to produce a DIFFERENT key whenever to_team came
+    back empty, so the same signing posted again. A player moves once; that's the
+    whole key."""
     p = _player_key(result.get("player"))
-    if not p:
-        return None
-    dest = card.resolve_team(result.get("to_team") or "")
-    return f"traded:{p}:{dest or 'x'}"
+    return f"moved:{p}" if p else None
+
+
+def _is_player_move(result: dict) -> bool:
+    """Is this item about a specific player changing teams? Broader than the
+    model's is_trade flag on purpose — a free-agent signing arrives as "chooses
+    Lakers in free agency", "signs one-year deal", and "adds Thybulle, reaches 16
+    guaranteed contracts" from four outlets, and only some of those come back
+    with is_trade set. Any of them naming a player and a destination is the same
+    event and must dedup against it."""
+    return bool(result.get("is_trade") or (result.get("player") and result.get("to_team")))
 
 
 def _trade_already_posted(teams: set, player_flag: str | None) -> bool:
@@ -255,8 +269,12 @@ def process_item(item: sources.NewsItem) -> None:
     # outlet naming a different player — collapse on the set of teams involved,
     # and the flags persist for days (not until midnight) so the same deal can't
     # come back a day later. Rumors/reports are deliberately NOT capped here.
+    # A free-agent signing touches ONE team, so the ">=2 shared teams" rule below
+    # can never fire for it — the player flag is the only thing standing between
+    # you and four posts about the same signing. Gate on _is_player_move, not on
+    # the model's is_trade alone.
     trade_teams, trade_pflag = set(), None
-    if result.get("is_trade"):
+    if _is_player_move(result):
         trade_teams = _trade_team_set(result, f"{item.title} {item.summary}")
         trade_pflag = _trade_player_flag(result)
         if _trade_already_posted(trade_teams, trade_pflag):
@@ -356,8 +374,8 @@ def process_item(item: sources.NewsItem) -> None:
             state.mark_seen(f"sig:{sig}")  # block dupes of this story going forward
         if event_sig:
             state.mark_seen(event_sig)  # highlight: one per player per day
-        if result.get("is_trade"):
-            # persistent flags: this deal never resurfaces (any player/wording/day)
+        if _is_player_move(result):
+            # persistent flags: this move never resurfaces (any outlet/wording/day)
             _mark_trade_posted(trade_teams, trade_pflag)
 
 
