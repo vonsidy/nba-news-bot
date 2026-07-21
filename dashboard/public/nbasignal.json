@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T18:13:50Z",
+  "updated": "2026-07-21T18:21:30Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -69,51 +69,51 @@
     {
       "label": "Trades & signings",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 20,
-      "newest_ts": 1784655792
+      "status": "down",
+      "count": 0,
+      "newest_ts": 0.0
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 10,
-      "newest_ts": 1784657470
+      "status": "down",
+      "count": 0,
+      "newest_ts": 0.0
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 1,
-      "newest_ts": 1784654675
+      "status": "down",
+      "count": 0,
+      "newest_ts": 0.0
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 4,
-      "newest_ts": 1784656440
+      "status": "down",
+      "count": 0,
+      "newest_ts": 0.0
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 5,
-      "newest_ts": 1784656570
+      "status": "down",
+      "count": 0,
+      "newest_ts": 0.0
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 20,
-      "newest_ts": 1784657082
+      "status": "down",
+      "count": 0,
+      "newest_ts": 0.0
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784652655
+      "newest_ts": 1784656420
     },
     {
       "label": "ESPN",
@@ -182,5 +182,17 @@
     "spent_usd": 0.0202,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
-  }
+  },
+  "insiders": [
+    {
+      "handle": "ShamsCharania",
+      "ok": false,
+      "note": "no successful poll yet"
+    },
+    {
+      "handle": "TheSteinLine",
+      "ok": false,
+      "note": "no successful poll yet"
+    }
+  ]
 }
