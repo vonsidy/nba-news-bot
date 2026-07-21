@@ -15,6 +15,7 @@ import card
 import composer
 import config
 import engage
+import insiders
 import photos
 import sources
 import state
@@ -183,10 +184,14 @@ def _insider_first(items: list) -> list:
     The hourly pace allows only a few paid calls, and without this an insider
     scoop competes for those slots on equal terms with an aggregator's opinion
     piece that happens to be newer. Same budget, better posts."""
-    ranked = sorted(
-        enumerate(items),
-        key=lambda p: (0 if _INSIDER_RE.search(f"{p[1].title} {p[1].summary}") else 1, p[0]),
-    )
+    def rank(item) -> int:
+        # A tweet READ FROM the insider outranks an article that merely quotes
+        # one: it is the same scoop minutes earlier, and it is already paid for.
+        if item.source.startswith("@"):
+            return 0
+        return 1 if _INSIDER_RE.search(f"{item.title} {item.summary}") else 2
+
+    ranked = sorted(enumerate(items), key=lambda p: (rank(p[1]), p[0]))
     return [i for _, i in ranked]
 
 
@@ -267,6 +272,20 @@ def _worth_composing(item: sources.NewsItem) -> bool:
         return False
     if _OTHER_SPORT_RE.search(t) and not _NBA_RE.search(t):
         return False
+    # The event gate is exempted for insider tweets, on purpose.
+    #
+    # _EVENT_RE was tuned against ARTICLE HEADLINES, which are written to
+    # announce ("Lakers sign X", "Report: Y traded to Z"). Insiders tweet in
+    # prose — "X is headed to the Lakers", "Y has informed the team he intends
+    # to test the market" — and half of those phrasings match nothing in the
+    # regex. Dropping one would waste the $0.005 already spent reading it AND
+    # lose the scoop the account exists to break.
+    #
+    # The junk and other-sport filters above still apply, and Claude still gets
+    # the final say on newsworthiness at $0.00048 — which is a twentieth of what
+    # the read cost. Paying it to be sure is the right trade.
+    if item.source.startswith("@"):
+        return True
     if config.REQUIRE_NEWS_EVENT and not _EVENT_RE.search(item.title):
         return False
     return True
@@ -714,6 +733,13 @@ def run_cycle() -> None:
     # is_fresh (local, free) is checked BEFORE is_seen (a Redis read), so we only
     # hit Redis for items new enough to matter — far fewer Redis commands.
     all_items = sources.fetch_all()
+    # Insider tweets join the same funnel as RSS. They arrive first — a scoop
+    # read from the tweet beats the same scoop read from an article about the
+    # tweet — and _insider_first() below keeps them at the front of the queue.
+    try:
+        all_items = insiders.fetch_insider_items() + all_items
+    except Exception as e:
+        print(f"insider X read error (continuing): {e}")
     # Snapshot which feeds are live/quiet/down for the dashboard's "sources" view.
     try:
         state.set_feed_health(sources.LAST_HEALTH)
@@ -810,6 +836,8 @@ def run_cycle() -> None:
             if process_item(item, result):
                 time.sleep(2)  # small gap between posts, looks less bot-bursty
 
+    if config.INSIDER_X_ENABLED:
+        print(f"  {insiders.usage_line()}")
     u = composer.USAGE
     print(f"Claude usage this cycle: {u['calls']} calls, {u['input']} in / "
           f"{u['output']} out tokens (cache: {u['cache_read']} read, "

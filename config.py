@@ -13,7 +13,35 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 # Override with ANTHROPIC_MODEL in the environment to go back to a bigger model.
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
+# ---- Insider X accounts (insiders.py) --------------------------------------
+# Read the scoop from the tweet instead of waiting for an outlet to write it up
+# and Google to index it — that chain runs 5-20 minutes behind, which on a trade
+# is the whole difference between first and forty-first.
+#
+# COST: X bills third-party reads at $0.005 per RESOURCE RETURNED. The bill is
+# therefore set by how much these accounts POST, not by how often we poll, and
+# insiders.py uses `since_id` so an idle poll returns nothing and costs nothing.
+#
+# Two accounts, not four. Shams breaks the most; Stein is independent and owns
+# coaching and front-office moves, which is the category Shams covers least — so
+# he adds the most per dollar. Haynes and Fischer overlap Shams on player
+# transactions, and paying $0.005 to hear the same scoop twice is not worth it.
+# Estimated ~25 originals/day between them, ~$0.125/day, ~$3.75/month.
+INSIDER_X_ENABLED = os.getenv("INSIDER_X_ENABLED", "1").strip().lower() in ("1", "true", "yes")
+INSIDER_X_ACCOUNTS = [
+    h.strip().lstrip("@") for h in
+    os.getenv("INSIDER_X_ACCOUNTS", "ShamsCharania,TheSteinLine").split(",")
+    if h.strip()
+]
+# Ceiling on tweets pulled per account per poll. A thread-storm is the only way
+# this module can spike, and this is the cap on that: 10 tweets = $0.05 worst
+# case per account per cycle, and anything above it is picked up next poll.
+INSIDER_X_MAX_PER_POLL = int(os.getenv("INSIDER_X_MAX_PER_POLL") or 10)
+
 X_API_KEY = os.getenv("X_API_KEY", "")
+# App-only bearer token. /2/users/:id/tweets is happiest with app auth; tweepy
+# falls back to the OAuth1 user context below when this is unset.
+X_BEARER_TOKEN = os.getenv("X_BEARER_TOKEN", "")
 X_API_SECRET = os.getenv("X_API_SECRET", "")
 X_ACCESS_TOKEN = os.getenv("X_ACCESS_TOKEN", "")
 X_ACCESS_SECRET = os.getenv("X_ACCESS_SECRET", "")

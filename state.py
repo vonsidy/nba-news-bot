@@ -303,6 +303,31 @@ def incr_highlights() -> None:
         _local_save(d)
 
 
+def get_str(key: str) -> str | None:
+    """A small durable string. Used for the X insider poller's per-account
+    `since_id` watermark and its cached numeric user ids.
+
+    Deliberately NEVER expires. The watermark is the only thing standing
+    between a 60-second poll and being billed $0.005 for the same tweet over
+    and over — if it vanished, the next poll would re-read the account's whole
+    recent timeline and pay for all of it again."""
+    if _redis:
+        val = _redis.get(key)
+        return str(val) if val is not None else None
+    return (_local_load().get("strings") or {}).get(key)
+
+
+def set_str(key: str, value: str) -> None:
+    if _redis:
+        _redis.set(key, value)
+        return
+    d = _local_load()
+    s = d.get("strings") or {}
+    s[key] = value
+    d["strings"] = s
+    _local_save(d)
+
+
 def get_flag(key: str) -> bool:
     """True if a self-expiring flag is currently set. Used for trade dedup that
     must persist for DAYS (not reset at midnight) so a confirmed deal posts once

@@ -63,6 +63,9 @@ jobs:
           # line won. config.py is the one place that decides it.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY: ${{ secrets.X_API_KEY }}
+          # Optional: app-only auth for reading insider timelines. Unset is fine —
+          # insiders.py falls back to the OAuth1 user context below.
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
