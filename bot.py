@@ -257,8 +257,20 @@ def _is_player_move(result: dict) -> bool:
     Lakers in free agency", "signs one-year deal", and "adds Thybulle, reaches 16
     guaranteed contracts" from four outlets, and only some of those come back
     with is_trade set. Any of them naming a player and a destination is the same
-    event and must dedup against it."""
-    return bool(result.get("is_trade") or (result.get("player") and result.get("to_team")))
+    event and must dedup against it.
+
+    EITHER endpoint counts, not just the destination. Outlets report the same
+    trade from whichever end they know — "Johnson dealt in Nets-Nuggets swap"
+    gives a from_team and no to_team, and files as a rumor, so a
+    destination-only rule left it undetected. Same-day that was invisible,
+    because the per-player backstop caught it anyway; the day after, the
+    backstop resets and the item posted a second time about a player whose
+    move was already reported. The schema defines from_team as the team the
+    player is LEAVING, so it never fills for a story that isn't a move."""
+    return bool(
+        result.get("is_trade")
+        or (result.get("player") and (result.get("to_team") or result.get("from_team")))
+    )
 
 
 def _trade_already_posted(teams: set, player_flag: str | None) -> bool:

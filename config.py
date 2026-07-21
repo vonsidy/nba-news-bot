@@ -19,11 +19,19 @@ X_ACCESS_TOKEN = os.getenv("X_ACCESS_TOKEN", "")
 X_ACCESS_SECRET = os.getenv("X_ACCESS_SECRET", "")
 
 DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
-POLL_SECONDS = int(os.getenv("POLL_SECONDS", "90"))
-# Daily post cap. 0 = uncapped, which is the default: the X bill turned out to be
-# ~99% reads (the dashboard's 100-post sync), not writes — posting ran 5-14
-# requests/day against reads in the hundreds. Capping posts was throttling
-# coverage to save money that posting was never spending.
+# Detection lag averages half this, so it is the single biggest lever on how
+# fast a scoop goes out. 60s is affordable now that fetch_all sweeps all 14
+# feeds concurrently (~1s, was ~7.4s serial) — the cycle is nearly all sleep.
+# Raise it if the dashboard's feed-health view starts showing errors: polling
+# Google News harder risks throttling, which costs more latency than it buys.
+POLL_SECONDS = int(os.getenv("POLL_SECONDS", "60"))
+# Daily post cap. 0 = uncapped.
+# CORRECTION (2026-07-21): this used to say posting cost nothing, because reads
+# ran in the hundreds of requests/day against 5-14 for posts. That read the
+# wrong meter. Reads bill per RESOURCE returned, not per request, while a post
+# containing a url bills at $0.200 — so posting was 42% of the bill and the
+# largest single line. Posts are ~$0.015 each now that no url goes out (see
+# INCLUDE_SOURCE_LINK), so the cap is again about editorial volume, not cost.
 # Set MAX_POSTS_PER_DAY to a positive number to put the cap back.
 # `or 0` not a default: an unset GitHub Actions variable arrives as an EMPTY
 # STRING, not as absent, and int("") raises. Empty means uncapped.

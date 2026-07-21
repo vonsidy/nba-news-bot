@@ -148,8 +148,59 @@ def test_non_player_news_is_bounded():
     print(f"non-player news: bounded to {survived} per team  OK")
 
 
+def test_traded_player_posts_once():
+    """The trade half of the same guarantee. POSTS above is a free-agent
+    signing; a trade differs in that from_team is populated and outlets
+    disagree about BOTH endpoints — abbreviation, nickname, full name, or
+    missing entirely — and some file it as a rumor with is_trade unset. Keyed
+    on the player alone, every one of those collapses to a single post."""
+    flags = {}
+    state.get_flag = lambda k: k in flags
+    state.set_flag = lambda k, ttl: flags.__setitem__(k, ttl)
+
+    trade = [
+        ("Woj 'Nets trade Cam Johnson to Nuggets'",
+         {"player": "Cam Johnson", "from_team": "BKN", "to_team": "DEN", "is_trade": True}),
+        ("ESPN 'Nuggets acquire Cameron Johnson from Brooklyn'",
+         {"player": "Cameron Johnson", "from_team": "Brooklyn", "to_team": "Nuggets", "is_trade": True}),
+        ("HoopsHype 'Cam Johnson on the move to Denver'",
+         {"player": "Cam Johnson", "from_team": "", "to_team": "Denver", "is_trade": False}),
+        ("RealGM 'Johnson dealt in Nets-Nuggets swap'",
+         {"player": "Cam Johnson", "from_team": "Nets", "to_team": "", "is_trade": False}),
+    ]
+
+    posted = []
+    for label, result in trade:
+        if not bot._is_player_move(result):
+            posted.append(label + "  [NOT DETECTED AS A MOVE]")
+            continue
+        teams = bot._trade_team_set(result, label)
+        pflag = bot._trade_player_flag(result)
+        if bot._trade_already_posted(teams, pflag):
+            continue
+        posted.append(label)
+        bot._mark_trade_posted(teams, pflag)
+
+    assert len(posted) == 1, f"expected 1 post for one trade, got {len(posted)}: {posted}"
+
+    # The flag is persistent, so the same trade resurfacing tomorrow stays dead.
+    next_day = {"player": "Cam Johnson", "from_team": "BKN", "to_team": "DEN", "is_trade": True}
+    assert bot._trade_already_posted(
+        bot._trade_team_set(next_day, "Nets-Nuggets deal official"),
+        bot._trade_player_flag(next_day),
+    ), "a posted trade must not resurface on a later day"
+
+    # The other player in the same deal is a separate subject and may post.
+    counterpart = {"player": "Michael Porter Jr.", "from_team": "DEN", "to_team": "BKN", "is_trade": True}
+    assert not bot._trade_already_posted(
+        set(), bot._trade_player_flag(counterpart)
+    ), "a different player must not be suppressed by another player's flag"
+    print("trade: one player, four phrasings -> 1 post, no next-day resurface  OK")
+
+
 if __name__ == "__main__":
     test_semantic_dedup()
+    test_traded_player_posts_once()
     test_backstop_bounds_damage()
     test_non_player_news_is_bounded()
     print("\nPASS")

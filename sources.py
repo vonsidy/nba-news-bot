@@ -1,6 +1,7 @@
 """Fetch and normalize NBA news items from RSS feeds."""
 
 import calendar
+import concurrent.futures
 import re
 import time
 from dataclasses import dataclass
@@ -87,57 +88,87 @@ def content_key(title: str) -> str:
 LAST_HEALTH: list[dict] = []
 
 
+def _fetch_one(source: str, url: str) -> tuple[list[NewsItem], dict]:
+    """Fetch and normalize a single feed. Never raises: a dead feed returns no
+    items and an error in its health row, so it can't take the cycle down."""
+    items: list[NewsItem] = []
+    ok, err, entries = True, "", []
+    try:
+        feed = feedparser.parse(url)
+        entries = feed.entries[:20]
+        if getattr(feed, "bozo", 0) and not entries:
+            ok, err = False, "parse error"
+    except Exception as e:
+        ok, err, entries = False, str(e)[:80], []
+    count, newest = 0, 0.0
+    is_gnews = "news.google.com" in url
+    for entry in entries:
+        eid = _entry_id(entry)
+        if not eid:
+            continue
+        title = _clean(entry.get("title") or "")
+        src = source
+        if is_gnews:
+            # Google News aggregates every outlet; the real publisher is in
+            # the per-item <source> element (fallback: the ' - Outlet' title
+            # suffix). Resolve it so attribution reads 'per ESPN', not
+            # 'per Google News', and strip the suffix from the headline.
+            esrc = entry.get("source")
+            if isinstance(esrc, dict) and esrc.get("title"):
+                src = esrc["title"].strip()
+            elif " - " in title:
+                src = title.rsplit(" - ", 1)[1].strip()
+            src = _publisher_name(src)
+            if " - " in title:
+                title = title.rsplit(" - ", 1)[0].strip()
+        ts = _entry_ts(entry)
+        count += 1
+        newest = max(newest, ts)
+        items.append(
+            NewsItem(
+                id=eid,
+                source=src,
+                title=title,
+                summary=_clean(entry.get("summary") or "")[:1500],
+                link=entry.get("link") or "",
+                published_ts=ts,
+            )
+        )
+    return items, {"source": source, "url": url, "ok": ok,
+                   "count": count, "newest_ts": newest, "error": err}
+
+
 def fetch_all() -> list[NewsItem]:
-    """Fetch every configured feed. Feeds that error are skipped silently
+    """Fetch every configured feed CONCURRENTLY. Feeds that error are skipped
     (one dead feed shouldn't stall the loop). Records per-feed health in
-    LAST_HEALTH as a side effect."""
+    LAST_HEALTH as a side effect.
+
+    Concurrency is the difference between reacting to a scoop and missing it:
+    fetched one at a time the 14 feeds take ~7.4s of pure network wait per
+    cycle, and a feed that is timing out spends that budget alone while every
+    other feed sits behind it. In parallel the same sweep is ~1.0s, bounded by
+    the slowest single feed rather than their sum. It is all network wait, so
+    threads are the right tool despite the GIL. Results are reassembled in
+    FEEDS order so the health view and item order stay deterministic."""
+    results: list[tuple[list[NewsItem], dict] | None] = [None] * len(FEEDS)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(16, len(FEEDS) or 1)) as ex:
+        futures = {ex.submit(_fetch_one, s, u): i for i, (s, u) in enumerate(FEEDS)}
+        for fut in concurrent.futures.as_completed(futures):
+            i = futures[fut]
+            try:
+                results[i] = fut.result()
+            except Exception as e:  # _fetch_one is already total; belt and braces
+                src, url = FEEDS[i]
+                results[i] = ([], {"source": src, "url": url, "ok": False,
+                                   "count": 0, "newest_ts": 0.0, "error": str(e)[:80]})
+
     items: list[NewsItem] = []
     health: list[dict] = []
-    for source, url in FEEDS:
-        ok, err, entries = True, "", []
-        try:
-            feed = feedparser.parse(url)
-            entries = feed.entries[:20]
-            if getattr(feed, "bozo", 0) and not entries:
-                ok, err = False, "parse error"
-        except Exception as e:
-            ok, err, entries = False, str(e)[:80], []
-        count, newest = 0, 0.0
-        is_gnews = "news.google.com" in url
-        for entry in entries:
-            eid = _entry_id(entry)
-            if not eid:
-                continue
-            title = _clean(entry.get("title") or "")
-            src = source
-            if is_gnews:
-                # Google News aggregates every outlet; the real publisher is in
-                # the per-item <source> element (fallback: the ' - Outlet' title
-                # suffix). Resolve it so attribution reads 'per ESPN', not
-                # 'per Google News', and strip the suffix from the headline.
-                esrc = entry.get("source")
-                if isinstance(esrc, dict) and esrc.get("title"):
-                    src = esrc["title"].strip()
-                elif " - " in title:
-                    src = title.rsplit(" - ", 1)[1].strip()
-                src = _publisher_name(src)
-                if " - " in title:
-                    title = title.rsplit(" - ", 1)[0].strip()
-            ts = _entry_ts(entry)
-            count += 1
-            newest = max(newest, ts)
-            items.append(
-                NewsItem(
-                    id=eid,
-                    source=src,
-                    title=title,
-                    summary=_clean(entry.get("summary") or "")[:1500],
-                    link=entry.get("link") or "",
-                    published_ts=ts,
-                )
-            )
-        health.append({"source": source, "url": url, "ok": ok,
-                       "count": count, "newest_ts": newest, "error": err})
+    for r in results:
+        if r is None:
+            continue
+        items.extend(r[0])
+        health.append(r[1])
     global LAST_HEALTH
     LAST_HEALTH = health
     # Newest first: on a breaking-news account the freshest item should go out

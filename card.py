@@ -7,6 +7,8 @@ card falls back to the original trademark-safe color-roundel badges, so a CDN
 hiccup never breaks a post and the safe mode is one env var away.
 """
 
+from __future__ import annotations
+
 import io
 import os
 import urllib.request
