@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T03:22:22Z",
+  "updated": "2026-07-21T09:34:23Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Hawks acquire Luguentz Dort in trade. Full pick details revealed.",
+      "cat": "Official",
+      "ts": 1784612224.7887874,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Jalen Wilson agrees to a two-way deal with the Atlanta Hawks. The 2023 draft pick spent last season with Brooklyn.",
       "cat": "Official",
@@ -59,63 +65,63 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784599560
+      "newest_ts": 1784625413
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1784603588
+      "count": 1,
+      "newest_ts": 1784624422
     },
     {
       "label": "Star highlights",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1784603251
+      "count": 10,
+      "newest_ts": 1784625413
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 3,
-      "newest_ts": 1784603384
+      "status": "stale",
+      "count": 0,
+      "newest_ts": 0.0
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1784602920
+      "count": 1,
+      "newest_ts": 1784623470
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1784603251
+      "count": 1,
+      "newest_ts": 1784624400
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 18,
-      "newest_ts": 1784603384
+      "count": 13,
+      "newest_ts": 1784625777
     },
     {
       "label": "Game finals",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1784602800
+      "count": 1,
+      "newest_ts": 1784623800
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784603432
+      "newest_ts": 1784613526
     },
     {
       "label": "HoopsHype",
@@ -136,7 +142,7 @@
       "publisher": "Yahoo Sports",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784600340
+      "newest_ts": 1784625305
     },
     {
       "label": "CBS Sports",
@@ -202,6 +208,6 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 3,
+  "posts_today": 4,
   "cap": null
 }
