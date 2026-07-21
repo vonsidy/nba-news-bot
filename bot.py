@@ -98,6 +98,7 @@ _NBA_TOKENS = sorted(
     key=len, reverse=True,
 )
 _NBA_RE = re.compile(r"(?i)\b(nba|" + "|".join(re.escape(x) for x in _NBA_TOKENS) + r")\b")
+_TEAM_WORDS = {t.lower() for t in card.TEAMS} | {a.lower() for a in card._ALIASES if len(a) > 3}
 
 
 # Does the HEADLINE assert something happened? Transactions, roster and staff
@@ -121,6 +122,61 @@ _EVENT_RE = re.compile(
     r"|\bexpected to\b|\bintends? to\b|\bfinalizing\b|\bbeat\b|\bdefeat"
     r"|\bfinal score\b|career-high|triple-double)"
 )
+
+
+# A person's name in a headline: two capitalised words, neither an NBA team.
+# The inner class allows a capital mid-word so LeBron, DeAndre, JaVale and
+# McGee parse — an [A-Z][a-z]+ pattern silently misses every one of them, and
+# missing them is exactly the case this is for.
+_NAME_PAIR = re.compile(r"\b([A-Z][a-zA-Z'’]{2,})\s+([A-Z][a-zA-Z'’.]{1,})\b")
+# Capitalised pairs that are not people. Title-cased headlines produce a lot of
+# these and every one is a chance to merge two unrelated stories.
+_NOT_A_NAME = {
+    "free agency", "summer league", "trade rumors", "trade rumor", "new york",
+    "los angeles", "nba trade", "the nba", "this week", "last season",
+    "training camp", "draft pick", "second round", "first round",
+}
+
+
+def _headline_names(title: str) -> set[str]:
+    """People a headline is about, normalised. Empty when it names nobody."""
+    out = set()
+    for m in _NAME_PAIR.finditer(title):
+        a, b = m.group(1).lower(), m.group(2).lower().rstrip("'’.")
+        if a in _TEAM_WORDS or b in _TEAM_WORDS:
+            continue
+        pair = _deaccent(f"{a} {b}")
+        if pair in _NOT_A_NAME:
+            continue
+        out.add(pair)
+    return out
+
+
+def _collapse_same_story(items: list) -> list:
+    """One item per person per cycle, chosen before anything is paid for.
+
+    A single story arrives from a dozen outlets with a dozen different
+    headlines, so content_key (a bag of words) does not collapse them: one
+    measured cycle carried EIGHT separate articles on the same Rich Paul /
+    LeBron story, none of which shared enough wording to dedup. Every one of
+    them would have been a paid call, and MAX_POSTS_PER_PLAYER means at most
+    one could ever have been published.
+
+    Items arrive newest-first, so the survivor is the freshest article about
+    each story. Headlines naming nobody are never merged — a name is the only
+    evidence used, and no name means no evidence."""
+    kept, claimed = [], {}
+    for item in items:
+        names = _headline_names(item.title)
+        hit = next((n for n in names if n in claimed), None)
+        if hit:
+            print(f"  same story as an earlier item this cycle ({hit}), "
+                  f"not composing: {item.title[:56]}")
+            continue
+        for n in names:
+            claimed[n] = item
+        kept.append(item)
+    return kept
 
 
 def _covered_subject_in(title: str) -> str | None:
@@ -615,6 +671,11 @@ def run_cycle() -> None:
 
     # Free prefilter: junk never reaches Claude.
     worth = [i for i in deduped if _worth_composing(i)]
+    if config.SKIP_COVERED_SUBJECTS:
+        before = len(worth)
+        worth = _collapse_same_story(worth)
+        if before != len(worth):
+            print(f"  collapsed {before - len(worth)} same-story item(s) before composing")
     if not fresh:
         return
     print(f"{len(fresh)} fresh | -{len(fresh) - len(deduped)} cross-feed dupes | "
