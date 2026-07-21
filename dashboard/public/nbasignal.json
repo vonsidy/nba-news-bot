@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T22:08:11Z",
+  "updated": "2026-07-21T22:19:24Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: Summer leaguer Sharp signs two-way deal with Clippers via Sportsnet.ca",
+      "cat": "Report",
+      "ts": 1784672082.9859884,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Jamarion Sharp signs two-way deal with the Clippers. The G League Defensive Player of the Year went undrafted out of Ole Miss in 2024.",
       "cat": "Official",
@@ -75,44 +81,44 @@
     {
       "label": "Trades & signings",
       "publisher": "Google News",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784671260
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0
+      "status": "ok",
+      "count": 6,
+      "newest_ts": 1784671320
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0
+      "status": "ok",
+      "count": 5,
+      "newest_ts": 1784672100
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0
+      "status": "ok",
+      "count": 4,
+      "newest_ts": 1784670516
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0
+      "status": "ok",
+      "count": 6,
+      "newest_ts": 1784669000
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784671932
     },
     {
       "label": "RealGM",
@@ -178,14 +184,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 6,
+  "posts_today": 7,
   "cap": null,
   "claude": {
-    "items_today": 45,
+    "items_today": 59,
     "items_cap": 340,
-    "items_this_hour": 0,
+    "items_this_hour": 14,
     "items_cap_hour": 14,
-    "spent_usd": 0.0216,
+    "spent_usd": 0.0283,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
