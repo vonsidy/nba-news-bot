@@ -176,6 +176,18 @@ BATCH_SCHEMA = {
 }
 
 
+# How many items the LAST compose_batch() had to retry one-at-a-time, so the
+# caller can charge them what they actually cost.
+#
+# The budget is denominated in items and sized for the BATCHED price. A fallback
+# item is ~4.3x dearer, so a systematic batch failure — schema rejected, model
+# dropping results, an API change — would quietly spend 4x the day's money while
+# the item counter read normal. Charging fallbacks their real weight makes the
+# ceiling hold in dollars, which is the thing being protected.
+FALLBACK_COST_WEIGHT = 4
+LAST_FALLBACKS = [0]
+
+
 def _render(item: NewsItem) -> str:
     return (
         f"Source: {item.source}\n"
@@ -269,6 +281,7 @@ def compose_batch(items: list[NewsItem]) -> list[dict | None]:
             out[n] = r
 
     missing = [n for n, r in enumerate(out) if r is None]
+    LAST_FALLBACKS[0] = len(missing)
     if missing:
         print(f"  batch answered {len(items) - len(missing)}/{len(items)}; "
               f"retrying {len(missing)} individually")

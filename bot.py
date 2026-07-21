@@ -791,8 +791,18 @@ def run_cycle() -> None:
     for start in range(0, len(affordable), size):
         chunk = affordable[start:start + size]
         results = composer.compose_batch(chunk)
-        state.incr_claude_calls(len(chunk))
-        state.incr_claude_calls_hour(len(chunk))
+        # Charge what it actually cost, not how many headlines went in: an item
+        # the batch could not answer for was retried individually at ~4.3x the
+        # batched price, and the ceiling is a DOLLAR ceiling wearing an item
+        # count as a costume. Without this a systematic batch failure spends 4x
+        # the day's budget with the counter reading normal.
+        fell_back = composer.LAST_FALLBACKS[0]
+        charge = len(chunk) + fell_back * (composer.FALLBACK_COST_WEIGHT - 1)
+        if fell_back:
+            print(f"  charging {charge} budget units for {len(chunk)} item(s) "
+                  f"({fell_back} un-batched at {composer.FALLBACK_COST_WEIGHT}x)")
+        state.incr_claude_calls(charge)
+        state.incr_claude_calls_hour(charge)
         for item, result in zip(chunk, results):
             # Pace only ACTUAL posts. This used to sleep after every item,
             # skipped ones included — 60 candidates meant two minutes of
