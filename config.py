@@ -210,7 +210,12 @@ FEEDS = [
     # the FINAL score card. Tight window: a score is only fresh at the buzzer.
     ("Google News", _GNEWS + "NBA%20(beat%20OR%20beats%20OR%20defeats%20OR%20%22final%20score%22%20OR%20%22holds%20off%22)%20when%3A1h"),
     ("RealGM", "https://basketball.realgm.com/rss/wiretap/0/0.xml"),
-    ("HoopsHype", "https://hoopshype.com/feed/"),
+    # HoopsHype removed 2026-07-21: the feed is gone, not flaky. Every variant
+    # (/feed/, /rss/, www, /feed/rss/) 301s to www.hoopshype.com and then 404s
+    # with an HTML error page — the site moved onto the Gannett platform and
+    # dropped RSS. It had been silently contributing zero items while still
+    # showing up as a source in the dashboard's health view, which is worse
+    # than being absent: it looked like coverage that wasn't there.
     ("ESPN", "https://www.espn.com/espn/rss/nba/news"),
     ("Yahoo Sports", "https://sports.yahoo.com/nba/rss.xml"),
     ("CBS Sports", "https://www.cbssports.com/rss/headlines/nba/"),
