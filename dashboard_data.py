@@ -18,8 +18,14 @@ import os
 import re
 import time
 
+import config
 import state
 from config import FEEDS, MAX_POSTS_PER_DAY
+
+# Measured on the live feeds 2026-07-21: a headline costs ~$0.00048 batched at
+# 25/call on Haiku 4.5. A budget "item" is priced at exactly this, which is why
+# an un-batched fallback is charged several of them (composer.FALLBACK_COST_WEIGHT).
+_USD_PER_ITEM = 0.00048
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                    "dashboard", "public", "nbasignal.json")
@@ -211,6 +217,27 @@ def build() -> dict:
         "posts_today": state.posts_today(),
         # null when uncapped, so the dashboard doesn't render "0 posts/day"
         "cap": MAX_POSTS_PER_DAY or None,
+        # Live Claude spend. The workflow runs one 5h45m job, and GitHub does
+        # not publish a job's log until it ENDS — so until now the only way to
+        # see what the bot was spending was to wait six hours and read it after
+        # the fact. On a $5 balance that is not a report, it is an autopsy.
+        #
+        # These come off the same counter the spend ceiling reads, so the
+        # dashboard shows the number that is actually enforcing the budget
+        # rather than a second estimate that could disagree with it.
+        "claude": {
+            "items_today": state.claude_calls_today(),
+            "items_cap": config.MAX_CLAUDE_ITEMS_PER_DAY or None,
+            "items_this_hour": state.claude_calls_this_hour(),
+            "items_cap_hour": config.MAX_CLAUDE_ITEMS_PER_HOUR or None,
+            # Budget units are priced at the batched rate; a un-batched fallback
+            # is charged FALLBACK_COST_WEIGHT of them, so this tracks dollars
+            # even when batching degrades.
+            "spent_usd": round(state.claude_calls_today() * _USD_PER_ITEM, 4),
+            "budget_usd": round((config.MAX_CLAUDE_ITEMS_PER_DAY or 0) * _USD_PER_ITEM, 4),
+            # ET, like every other day boundary — see state._today().
+            "day_resets": "midnight ET",
+        },
     }
 
 
