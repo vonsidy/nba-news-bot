@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T18:26:07Z",
+  "updated": "2026-07-21T20:44:00Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -175,11 +175,11 @@
   "posts_today": 5,
   "cap": null,
   "claude": {
-    "items_today": 42,
+    "items_today": 43,
     "items_cap": 340,
-    "items_this_hour": 14,
+    "items_this_hour": 0,
     "items_cap_hour": 14,
-    "spent_usd": 0.0202,
+    "spent_usd": 0.0206,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
