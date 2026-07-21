@@ -194,7 +194,8 @@ FEEDS = [
     ("Google News", _GNEWS + "NBA%20(injury%20OR%20injured%20OR%20suspended%20OR%20%22ruled%20out%22%20OR%20%22out%20for%22)%20when%3A1h"),
     # Star highlights / standout performances (summer league + regular season).
     # The composer filters these down to genuine stars / top prospects.
-    ("Google News", _GNEWS + "NBA%20(%22career-high%22%20OR%20%22triple-double%22%20OR%20%22summer%20league%22%20OR%20%22game-winner%22%20OR%20%2240%20points%22%20OR%20%2250%20points%22)%20when%3A1h"),
+    # dropped 2026-07-21 — summer-league noise only; 1 paid call, 0 transactions
+    # ("Google News", _GNEWS + "NBA%20(%22career-high%22%20OR%20%22triple-double%22%20OR%20%22summer%20league%22%20OR%20%22game-winner%22%20OR%20%2240%20points%22%20OR%20%2250%20points%22)%20when%3A1h"),
     # Extensions / re-signings / buyouts — high-engagement roster moves the
     # trade query's keywords (traded/signs/waived) don't catch.
     ("Google News", _GNEWS + "NBA%20(%22extension%22%20OR%20%22re-signs%22%20OR%20%22re-signing%22%20OR%20%22buyout%22)%20when%3A1h"),
@@ -220,7 +221,8 @@ FEEDS = [
     ("Google News", _GNEWS + "NBA%20(%22free%20agency%22%20OR%20%22expected%20to%20sign%22%20OR%20%22expected%20to%20decide%22%20OR%20%22trade%20request%22%20OR%20%22requested%20a%20trade%22%20OR%20%22meeting%20with%22%20OR%20%22in%20talks%22%20OR%20suitors%20OR%20%22market%20for%22)%20when%3A2h"),
     # Just-finished games — result headlines carry the final score, which feeds
     # the FINAL score card. Tight window: a score is only fresh at the buzzer.
-    ("Google News", _GNEWS + "NBA%20(beat%20OR%20beats%20OR%20defeats%20OR%20%22final%20score%22%20OR%20%22holds%20off%22)%20when%3A1h"),
+    # dropped 2026-07-21 — there are no final scores in the offseason
+    # ("Google News", _GNEWS + "NBA%20(beat%20OR%20beats%20OR%20defeats%20OR%20%22final%20score%22%20OR%20%22holds%20off%22)%20when%3A1h"),
     ("RealGM", "https://basketball.realgm.com/rss/wiretap/0/0.xml"),
     # HoopsHype removed 2026-07-21: the feed is gone, not flaky. Every variant
     # (/feed/, /rss/, www, /feed/rss/) 301s to www.hoopshype.com and then 404s
@@ -229,7 +231,10 @@ FEEDS = [
     # showing up as a source in the dashboard's health view, which is worse
     # than being absent: it looked like coverage that wasn't there.
     ("ESPN", "https://www.espn.com/espn/rss/nba/news"),
-    ("Yahoo Sports", "https://sports.yahoo.com/nba/rss.xml"),
-    ("CBS Sports", "https://www.cbssports.com/rss/headlines/nba/"),
-    ("SB Nation", "https://www.sbnation.com/rss/nba/index.xml"),
+    # dropped 2026-07-21 — 3 paid calls, 0 transactions — opinion and recaps
+    # ("Yahoo Sports", "https://sports.yahoo.com/nba/rss.xml"),
+    # dropped 2026-07-21 — 0 paid, 0 transactions
+    # ("CBS Sports", "https://www.cbssports.com/rss/headlines/nba/"),
+    # dropped 2026-07-21 — 0 paid, 0 transactions; its items are always stale by the time we see them
+    # ("SB Nation", "https://www.sbnation.com/rss/nba/index.xml"),
 ]
