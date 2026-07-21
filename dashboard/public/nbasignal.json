@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-20T23:35:19Z",
+  "updated": "2026-07-21T03:22:22Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,24 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Jalen Wilson agrees to a two-way deal with the Atlanta Hawks. The 2023 draft pick spent last season with Brooklyn.",
+      "cat": "Official",
+      "ts": 1784603840.2759771,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Mavs sign Jett Howard to a two-way contract.",
+      "cat": "Official",
+      "ts": 1784599998.263211,
+      "media": false
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Lakers sign Arthur Kaluma to a two-way contract.",
+      "cat": "Official",
+      "ts": 1784599529.1908321,
+      "media": false
+    },
     {
       "text": "\ud83d\udcf0 REPORT: Nets and Michael Porter Jr. are set to engage in contract extension talks, per roundtable.io",
       "cat": "Report",
@@ -41,63 +59,63 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784587903
+      "newest_ts": 1784599560
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1784590020
+      "count": 3,
+      "newest_ts": 1784603588
     },
     {
       "label": "Star highlights",
       "publisher": "Google News",
       "status": "ok",
-      "count": 14,
-      "newest_ts": 1784590372
+      "count": 9,
+      "newest_ts": 1784603251
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
       "count": 3,
-      "newest_ts": 1784589435
+      "newest_ts": 1784603384
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1784588416
+      "count": 2,
+      "newest_ts": 1784602920
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1784590062
+      "count": 3,
+      "newest_ts": 1784603251
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1784590226
+      "count": 18,
+      "newest_ts": 1784603384
     },
     {
       "label": "Game finals",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1784589600
+      "count": 3,
+      "newest_ts": 1784602800
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784571896
+      "newest_ts": 1784603432
     },
     {
       "label": "HoopsHype",
@@ -118,7 +136,7 @@
       "publisher": "Yahoo Sports",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784583491
+      "newest_ts": 1784600340
     },
     {
       "label": "CBS Sports",
@@ -184,6 +202,6 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 10,
+  "posts_today": 3,
   "cap": null
 }
