@@ -72,7 +72,19 @@ DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 # against 90, and the note above still stands that pulling Google News harder
 # risks throttling — which COSTS coverage rather than buying it. 60 is known
 # good; it ran this morning. Try 30 only after a day of clean feed health.
-POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 60)
+#
+# BACK TO 90 the same evening, because 60 did exactly what that warning said.
+# All six Google News feeds were healthy at 18:13 UTC and all six were `down`
+# by 22:08, while the identical URLs returned 50+ entries from a laptop — so it
+# was the runner's IP being blocked, not the feeds. 60s over six Google queries
+# is ~360 requests/hour from one address; it was tolerated for about two hours
+# and then it was not.
+#
+# The 15s of detection lag 60 bought is worthless against six dead feeds. Do
+# not lower this again without watching feed health for a full day: the failure
+# is silent from the bot's side (a blocked fetch looks exactly like a quiet
+# news hour) and it costs total coverage, not latency.
+POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
 
 # Hard ceiling on paid Claude calls per UTC day. This is a spend cap, not an
 # editorial one: it counts compose() ATTEMPTS, because a call costs the same

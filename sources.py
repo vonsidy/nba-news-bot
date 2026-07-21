@@ -85,6 +85,11 @@ def content_key(title: str) -> str:
 # Per-feed health from the most recent fetch_all() call: a list of
 # {source, url, ok, count, newest_ts, error}. The dashboard shows this as the
 # "sources" list so you can see at a glance which feeds are live vs. quiet/down.
+_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
 LAST_HEALTH: list[dict] = []
 
 
@@ -94,7 +99,13 @@ def _fetch_one(source: str, url: str) -> tuple[list[NewsItem], dict]:
     items: list[NewsItem] = []
     ok, err, entries = True, "", []
     try:
-        feed = feedparser.parse(url)
+        # Identify as a browser. feedparser's default agent announces itself as
+        # a bot, which is a free reason for Google News to refuse a request it
+        # was already inclined to rate-limit. This is not what caused the
+        # 2026-07-21 blackout — the identical URLs worked from a laptop on the
+        # default agent, so that was the runner's IP — but there is no upside
+        # to volunteering "I am a script" to a host that is already throttling.
+        feed = feedparser.parse(url, agent=_USER_AGENT)
         entries = feed.entries[:20]
         if getattr(feed, "bozo", 0) and not entries:
             ok, err = False, "parse error"
