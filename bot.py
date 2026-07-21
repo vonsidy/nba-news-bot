@@ -143,6 +143,30 @@ _NOT_A_NAME = {
     "los angeles", "nba trade", "the nba", "this week", "last season",
     "training camp", "draft pick", "second round", "first round",
 }
+# No person has one of these as a first OR last name. Enumerating bad PAIRS was
+# not enough: "NBA Summer" (from "...After NBA Summer League") is not in the
+# pair list, parsed as a person, and collapsed a real "Mavericks Waive..."
+# transaction as a duplicate. One generic word anywhere in the pair is enough
+# to reject it, which covers the combinations nobody thought to list.
+_NOT_NAME_WORDS = {
+    "nba", "summer", "league", "free", "agency", "trade", "trades", "rumor",
+    "rumors", "draft", "pick", "picks", "round", "season", "camp", "training",
+    "news", "report", "reports", "update", "updates", "latest", "sources",
+    "decision", "contract", "deal", "deals", "signing", "week", "day", "year",
+    "east", "west", "eastern", "western", "conference", "finals", "playoffs",
+    "star", "all", "team", "teams", "game", "games", "coach", "front", "office",
+    # Prepositions and connectives. Title-cased headlines capitalise these, so
+    # "Guard After" and "Ways With" both parsed as people — harmless until two
+    # unrelated headlines share one and collapse into each other.
+    "after", "with", "from", "over", "into", "amid", "before", "during",
+    "while", "about", "against", "between", "among", "under", "through",
+    "another", "who", "what", "when", "where", "why", "how", "his", "her",
+    # Positions and the adjectives that surround them in roster copy.
+    "guard", "forward", "center", "point", "shooting", "power", "small",
+    "young", "old", "veteran", "rookie", "former", "next", "first", "last",
+    "best", "worst", "new", "big", "top", "two", "three", "one", "way",
+    "ways", "part", "parts",
+}
 
 
 def _headline_names(title: str) -> set[str]:
@@ -151,6 +175,8 @@ def _headline_names(title: str) -> set[str]:
     for m in _NAME_PAIR.finditer(title):
         a, b = m.group(1).lower(), m.group(2).lower().rstrip("'’.")
         if a in _TEAM_WORDS or b in _TEAM_WORDS:
+            continue
+        if a in _NOT_NAME_WORDS or b in _NOT_NAME_WORDS:
             continue
         pair = _deaccent(f"{a} {b}")
         if pair in _NOT_A_NAME:
