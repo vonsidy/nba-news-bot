@@ -59,7 +59,23 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
 # allowance still rounded to 3 and the day ran dry around hour 22 — the account
 # went dark for the last stretch of every day for no benefit, since 72 costs
 # $0.166/day against 66's $0.152 and both round to ~$5/month.
-MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 72)
+#
+# 72 -> 340 (2026-07-21), same money. The counter always measured ITEMS
+# composed, not HTTP requests, and composer.compose_batch now puts 25 items in
+# one request: measured on the live feeds that is $0.00205 -> $0.00048 per item,
+# 4.2x cheaper, so $0.166/day buys ~344 headlines instead of ~81. (4.2x and not
+# 12x because output tokens — ~70/item at 5x the input rate — do not amortise.)
+#
+# 340 is chosen to spend the SAME $0.166/day, not more. It is above what the
+# free prefilters currently pass, so in practice the bot now reads everything
+# that reaches it rather than rationing 3 headlines an hour and dropping the
+# rest of the news that broke in between.
+MAX_CLAUDE_ITEMS_PER_DAY = int(
+    os.getenv("MAX_CLAUDE_ITEMS_PER_DAY") or os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 340
+)
+# Old name kept so an existing MAX_CLAUDE_CALLS_PER_DAY repo variable, and any
+# code still reading it, keep working against the renamed knob.
+MAX_CLAUDE_CALLS_PER_DAY = MAX_CLAUDE_ITEMS_PER_DAY
 
 # Hours a day the budget should stretch across. The daily cap alone protects
 # the balance but not the coverage: on 2026-07-21 the bot spent $0.12 of its
@@ -72,7 +88,16 @@ MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 72)
 # hours do NOT roll over — that is the point; a quiet morning must not fund a
 # spike that empties the day by noon.
 CLAUDE_SPEND_HOURS = int(os.getenv("CLAUDE_SPEND_HOURS") or 24)
-MAX_CLAUDE_CALLS_PER_HOUR = max(1, MAX_CLAUDE_CALLS_PER_DAY // max(1, CLAUDE_SPEND_HOURS))
+MAX_CLAUDE_ITEMS_PER_HOUR = max(1, MAX_CLAUDE_ITEMS_PER_DAY // max(1, CLAUDE_SPEND_HOURS))
+MAX_CLAUDE_CALLS_PER_HOUR = MAX_CLAUDE_ITEMS_PER_HOUR  # old name, see above
+
+# How many items ride in one Claude request. This is what makes the ceiling
+# above affordable — see composer.compose_batch. Bigger is cheaper per item but
+# raises the blast radius of a malformed reply and gives the model a longer list
+# to stay sharp across; 25 is the tested balance, and anything the batch fails
+# to answer for is retried individually, so raising it trades money for
+# coverage, never the reverse.
+CLAUDE_BATCH_SIZE = int(os.getenv("CLAUDE_BATCH_SIZE") or 25)
 
 # Require the HEADLINE to assert an event before paying to compose it — see
 # bot._EVENT_RE. This is the difference between spending the daily budget on

@@ -204,16 +204,21 @@ def claude_calls_this_hour() -> int:
     return (d.get("claude_calls_hour") or {}).get(_claude_hour_key(), 0)
 
 
-def incr_claude_calls_hour() -> None:
+def incr_claude_calls_hour(n: int = 1) -> None:
+    """Charge `n` items against this hour's allowance.
+
+    Takes a count because composing is batched: one HTTP request now carries
+    many items, and the budget is denominated in ITEMS (what actually costs
+    money), not requests."""
     if _redis:
         key = _claude_hour_key()
-        n = _redis.incr(key)
-        if n == 1:
+        total = _redis.incrby(key, n)
+        if total == n:
             _redis.expire(key, 3 * 3600)
         return
     d = _local_load()
     h = _claude_hour_key()
-    d["claude_calls_hour"] = {h: (d.get("claude_calls_hour") or {}).get(h, 0) + 1}
+    d["claude_calls_hour"] = {h: (d.get("claude_calls_hour") or {}).get(h, 0) + n}
     _local_save(d)
 
 
@@ -234,16 +239,17 @@ def claude_calls_today() -> int:
     return (d.get("claude_calls") or {}).get(_today(), 0)
 
 
-def incr_claude_calls() -> None:
+def incr_claude_calls(n: int = 1) -> None:
+    """Charge `n` items against today's budget. See incr_claude_calls_hour."""
     if _redis:
         key = _claude_calls_key()
-        n = _redis.incr(key)
-        if n == 1:
+        total = _redis.incrby(key, n)
+        if total == n:
             _redis.expire(key, 60 * 60 * 30)  # auto-clean after ~30h
         return
     d = _local_load()
     calls = d.get("claude_calls") or {}
-    calls[_today()] = calls.get(_today(), 0) + 1
+    calls[_today()] = calls.get(_today(), 0) + n
     d["claude_calls"] = {_today(): calls[_today()]}  # keep only today
     _local_save(d)
 
