@@ -86,59 +86,30 @@ Trade detection (for auto-generating a graphic):
 TWEET_SCHEMA = {
     "type": "object",
     "properties": {
-        "newsworthy": {
-            "type": "boolean",
-            "description": "false if the item should be skipped per the editorial rules",
-        },
+        # Descriptions are deliberately terse. Every rule these used to restate
+        # — what counts as a trade, who counts as a star, when to skip, how to
+        # pick a category — is stated in full in SYSTEM_PROMPT above, and the
+        # schema is re-sent on EVERY call. Saying it twice cost ~370 tokens a
+        # call for nothing: the fixed prompt+schema is ~95% of each request and
+        # the actual news is ~5%. Field names plus the prompt carry the
+        # meaning; these lines only disambiguate shape and units.
+        "newsworthy": {"type": "boolean", "description": "false = skip, per the editorial rules"},
         "category": {"type": "string", "enum": ["official", "report", "rumor", "highlight", "final", "skip"]},
-        "tweet": {
-            "type": "string",
-            "description": "The tweet text, max 250 characters. Empty string if not newsworthy.",
-        },
-        "is_trade": {
-            "type": "boolean",
-            "description": "true only if this item is about a specific player being traded, signed, or moving to a new team",
-        },
-        "is_highlight": {
-            "type": "boolean",
-            "description": "true if this is a standout individual game performance (highlight), not a transaction or injury",
-        },
-        "is_star": {
-            "type": "boolean",
-            "description": "true only if the player is a widely-known NBA star or a top prospect/high draft pick; false for role players or unknown names",
-        },
+        "tweet": {"type": "string", "description": "Max 250 chars. Empty if not newsworthy."},
+        "is_trade": {"type": "boolean", "description": "player traded/signed/moving teams"},
+        "is_highlight": {"type": "boolean", "description": "standout game performance, not a transaction"},
+        "is_star": {"type": "boolean", "description": "widely-known star or top prospect"},
         "player": {
             "type": "string",
-            "description": "The PRIMARY player this item is about (full name), for ANY category — trade, rumor, report, or highlight (e.g. the star reportedly deciding, the player being traded, the standout performer). Empty ONLY if the item isn't centered on one specific player.",
+            "description": "PRIMARY player, full name, any category. Empty only if not about one player.",
         },
-        "from_team": {
-            "type": "string",
-            "description": "The team the player is leaving (name, nickname, or 3-letter abbreviation) if known, else empty string",
-        },
-        "to_team": {
-            "type": "string",
-            "description": "The team the player is going to (name, nickname, or 3-letter abbreviation) if is_trade, else empty string",
-        },
-        "away_team": {
-            "type": "string",
-            "description": "category=final only: the road team (name/nickname/abbreviation), else empty string",
-        },
-        "home_team": {
-            "type": "string",
-            "description": "category=final only: the home team (name/nickname/abbreviation), else empty string",
-        },
-        "away_score": {
-            "type": "integer",
-            "description": "category=final only: the road team's final points, copied exactly from the item; else 0",
-        },
-        "home_score": {
-            "type": "integer",
-            "description": "category=final only: the home team's final points, copied exactly from the item; else 0",
-        },
-        "star_player": {
-            "type": "string",
-            "description": "category=final only: the game's standout/leading player (full name) for the card backdrop photo, else empty string",
-        },
+        "from_team": {"type": "string", "description": "team being left; name/nickname/abbrev, else ''"},
+        "to_team": {"type": "string", "description": "team being joined; name/nickname/abbrev, else ''"},
+        "away_team": {"type": "string", "description": "final only: road team, else ''"},
+        "home_team": {"type": "string", "description": "final only: home team, else ''"},
+        "away_score": {"type": "integer", "description": "final only: road points as printed, else 0"},
+        "home_score": {"type": "integer", "description": "final only: home points as printed, else 0"},
+        "star_player": {"type": "string", "description": "final only: standout player for the card photo, else ''"},
     },
     "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team", "away_team", "home_team", "away_score", "home_score", "star_player"],
     "additionalProperties": False,
