@@ -152,11 +152,14 @@ def _center(draw, cx, y, text, font, fill):
 
 CREDIT_BOTTOM_MARGIN = 30   # air between the credit glyphs and the canvas edge
 CREDIT_GAP_BELOW_SOURCE = 6  # air between the VIA <source> line and the credit
-# Font size for the CC photo attribution. Owner picked it off a rendered
-# comparison at 22 -> 17 -> 15; it is deliberately much smaller than the VIA
-# line, which is the credit a reader is meant to notice. Change this one number
-# to resize it on both the trade card and the score card.
-CREDIT_SIZE = 15
+# The two attribution lines under the BREAKING NEWS box, both picked off
+# rendered comparisons. SOURCE_SIZE is the "VIA <outlet>" line — the credit a
+# reader is meant to notice; CREDIT_SIZE is the CC photo attribution, which is
+# a licence requirement rather than something to read. Keep CREDIT_SIZE well
+# below SOURCE_SIZE so they read as a heading and its footnote. Each is one
+# number and applies to both the trade card and the score card.
+SOURCE_SIZE = 22
+CREDIT_SIZE = 12
 
 
 def _credit_line(draw, W, H, credit, size, fill, top=None):
@@ -235,7 +238,7 @@ def _breaking_box(d, W, y_top, source=None):
     # vertically center the text inside the box (offset out the bbox's top gap)
     _center(d, W / 2, by0 + pad_y - box[1], bn, bn_font, (255, 255, 255))
     if source:
-        via_font = _font(30)
+        via_font = _font(SOURCE_SIZE)
         via = f"VIA {source.upper()}"
         _center(d, W / 2, by1 + 18, via, via_font, (232, 232, 236))
         # Return the bottom of the VIA line, not of the box — the photo credit
@@ -562,7 +565,7 @@ def make_score_card(away_team: str, home_team: str, away_score: int,
 
     source_bottom = None
     if source:
-        via_font = _font(30)
+        via_font = _font(SOURCE_SIZE)
         via = f"VIA {source.upper()}"
         _center(d, W / 2, H - 90, via, via_font, (200, 204, 212))
         source_bottom = H - 90 + d.textbbox((0, 0), via, font=via_font)[3]
