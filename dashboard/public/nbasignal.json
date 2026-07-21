@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T09:34:23Z",
+  "updated": "2026-07-21T15:58:17Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: NBA investigating Gary Trent Jr.'s $64M contract with the Bucks. Via AOL.",
+      "cat": "Report",
+      "ts": 1784635283.2778478,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Hawks acquire Luguentz Dort in trade. Full pick details revealed.",
       "cat": "Official",
@@ -65,63 +71,63 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784625413
+      "newest_ts": 1784648818
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 1,
-      "newest_ts": 1784624422
+      "count": 4,
+      "newest_ts": 1784647500
     },
     {
       "label": "Star highlights",
       "publisher": "Google News",
       "status": "ok",
       "count": 10,
-      "newest_ts": 1784625413
+      "newest_ts": 1784648888
     },
     {
       "label": "Extensions & buyouts",
+      "publisher": "Google News",
+      "status": "ok",
+      "count": 7,
+      "newest_ts": 1784649274
+    },
+    {
+      "label": "Coaching & front office",
+      "publisher": "Google News",
+      "status": "ok",
+      "count": 7,
+      "newest_ts": 1784649120
+    },
+    {
+      "label": "Insider bylines",
+      "publisher": "Google News",
+      "status": "ok",
+      "count": 2,
+      "newest_ts": 1784646745
+    },
+    {
+      "label": "Free agency & rumors",
+      "publisher": "Google News",
+      "status": "ok",
+      "count": 20,
+      "newest_ts": 1784649022
+    },
+    {
+      "label": "Game finals",
       "publisher": "Google News",
       "status": "stale",
       "count": 0,
       "newest_ts": 0.0
     },
     {
-      "label": "Coaching & front office",
-      "publisher": "Google News",
-      "status": "ok",
-      "count": 1,
-      "newest_ts": 1784623470
-    },
-    {
-      "label": "Insider bylines",
-      "publisher": "Google News",
-      "status": "ok",
-      "count": 1,
-      "newest_ts": 1784624400
-    },
-    {
-      "label": "Free agency & rumors",
-      "publisher": "Google News",
-      "status": "ok",
-      "count": 13,
-      "newest_ts": 1784625777
-    },
-    {
-      "label": "Game finals",
-      "publisher": "Google News",
-      "status": "ok",
-      "count": 1,
-      "newest_ts": 1784623800
-    },
-    {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784613526
+      "newest_ts": 1784639010
     },
     {
       "label": "HoopsHype",
@@ -142,19 +148,19 @@
       "publisher": "Yahoo Sports",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784625305
+      "newest_ts": 1784647577
     },
     {
       "label": "CBS Sports",
       "publisher": "CBS Sports",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784581117
+      "newest_ts": 1784647186
     },
     {
       "label": "SB Nation",
       "publisher": "SB Nation",
-      "status": "ok",
+      "status": "stale",
       "count": 10,
       "newest_ts": 1784558165
     }
@@ -208,6 +214,6 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 4,
+  "posts_today": 5,
   "cap": null
 }
