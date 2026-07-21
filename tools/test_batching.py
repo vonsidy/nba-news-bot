@@ -147,4 +147,38 @@ bot.run_cycle()
 assert len(CALLS) == 0, f"re-composed seen items: {len(CALLS)} calls"
 print("OK second pass over the same feed spent nothing\n")
 
+# ===========================================================================
+print("--- 6. fallback items are charged their real cost ---")
+SEEN.clear(); POSTS.clear(); PLAYERS.clear(); CALLS.clear(); NAMES.clear()
+BUDGET.update(day=0, hour=0)
+config.CLAUDE_BATCH_SIZE = 25
+config.MAX_CLAUDE_ITEMS_PER_HOUR = 100
+
+def half_dropping(**kw):
+    """Batch answers only half; the rest fall back to individual calls."""
+    CALLS.append(kw)
+    msg = kw["messages"][0]["content"]
+    heads = [l[len("Headline: "):] for l in msg.splitlines() if l.startswith("Headline: ")]
+    res = []
+    for n, h in enumerate(heads):
+        if len(heads) > 1 and n % 2:      # drop every other one from the batch
+            continue
+        r = blank(); r["index"] = n
+        r.update(newsworthy=False, category="skip", tweet="")
+        res.append(r)
+    payload = {"results": res} if len(heads) > 1 else (res[0] if res else blank() | {"index": 0})
+    blk = types.SimpleNamespace(type="text", text=json.dumps(payload))
+    return types.SimpleNamespace(content=[blk], stop_reason="end_turn",
+        usage=types.SimpleNamespace(input_tokens=100, output_tokens=50,
+            cache_read_input_tokens=0, cache_creation_input_tokens=0))
+
+composer.client = types.SimpleNamespace(
+    messages=types.SimpleNamespace(create=half_dropping))
+bot.run_cycle()
+# 6 items, 3 answered by the batch, 3 retried solo at 4x
+expected = 6 + 3 * (composer.FALLBACK_COST_WEIGHT - 1)
+assert BUDGET["day"] == expected, f"charged {BUDGET['day']}, expected {expected}"
+print(f"OK 6 items (3 un-batched) charged {BUDGET['day']} units, not 6 — "
+      f"a broken batch can no longer spend 4x silently\n")
+
 print("ALL CYCLE TESTS PASSED")
