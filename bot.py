@@ -506,7 +506,17 @@ def process_item(item: sources.NewsItem) -> None:
             print(f"  Claude daily call cap reached ({used}/"
                   f"{config.MAX_CLAUDE_CALLS_PER_DAY}), skipping until UTC midnight")
             return
+        # Pace it. Without this the day's budget goes in the first busy hour
+        # and the account is dark for the other 23 — the cap protects the
+        # balance, this protects the coverage.
+        hour_used = state.claude_calls_this_hour()
+        if hour_used >= config.MAX_CLAUDE_CALLS_PER_HOUR:
+            print(f"  hourly pace reached ({hour_used}/"
+                  f"{config.MAX_CLAUDE_CALLS_PER_HOUR}), holding budget for later today: "
+                  f"{item.title[:50]}")
+            return
     state.incr_claude_calls()
+    state.incr_claude_calls_hour()
 
     result = compose(item)
     if not result or not result.get("newsworthy") or not result.get("tweet"):

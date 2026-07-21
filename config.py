@@ -57,6 +57,19 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
 # more credit, and see the calls-per-post note above for the real fix.
 MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 66)
 
+# Hours a day the budget should stretch across. The daily cap alone protects
+# the balance but not the coverage: on 2026-07-21 the bot spent $0.12 of its
+# $0.15 daily budget inside an hour, so it would have gone silent before
+# lunchtime and missed every afternoon signing. Pacing turns "66 calls, then
+# nothing" into "roughly 4 an hour, all day".
+#
+# The hourly allowance is derived, not configured, so raising the daily cap
+# widens each hour rather than letting the whole thing burn at once. Unused
+# hours do NOT roll over — that is the point; a quiet morning must not fund a
+# spike that empties the day by noon.
+CLAUDE_SPEND_HOURS = int(os.getenv("CLAUDE_SPEND_HOURS") or 18)
+MAX_CLAUDE_CALLS_PER_HOUR = max(1, MAX_CLAUDE_CALLS_PER_DAY // max(1, CLAUDE_SPEND_HOURS))
+
 # Require the HEADLINE to assert an event before paying to compose it — see
 # bot._EVENT_RE. This is the difference between spending the daily budget on
 # 66 headlines and spending it on 66 STORIES: measured on a live cycle it cuts

@@ -190,6 +190,33 @@ def record_posted_name(name: str) -> None:
     _local_save(d)
 
 
+def _claude_hour_key() -> str:
+    return f"bot:claude_calls_hour:{time.strftime('%Y-%m-%dT%H', time.gmtime())}"
+
+
+def claude_calls_this_hour() -> int:
+    """Calls made in the current UTC hour. Paired with the daily cap so the
+    day's budget is spread across the day instead of spent in the first hour."""
+    if _redis:
+        val = _redis.get(_claude_hour_key())
+        return int(val) if val else 0
+    d = _local_load()
+    return (d.get("claude_calls_hour") or {}).get(_claude_hour_key(), 0)
+
+
+def incr_claude_calls_hour() -> None:
+    if _redis:
+        key = _claude_hour_key()
+        n = _redis.incr(key)
+        if n == 1:
+            _redis.expire(key, 3 * 3600)
+        return
+    d = _local_load()
+    h = _claude_hour_key()
+    d["claude_calls_hour"] = {h: (d.get("claude_calls_hour") or {}).get(h, 0) + 1}
+    _local_save(d)
+
+
 def _claude_calls_key() -> str:
     return f"bot:claude_calls:{_today()}"
 
