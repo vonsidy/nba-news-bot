@@ -55,7 +55,11 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
 # day the bot goes quiet once the budget is spent — that is the intended
 # behaviour, and it is why the cap is an env var: raise it the moment there is
 # more credit, and see the calls-per-post note above for the real fix.
-MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 66)
+# 72, not 66, so that 24 hours x 3 calls divides exactly. At 66 the hourly
+# allowance still rounded to 3 and the day ran dry around hour 22 — the account
+# went dark for the last stretch of every day for no benefit, since 72 costs
+# $0.166/day against 66's $0.152 and both round to ~$5/month.
+MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 72)
 
 # Hours a day the budget should stretch across. The daily cap alone protects
 # the balance but not the coverage: on 2026-07-21 the bot spent $0.12 of its
@@ -67,7 +71,7 @@ MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 66)
 # widens each hour rather than letting the whole thing burn at once. Unused
 # hours do NOT roll over — that is the point; a quiet morning must not fund a
 # spike that empties the day by noon.
-CLAUDE_SPEND_HOURS = int(os.getenv("CLAUDE_SPEND_HOURS") or 18)
+CLAUDE_SPEND_HOURS = int(os.getenv("CLAUDE_SPEND_HOURS") or 24)
 MAX_CLAUDE_CALLS_PER_HOUR = max(1, MAX_CLAUDE_CALLS_PER_DAY // max(1, CLAUDE_SPEND_HOURS))
 
 # Require the HEADLINE to assert an event before paying to compose it — see
