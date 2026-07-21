@@ -155,6 +155,37 @@ def player_posts_today(pkey: str) -> int:
     return (d.get("players") or {}).get(_player_key_name(pkey), 0)
 
 
+def _claude_calls_key() -> str:
+    return f"bot:claude_calls:{_today()}"
+
+
+def claude_calls_today() -> int:
+    """How many Claude compose calls have been made today (UTC).
+
+    Every call costs money whether or not the item ends up posted, so this
+    counts ATTEMPTS, not posts — the dedup and freshness checks that run after
+    compose() discard a meaningful share of them."""
+    if _redis:
+        val = _redis.get(_claude_calls_key())
+        return int(val) if val else 0
+    d = _local_load()
+    return (d.get("claude_calls") or {}).get(_today(), 0)
+
+
+def incr_claude_calls() -> None:
+    if _redis:
+        key = _claude_calls_key()
+        n = _redis.incr(key)
+        if n == 1:
+            _redis.expire(key, 60 * 60 * 30)  # auto-clean after ~30h
+        return
+    d = _local_load()
+    calls = d.get("claude_calls") or {}
+    calls[_today()] = calls.get(_today(), 0) + 1
+    d["claude_calls"] = {_today(): calls[_today()]}  # keep only today
+    _local_save(d)
+
+
 def incr_player_posts(pkey: str) -> None:
     if _redis:
         key = _player_key_name(pkey)

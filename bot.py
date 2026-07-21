@@ -311,6 +311,18 @@ def process_item(item: sources.NewsItem) -> None:
         print(f"  duplicate story, skipping: {item.title[:60]}")
         return
 
+    # Spend ceiling. Checked immediately before the call because this is the
+    # only line in the bot that costs Anthropic credit, and the checks after it
+    # (freshness, per-subject backstop, trade dedup) discard a real share of
+    # what it pays for. Counting attempts rather than posts is the point.
+    if config.MAX_CLAUDE_CALLS_PER_DAY:
+        used = state.claude_calls_today()
+        if used >= config.MAX_CLAUDE_CALLS_PER_DAY:
+            print(f"  Claude daily call cap reached ({used}/"
+                  f"{config.MAX_CLAUDE_CALLS_PER_DAY}), skipping until UTC midnight")
+            return
+    state.incr_claude_calls()
+
     result = compose(item)
     if not result or not result.get("newsworthy") or not result.get("tweet"):
         print(f"  skipped: {item.title[:70]}")

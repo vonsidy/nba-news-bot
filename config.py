@@ -24,9 +24,22 @@ DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 # feeds concurrently (~1s, was ~7.4s serial) — the cycle is nearly all sleep.
 # Raise it if the dashboard's feed-health view starts showing errors: polling
 # Google News harder risks throttling, which costs more latency than it buys.
-# `or 60` not a default: an unset GitHub Actions variable arrives as an EMPTY
+# `or 90` not a default: an unset GitHub Actions variable arrives as an EMPTY
 # STRING, not absent, and int("") raises — the same trap MAX_POSTS_PER_DAY hit.
-POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 60)
+#
+# Back to 90 from 60 on 2026-07-21. Polling twice as often does not just cost
+# more requests — the Google News feeds are windowed (`when:1h`), so a shorter
+# interval surfaces items that would otherwise appear and roll out between
+# polls. Each extra item is a paid Claude call, and Jul 21 spent ~$1.50 of
+# Anthropic credit in four hours against ~$1.22 for all of Jul 19. Detection
+# lag averages half this, so 90s costs ~15s of latency against a real bill.
+POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
+
+# Hard ceiling on paid Claude calls per UTC day. This is a spend cap, not an
+# editorial one: it counts compose() ATTEMPTS, because a call costs the same
+# whether the item is posted or discarded by the dedup that runs after it.
+# 0 = uncapped. At roughly $0.0025 a call, 400 is about $1/day.
+MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 400)
 # Daily post cap. 0 = uncapped.
 # CORRECTION (2026-07-21): this used to say posting cost nothing, because reads
 # ran in the hundreds of requests/day against 5-14 for posts. That read the
