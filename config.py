@@ -48,7 +48,14 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
 # run after it. 150 still leaves ~15 calls per post, which is ample headroom;
 # the honest fix is to move those checks in front of compose() so the cap stops
 # being the thing that bounds the bill.
-MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 150)
+#
+# Sized to a BUDGET, not to demand. Owner topped up $5 on 2026-07-21 and needs
+# it to last a month, which is ~$0.17/day, which is ~66 calls. 150 would have
+# drained it in 13 days. This will bind well before the news does, so on a busy
+# day the bot goes quiet once the budget is spent — that is the intended
+# behaviour, and it is why the cap is an env var: raise it the moment there is
+# more credit, and see the calls-per-post note above for the real fix.
+MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 66)
 # Daily post cap. 0 = uncapped.
 # CORRECTION (2026-07-21): this used to say posting cost nothing, because reads
 # ran in the hundreds of requests/day against 5-14 for posts. That read the
