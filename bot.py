@@ -248,7 +248,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
-def process_item(item: sources.NewsItem, result: dict | None) -> None:
+def process_item(item: sources.NewsItem, result: dict | None) -> bool:
     """Decide whether `result` (Claude's verdict on `item`) should post, and post it.
 
     The item is already marked seen and already past the free/Redis-only gates —
@@ -260,13 +260,13 @@ def process_item(item: sources.NewsItem, result: dict | None) -> None:
     # cap can be reached partway through a batch we've already paid for.
     if config.MAX_POSTS_PER_DAY and state.posts_today() >= config.MAX_POSTS_PER_DAY:
         print("Daily post cap reached; skipping remaining items")
-        return
+        return False
 
     sig = sources.content_key(item.title)
 
     if not result or not result.get("newsworthy") or not result.get("tweet"):
         print(f"  skipped: {item.title[:70]}")
-        return
+        return False
 
     # Semantic dedup: block a repeat of the SAME event even when the headline is
     # worded differently by another outlet. content_key above only catches near-
@@ -277,7 +277,7 @@ def process_item(item: sources.NewsItem, result: dict | None) -> None:
     event_sig = _final_signature(result) if is_final else _event_signature(result)
     if event_sig and state.is_seen(event_sig):
         print(f"  duplicate event, skipping: {event_sig}")
-        return
+        return False
 
     # BACKSTOP — deliberately not clever, and independent of how the model
     # classified the item. Every semantic dedup above depends on the model
@@ -289,7 +289,7 @@ def process_item(item: sources.NewsItem, result: dict | None) -> None:
     if subject and state.player_posts_today(subject) >= config.MAX_POSTS_PER_PLAYER:
         print(f"  already posted {config.MAX_POSTS_PER_PLAYER} items about "
               f"{subject} today, skipping")
-        return
+        return False
 
     # CONFIRMED-TRADE dedup: post a deal ONCE and never let it resurface. A
     # 3-team blockbuster (Dort + Risacher + picks) surfaces for DAYS from every
@@ -306,18 +306,18 @@ def process_item(item: sources.NewsItem, result: dict | None) -> None:
         trade_pflag = _trade_player_flag(result)
         if _trade_already_posted(trade_teams, trade_pflag):
             print(f"  trade already posted ({','.join(sorted(trade_teams)) or trade_pflag}), skipping")
-            return
+            return False
 
     if is_final and not event_sig:
         print(f"  final with unresolvable teams, skipping: {item.title[:60]}")
-        return
+        return False
     if is_final:
         a_s, h_s = int(result.get("away_score") or 0), int(result.get("home_score") or 0)
         # even summer-league teams clear 50; equal or tiny scores mean the model
         # couldn't actually read a final score out of the item
         if a_s < 50 or h_s < 50 or a_s == h_s:
             print(f"  final with implausible score ({a_s}-{h_s}), skipping")
-            return
+            return False
 
     # Highlights (standout performances) only post for genuine stars, and are
     # capped separately per day so they add engagement without burying the news.
@@ -325,10 +325,10 @@ def process_item(item: sources.NewsItem, result: dict | None) -> None:
     if is_highlight:
         if not result.get("is_star"):
             print(f"  non-star highlight, skipping: {item.title[:60]}")
-            return
+            return False
         if state.highlights_today() >= config.MAX_HIGHLIGHTS_PER_DAY:
             print("  daily highlight cap reached; skipping highlight")
-            return
+            return False
 
     # Freshness by type: transactions AND the trade/free-agency chatter around
     # them (rumors, reports — "star deciding today", "weighing offers") stay
@@ -340,7 +340,7 @@ def process_item(item: sources.NewsItem, result: dict | None) -> None:
         max_age = config.TRADE_MAX_AGE_MIN if wide else config.FRESH_MAX_AGE_MIN
         if age_min > max_age:
             print(f"  too stale ({int(age_min)}m old), skipping: {item.title[:60]}")
-            return
+            return False
 
     text = result["tweet"].strip()
     if item.link:
@@ -406,6 +406,8 @@ def process_item(item: sources.NewsItem, result: dict | None) -> None:
         if _is_player_move(result):
             # persistent flags: this move never resurfaces (any outlet/wording/day)
             _mark_trade_posted(trade_teams, trade_pflag)
+        return True
+    return False
 
 
 def run_cycle() -> None:
@@ -486,8 +488,13 @@ def run_cycle() -> None:
         chunk = pending[start:start + size]
         results = composer.compose_batch(chunk)
         for item, result in zip(chunk, results):
-            process_item(item, result)
-            time.sleep(2)  # small gap between posts, looks less bot-bursty
+            # Only pace ACTUAL posts. This used to sleep after every item,
+            # skipped ones included — 70 candidates meant 140s of sleeping to
+            # space out the handful that posted. Harmless when each item also
+            # cost a ~2s API call; now that a whole batch resolves in one call,
+            # it was the single slowest thing left in a cycle.
+            if process_item(item, result):
+                time.sleep(2)  # small gap between posts, looks less bot-bursty
 
     u = composer.USAGE
     print(f"Claude usage this cycle: {u['calls']} calls, {u['input']} in / "
