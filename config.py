@@ -33,7 +33,18 @@ DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 # polls. Each extra item is a paid Claude call, and Jul 21 spent ~$1.50 of
 # Anthropic credit in four hours against ~$1.22 for all of Jul 19. Detection
 # lag averages half this, so 90s costs ~15s of latency against a real bill.
-POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
+#
+# Back to 60 later the same day, because both halves of that reasoning changed.
+# An extra item is now $0.00048, not $0.00205 — the cost objection is 4x weaker
+# — and an item over the hourly allowance is now HELD rather than marked seen
+# and dropped, so surfacing more of them can no longer lose news. 60s buys back
+# ~15s of detection lag at 1.5x the fetch load.
+#
+# Not 30s, which is the other thing worth wanting: that is 3x the fetch load
+# against 90, and the note above still stands that pulling Google News harder
+# risks throttling — which COSTS coverage rather than buying it. 60 is known
+# good; it ran this morning. Try 30 only after a day of clean feed health.
+POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 60)
 
 # Hard ceiling on paid Claude calls per UTC day. This is a spend cap, not an
 # editorial one: it counts compose() ATTEMPTS, because a call costs the same
