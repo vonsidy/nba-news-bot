@@ -76,7 +76,14 @@ _JUNK_RE = re.compile(
     r"|superlatives|\bargues?\b|\bproves?\b|looking ahead|open thread"
     r"|youtube gold|biggest storylines|salary.?cap sheet|countdown"
     r"|\bnotes:|\bintel:|every .{0,30}(deal|trade).{0,30}all 30 teams"
-    r"|ranking the|grading every|grades for|worst .{0,20}contracts)\b"
+    r"|ranking the|grading every|grades for|worst .{0,20}contracts"
+    # Retrospectives: a NEW article about OLD news. The bot posted "Hawks
+    # acquire Luguentz Dort in trade. Full pick details revealed" on
+    # 2026-07-21 from a follow-up piece about a trade it had already covered.
+    # The article was fresh; the news was not. is_fresh only knows when the
+    # ARTICLE was published, so this has to be caught on wording.
+    r"|details revealed|revisiting|look(ing)? back|what it means for"
+    r"|full (pick|trade) details|one year (later|ago)|anniversary)\b"
 )
 _OTHER_SPORT_RE = re.compile(
     r"(?i)\b(NFL|NHL|MLB|MLS|WNBA|cricket|rugby|premier league|la liga|bundesliga"
@@ -342,7 +349,15 @@ def _trade_team_set(result: dict, title: str) -> set:
 # A confirmed trade is deduped for this long — DAYS, not until midnight — so
 # follow-up articles that keep a fresh timestamp can't re-post the same deal a
 # day later. Auto-expires so the same teams can trade again down the line.
-_TRADE_TTL = 6 * 24 * 3600
+# How long a posted move stays "already covered". Was 6 days, which expired
+# before the news cycle around a trade did: on 2026-07-21 the bot posted
+# "Hawks acquire Luguentz Dort in trade. Full pick details revealed" — a
+# follow-up article about a trade it had already covered more than six days
+# earlier, republished as if it were breaking. Outlets keep writing pick-detail
+# and grades pieces for weeks, so the flag has to outlive that tail. A player
+# genuinely moving twice inside three weeks is rare enough to be worth the
+# trade, and the daily per-subject cap still bounds it if it happens.
+_TRADE_TTL = 21 * 24 * 3600
 
 
 def _trade_player_flag(result: dict) -> str | None:

@@ -37,6 +37,12 @@ Editorial rules (non-negotiable):
   * highlight — a standout individual performance by a star/notable player (see below)
   * final     — a game that JUST ended, when the item states the final score
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
+- The ARTICLE being new does not make the NEWS new. Set newsworthy=false when
+  the item is a later write-up of something that already happened — pick
+  details or financial terms revealed after the fact, grades and reaction,
+  "what it means for", "revisiting", anniversary and look-back pieces. A
+  breaking-news account posts the trade when it breaks, not the analysis a week
+  later. If the item does not assert that something happened recently, skip it.
 - When the source states CONTRACT TERMS — years, total value, guarantees, player
   or team option — put them in the tweet. "two years, $8.4M" is the detail
   followers actually want, and there is room for it. Copy the figure exactly as
