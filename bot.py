@@ -439,6 +439,64 @@ def _trade_player_flag(result: dict) -> str | None:
     return f"moved:{p}" if p else None
 
 
+# Containment threshold. 0.60 sits in the gap measured on real posts: the
+# duplicate that shipped scores 0.67, a different player on the same team 0.40.
+_DUPLICATE_SIMILARITY = 0.60
+
+
+def _too_similar_to_recent(text: str) -> str | None:
+    """The already-posted tweet this one is a near-copy of, or None.
+
+    LAST-DITCH backstop, and deliberately the dumbest check in the file: it
+    compares the FINISHED TWEET against the tweets already sent, on words alone.
+
+    Every other duplicate guard reasons about structure — a headline signature,
+    a player key, a team set — and each one has now failed in production for its
+    own separate reason. content_key does not collapse "...to Warriors" against
+    "...to Warriors, per ESPN", because the outlet name changes the signature.
+    The per-player backstop did not collapse "Jamarion Sharp" against "Sharp",
+    because the keys differed. Both shipped a duplicate to the timeline.
+
+    Those are different bugs with one shape: the guard ran on an INPUT, and the
+    inputs were worded differently. This runs on the OUTPUT, where the bot has
+    already normalised both stories into its own voice — so two tellings of one
+    signing come out nearly the same sentence even when nothing upstream
+    matched. It cannot know WHY they are duplicates, which is the point: it
+    needs no theory of what went wrong to catch it.
+
+    Containment, not Jaccard: shared words over the SHORTER tweet's word count.
+    Jaccard was tried first and cannot separate these — it divides by the union,
+    so a terse duplicate of a detailed tweet is punished for the detail it
+    omits. The real pair scored 0.286 against 0.222 for a DIFFERENT player on
+    the same team, which is not a gap you can put a threshold in.
+
+    Containment asks the question that actually matters — "is this mostly stuff
+    I already said?" — and separates cleanly on the same examples:
+
+        duplicate that shipped        0.67   blocked
+        same signing, reworded        0.86   blocked
+        different player, other team  0.50   posts
+        different player, same team   0.40   posts
+        different news, same team     0.25   posts
+        unrelated trade               0.00   posts
+    """
+    def bag(s: str) -> set:
+        toks = re.findall(r"[a-z0-9]+", _deaccent(s).lower())
+        return {w for w in toks if len(w) > 2 and w not in sources._STOP}
+
+    new = bag(text)
+    if len(new) < 4:  # too short to judge; let the other guards decide
+        return None
+    for prev in state.recent_posts(20):
+        old_text = prev.get("text") if isinstance(prev, dict) else str(prev)
+        old = bag(old_text or "")
+        if not old:
+            continue
+        if len(new & old) / min(len(new), len(old)) >= _DUPLICATE_SIMILARITY:
+            return old_text
+    return None
+
+
 def _resolve_partial_name(name: str) -> str:
     """Expand a bare surname to a full name already posted about today.
 
@@ -664,6 +722,18 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
         text = f"{text}\n{item.link}"
     else:
         text = _delink(text)
+
+    # Final duplicate check, on the finished tweet rather than on anything that
+    # produced it. Runs AFTER compose because that is the whole idea — the model
+    # has normalised two differently-worded stories into one voice by here, so
+    # near-copies look alike even when no upstream key matched. Costs the Claude
+    # call, saves the duplicate post; the post is the part followers see.
+    twin = _too_similar_to_recent(text)
+    if twin:
+        print(f"  near-duplicate of a recent post, skipping:\n"
+              f"    new:  {text[:88]}\n"
+              f"    prev: {twin[:88]}")
+        return False
 
     # Auto-generate a graphic: a FINAL score card for game results (attaching
     # our own media also stops X from showing the linked article's ugly

@@ -204,3 +204,49 @@ if __name__ == "__main__":
     test_backstop_bounds_damage()
     test_non_player_news_is_bounded()
     print("\nPASS")
+
+
+# ---------------------------------------------------------------------------
+# Output-side backstop: catches duplicates no structural key matched.
+# ---------------------------------------------------------------------------
+def test_near_duplicate_tweet_blocked():
+    import state
+    real = state.recent_posts
+    try:
+        # The exact pair that reached the timeline on 2026-07-21.
+        posted = ("🚨 OFFICIAL: Jamarion Sharp signs two-way deal with the Clippers. "
+                  "The G League Defensive Player of the Year went undrafted out of Ole Miss in 2024.")
+        state.recent_posts = lambda n=20: [{"text": posted}]
+
+        dupe = "📰 REPORT: Summer leaguer Sharp signs two-way deal with Clippers via Sportsnet"
+        assert bot._too_similar_to_recent(dupe), "the duplicate that shipped is still allowed"
+
+        # A DIFFERENT signing on the same day must still go out.
+        other = "🚨 OFFICIAL: Jett Howard signs a two-way contract with the Mavericks."
+        assert not bot._too_similar_to_recent(other), \
+            "blocked a genuinely different signing — too aggressive"
+
+        # Different player, same team, same day.
+        same_team = ("🚨 OFFICIAL: Kobe Brown signs a two-way deal with the Clippers. "
+                     "The 2023 first-round pick returns on a new contract.")
+        assert not bot._too_similar_to_recent(same_team), \
+            "blocked a different player on the same team"
+
+        # Same story reworded by another outlet — the case no upstream key catches.
+        reworded = "📰 REPORT: Clippers sign Jamarion Sharp to a two-way deal, per sources."
+        assert bot._too_similar_to_recent(reworded), "reworded duplicate allowed"
+
+        # Unrelated news about the same team must still post.
+        other_team_news = "🚨 OFFICIAL: Clippers waive guard Bones Hyland after three seasons."
+        assert not bot._too_similar_to_recent(other_team_news), \
+            "blocked unrelated news about the same team"
+
+        # Trivially short text must not be judged at all.
+        assert not bot._too_similar_to_recent("🔥 40 points")
+    finally:
+        state.recent_posts = real
+    print("near-duplicate tweet blocked, distinct signings still post  OK")
+
+
+test_near_duplicate_tweet_blocked()
+print("\nPASS")
