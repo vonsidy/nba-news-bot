@@ -347,7 +347,7 @@ def process_item(item: sources.NewsItem) -> None:
             return
 
     text = result["tweet"].strip()
-    if item.link:
+    if item.link and config.INCLUDE_SOURCE_LINK:
         text = f"{text}\n{item.link}"
 
     # Auto-generate a graphic: a FINAL score card for game results (attaching

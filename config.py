@@ -52,6 +52,16 @@ MAX_POSTS_PER_PLAYER = int(os.getenv("MAX_POSTS_PER_PLAYER", "1"))
 # untouched — set ENABLE_DEBATE_POSTS=1 to bring them back.
 ENABLE_DEBATE_POSTS = os.getenv("ENABLE_DEBATE_POSTS", "0").strip().lower() in ("1", "true", "yes")
 
+# Append the source article's link to each tweet. OFF by default, because X
+# prices a post containing ANY url at $0.20 against one at $0.010 — appending
+# the link made every post 20x more expensive, and at 10 posts/day that was
+# ~$2.00/day (~$60/mo) versus ~$0.10/day (~$3/mo) without it. It was 42% of the
+# entire X bill for 2026-06-21..07-21. Attribution does not depend on this: the
+# composer already names the outlet in the tweet text ("per ESPN"), and the
+# links being appended were opaque news.google.com/rss/articles/... redirects.
+# Set INCLUDE_SOURCE_LINK=1 to bring them back, knowing the 20x cost.
+INCLUDE_SOURCE_LINK = os.getenv("INCLUDE_SOURCE_LINK", "0").strip().lower() in ("1", "true", "yes")
+
 # How recent (in minutes) an item must be to still be worth posting. Breaking
 # news lives or dies on latency — a game score that's hours old gets no traction,
 # so keep this tight. Anything older is dropped instead of posted stale.
