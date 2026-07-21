@@ -123,6 +123,24 @@ _EVENT_RE = re.compile(
 )
 
 
+def _covered_subject_in(title: str) -> str | None:
+    """The name of a player already posted about today that this headline is
+    about, or None.
+
+    Requires EVERY token of the stored name to appear, so "LeBron James" needs
+    both "LeBron" and "James" present — a lone "James" will not match James
+    Harden. Tokens need not be adjacent: 'Rich Paul Addresses LeBron Narrative
+    That James Loves the Attention' is the same story and should collapse.
+    Accents are folded via _deaccent because feeds spell Doncic several
+    different ways."""
+    hay = _deaccent(title).lower()
+    for name in state.posted_names_today():
+        toks = [t for t in re.findall(r"[a-z0-9]+", _deaccent(name).lower()) if len(t) > 2]
+        if toks and all(re.search(rf"\b{re.escape(t)}\b", hay) for t in toks):
+            return name
+    return None
+
+
 def _worth_composing(item: sources.NewsItem) -> bool:
     """True if the item is worth a paid Claude call.
 
@@ -363,6 +381,24 @@ def process_item(item: sources.NewsItem) -> None:
         print(f"  duplicate story, skipping: {item.title[:60]}")
         return
 
+    # Already covered this player today? The per-subject backstop further down
+    # enforces MAX_POSTS_PER_PLAYER, but it needs the player name from Claude,
+    # so it only runs AFTER the call is paid for. One live cycle carried ten
+    # separate items about the same Rich Paul / LeBron story: the bot paid ten
+    # times and published once, because nine were discarded a few lines later.
+    #
+    # Checking the headline first costs nothing and removes no coverage in the
+    # ordinary case — the same rule was going to reject these anyway. It
+    # diverges only when Claude would have named a DIFFERENT primary player
+    # than the one the headline mentions, which is why every skip is logged:
+    # the log is the audit trail for what this rule is actually costing.
+    if config.SKIP_COVERED_SUBJECTS:
+        covered = _covered_subject_in(item.title)
+        if covered:
+            print(f"  already covered {covered} today, skipping before the Claude call: "
+                  f"{item.title[:60]}")
+            return
+
     # Spend ceiling. Checked immediately before the call because this is the
     # only line in the bot that costs Anthropic credit, and the checks after it
     # (freshness, per-subject backstop, trade dedup) discard a real share of
@@ -534,6 +570,10 @@ def process_item(item: sources.NewsItem) -> None:
             state.mark_seen(event_sig)  # highlight: one per player per day
         if subject:
             state.incr_player_posts(subject)
+        # Remember the raw name too, so _covered_subject_in can scan tomorrow's
+        # headlines for it without paying Claude to identify the subject first.
+        if result.get("player"):
+            state.record_posted_name(result["player"])
         if _is_player_move(result):
             # persistent flags: this move never resurfaces (any outlet/wording/day)
             _mark_trade_posted(trade_teams, trade_pflag)

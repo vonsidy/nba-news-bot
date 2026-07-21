@@ -68,6 +68,19 @@ MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 66)
 # back to the old "when in doubt, let it through" behaviour once there is
 # credit to spend on maybes.
 REQUIRE_NEWS_EVENT = os.getenv("REQUIRE_NEWS_EVENT", "1").strip().lower() in ("1", "true", "yes")
+
+# Skip an item before paying for it when its headline names a player already
+# posted about today. MAX_POSTS_PER_PLAYER already rejects these — but only
+# after the Claude call, because the rule needs the player name the call
+# returns. One live cycle carried ten items about the same Rich Paul / LeBron
+# story: ten calls bought one post.
+#
+# This buys back budget without costing coverage, because the duplicate was
+# never going to be published either way. It is not free of risk: an item that
+# merely MENTIONS a covered player is skipped too, so a genuine Anthony Davis
+# story that leads with LeBron's name is lost. Every skip is logged with the
+# name that matched, so the cost is auditable rather than silent.
+SKIP_COVERED_SUBJECTS = os.getenv("SKIP_COVERED_SUBJECTS", "1").strip().lower() in ("1", "true", "yes")
 # Daily post cap. 0 = uncapped.
 # CORRECTION (2026-07-21): this used to say posting cost nothing, because reads
 # ran in the hundreds of requests/day against 5-14 for posts. That read the

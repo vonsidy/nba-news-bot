@@ -155,6 +155,41 @@ def player_posts_today(pkey: str) -> int:
     return (d.get("players") or {}).get(_player_key_name(pkey), 0)
 
 
+def _subject_names_key() -> str:
+    return f"bot:subject_names:{_today()}"
+
+
+def posted_names_today() -> set[str]:
+    """Raw player names posted today, e.g. {"LeBron James", "Jett Howard"}.
+
+    Kept alongside the hashed per-player counters because those are one-way:
+    you can ask "have I posted about key X" but you cannot ask "which players
+    have I posted about", and the pre-compose check needs the second question
+    so it can scan a headline before paying to understand it."""
+    if _redis:
+        vals = _redis.smembers(_subject_names_key())
+        return {str(v) for v in (vals or [])}
+    d = _local_load()
+    return set((d.get("subject_names") or {}).get(_today(), []))
+
+
+def record_posted_name(name: str) -> None:
+    if not name:
+        return
+    if _redis:
+        key = _subject_names_key()
+        _redis.sadd(key, name)
+        _redis.expire(key, 60 * 60 * 30)  # auto-clean after ~30h
+        return
+    d = _local_load()
+    names = d.get("subject_names") or {}
+    today = names.get(_today(), [])
+    if name not in today:
+        today.append(name)
+    d["subject_names"] = {_today(): today}  # keep only today
+    _local_save(d)
+
+
 def _claude_calls_key() -> str:
     return f"bot:claude_calls:{_today()}"
 
