@@ -19,7 +19,6 @@ import photos
 import sources
 import state
 import tweeter
-from composer import compose
 
 
 # Anything X would turn into a t.co link: an explicit scheme, or a bare domain
@@ -482,68 +481,58 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
-def process_item(item: sources.NewsItem) -> None:
-    # Mark seen first — a bad item shouldn't be retried forever
-    state.mark_seen(item.id)
+def _affordable(items: list) -> list:
+    """The prefix of `items` this cycle may pay to compose.
 
-    # A cap of 0 means uncapped (the default) — see config.MAX_POSTS_PER_DAY.
+    The spend ceiling lives here rather than beside the call because composing
+    is now batched: the decision is "how many of these can we afford", made
+    once, instead of "can we afford this one" asked N times.
+
+    Crucially, items this trims are NOT marked seen — they come back on a later
+    cycle when the hour rolls over. That is the difference between pacing the
+    budget and silently dropping the news that broke while the budget was spent.
+    """
+    if not config.MAX_CLAUDE_ITEMS_PER_DAY:
+        return items
+    day_left = config.MAX_CLAUDE_ITEMS_PER_DAY - state.claude_calls_today()
+    if day_left <= 0:
+        print(f"  Claude daily budget spent ({config.MAX_CLAUDE_ITEMS_PER_DAY} items), "
+              f"holding until UTC midnight")
+        return []
+    # Pace it. Without this the day's budget goes in the first busy hour and the
+    # account is dark for the other 23 — the cap protects the balance, this
+    # protects the coverage.
+    hour_left = config.MAX_CLAUDE_ITEMS_PER_HOUR - state.claude_calls_this_hour()
+    if hour_left <= 0:
+        print(f"  hourly pace reached ({config.MAX_CLAUDE_ITEMS_PER_HOUR} items); "
+              f"{len(items)} item(s) held for the next hour, not dropped")
+        return []
+    n = min(len(items), day_left, hour_left)
+    if n < len(items):
+        print(f"  budget allows {n} of {len(items)} item(s) this cycle; "
+              f"the rest stay unseen and come back later")
+    return items[:n]
+
+
+def process_item(item: sources.NewsItem, result: dict | None) -> bool:
+    """Decide whether `result` (Claude's verdict on `item`) should post, and post it.
+
+    Returns True only if a tweet actually went out. The item is already marked
+    seen and already past every unpaid gate — run_cycle applies those BEFORE
+    composing, so nothing that cannot post reaches a paid call.
+    """
+    # A cap of 0 means uncapped — see config.MAX_POSTS_PER_DAY. Re-checked here
+    # as well as pre-compose: posts land during this loop, so the cap can be
+    # reached partway through a batch that is already paid for.
     if config.MAX_POSTS_PER_DAY and state.posts_today() >= config.MAX_POSTS_PER_DAY:
         print("Daily post cap reached; skipping remaining items")
-        return
+        return False
 
-    # Skip a story we've already posted from another outlet/feed. The Google
-    # News feeds aggregate every publisher, so the same trade surfaces many
-    # times with different links — dedup on the headline's meaning, and do it
-    # before the Claude call so duplicates cost nothing.
     sig = sources.content_key(item.title)
-    if sig and state.is_seen(f"sig:{sig}"):
-        print(f"  duplicate story, skipping: {item.title[:60]}")
-        return
 
-    # Already covered this player today? The per-subject backstop further down
-    # enforces MAX_POSTS_PER_PLAYER, but it needs the player name from Claude,
-    # so it only runs AFTER the call is paid for. One live cycle carried ten
-    # separate items about the same Rich Paul / LeBron story: the bot paid ten
-    # times and published once, because nine were discarded a few lines later.
-    #
-    # Checking the headline first costs nothing and removes no coverage in the
-    # ordinary case — the same rule was going to reject these anyway. It
-    # diverges only when Claude would have named a DIFFERENT primary player
-    # than the one the headline mentions, which is why every skip is logged:
-    # the log is the audit trail for what this rule is actually costing.
-    if config.SKIP_COVERED_SUBJECTS:
-        covered = _covered_subject_in(item.title)
-        if covered:
-            print(f"  already covered {covered} today, skipping before the Claude call: "
-                  f"{item.title[:60]}")
-            return
-
-    # Spend ceiling. Checked immediately before the call because this is the
-    # only line in the bot that costs Anthropic credit, and the checks after it
-    # (freshness, per-subject backstop, trade dedup) discard a real share of
-    # what it pays for. Counting attempts rather than posts is the point.
-    if config.MAX_CLAUDE_CALLS_PER_DAY:
-        used = state.claude_calls_today()
-        if used >= config.MAX_CLAUDE_CALLS_PER_DAY:
-            print(f"  Claude daily call cap reached ({used}/"
-                  f"{config.MAX_CLAUDE_CALLS_PER_DAY}), skipping until UTC midnight")
-            return
-        # Pace it. Without this the day's budget goes in the first busy hour
-        # and the account is dark for the other 23 — the cap protects the
-        # balance, this protects the coverage.
-        hour_used = state.claude_calls_this_hour()
-        if hour_used >= config.MAX_CLAUDE_CALLS_PER_HOUR:
-            print(f"  hourly pace reached ({hour_used}/"
-                  f"{config.MAX_CLAUDE_CALLS_PER_HOUR}), holding budget for later today: "
-                  f"{item.title[:50]}")
-            return
-    state.incr_claude_calls()
-    state.incr_claude_calls_hour()
-
-    result = compose(item)
     if not result or not result.get("newsworthy") or not result.get("tweet"):
         print(f"  skipped: {item.title[:70]}")
-        return
+        return False
 
     # Semantic dedup: block a repeat of the SAME event even when the headline is
     # worded differently by another outlet. content_key above only catches near-
@@ -554,7 +543,7 @@ def process_item(item: sources.NewsItem) -> None:
     event_sig = _final_signature(result) if is_final else _event_signature(result)
     if event_sig and state.is_seen(event_sig):
         print(f"  duplicate event, skipping: {event_sig}")
-        return
+        return False
 
     # BACKSTOP — deliberately not clever, and independent of how the model
     # classified the item. Every semantic dedup above depends on the model
@@ -566,7 +555,7 @@ def process_item(item: sources.NewsItem) -> None:
     if subject and state.player_posts_today(subject) >= config.MAX_POSTS_PER_PLAYER:
         print(f"  already posted {config.MAX_POSTS_PER_PLAYER} items about "
               f"{subject} today, skipping")
-        return
+        return False
 
     # CONFIRMED-TRADE dedup: post a deal ONCE and never let it resurface. A
     # 3-team blockbuster (Dort + Risacher + picks) surfaces for DAYS from every
@@ -583,18 +572,18 @@ def process_item(item: sources.NewsItem) -> None:
         trade_pflag = _trade_player_flag(result)
         if _trade_already_posted(trade_teams, trade_pflag):
             print(f"  trade already posted ({','.join(sorted(trade_teams)) or trade_pflag}), skipping")
-            return
+            return False
 
     if is_final and not event_sig:
         print(f"  final with unresolvable teams, skipping: {item.title[:60]}")
-        return
+        return False
     if is_final:
         a_s, h_s = int(result.get("away_score") or 0), int(result.get("home_score") or 0)
         # even summer-league teams clear 50; equal or tiny scores mean the model
         # couldn't actually read a final score out of the item
         if a_s < 50 or h_s < 50 or a_s == h_s:
             print(f"  final with implausible score ({a_s}-{h_s}), skipping")
-            return
+            return False
 
     # Highlights (standout performances) only post for genuine stars, and are
     # capped separately per day so they add engagement without burying the news.
@@ -602,10 +591,10 @@ def process_item(item: sources.NewsItem) -> None:
     if is_highlight:
         if not result.get("is_star"):
             print(f"  non-star highlight, skipping: {item.title[:60]}")
-            return
+            return False
         if state.highlights_today() >= config.MAX_HIGHLIGHTS_PER_DAY:
             print("  daily highlight cap reached; skipping highlight")
-            return
+            return False
 
     # Freshness by type: transactions AND the trade/free-agency chatter around
     # them (rumors, reports — "star deciding today", "weighing offers") stay
@@ -617,7 +606,7 @@ def process_item(item: sources.NewsItem) -> None:
         max_age = config.TRADE_MAX_AGE_MIN if wide else config.FRESH_MAX_AGE_MIN
         if age_min > max_age:
             print(f"  too stale ({int(age_min)}m old), skipping: {item.title[:60]}")
-            return
+            return False
 
     text = result["tweet"].strip()
     if item.link and config.INCLUDE_SOURCE_LINK:
@@ -686,7 +675,7 @@ def process_item(item: sources.NewsItem) -> None:
     if image is None and config.REQUIRE_IMAGE:
         print(f"  no card for this item (category={result.get('category') or '?'}), "
               f"skipping — REQUIRE_IMAGE is on")
-        return
+        return False
 
     if tweeter.post(text, image=image):
         state.incr_posts()
@@ -706,6 +695,8 @@ def process_item(item: sources.NewsItem) -> None:
         if _is_player_move(result):
             # persistent flags: this move never resurfaces (any outlet/wording/day)
             _mark_trade_posted(trade_teams, trade_pflag)
+        return True
+    return False
 
 
 def run_cycle() -> None:
@@ -754,11 +745,60 @@ def run_cycle() -> None:
             print(f"  collapsed {before - len(worth)} same-story item(s) before composing")
     if not fresh:
         return
-    print(f"{len(fresh)} fresh | -{len(fresh) - len(deduped)} cross-feed dupes | "
-          f"-{len(deduped) - len(worth)} prefiltered junk | {len(worth)} -> Claude")
+
+    # Last unpaid gates, hoisted ahead of composing now that composing is
+    # batched. Everything here is free or a Redis read, and every item it drops
+    # was going to be rejected after the call anyway — so paying for it first
+    # bought nothing.
+    pending = []
     for item in worth:
-        process_item(item)
-        time.sleep(2)  # small gap between posts, looks less bot-bursty
+        if config.MAX_POSTS_PER_DAY and state.posts_today() >= config.MAX_POSTS_PER_DAY:
+            print("Daily post cap reached; composing nothing further this cycle")
+            break
+        sig = sources.content_key(item.title)
+        if sig and state.is_seen(f"sig:{sig}"):
+            state.mark_seen(item.id)
+            print(f"  duplicate story, skipping: {item.title[:60]}")
+            continue
+        if config.SKIP_COVERED_SUBJECTS:
+            covered = _covered_subject_in(item.title)
+            if covered:
+                state.mark_seen(item.id)
+                print(f"  already covered {covered} today, skipping before the Claude "
+                      f"call: {item.title[:60]}")
+                continue
+        pending.append(item)
+
+    # Trim to what the budget allows. Held-back items are deliberately NOT
+    # marked seen, so they return next hour instead of being dropped — the old
+    # code marked every item seen on entry and only then checked the budget, so
+    # a story that broke while the hourly allowance was spent was gone for good.
+    affordable = _affordable(pending)
+    for item in affordable:
+        state.mark_seen(item.id)
+
+    print(f"{len(fresh)} fresh | -{len(fresh) - len(deduped)} cross-feed dupes | "
+          f"-{len(deduped) - len(worth)} prefiltered junk | "
+          f"-{len(worth) - len(pending)} already covered | "
+          f"{len(affordable)} -> Claude"
+          + (f" (+{len(pending) - len(affordable)} held for budget)"
+             if len(affordable) < len(pending) else ""))
+
+    # One request per CLAUDE_BATCH_SIZE items. Post each batch's verdicts as
+    # they land rather than composing everything first, so the freshest story
+    # goes out sooner on a busy cycle.
+    size = max(1, config.CLAUDE_BATCH_SIZE)
+    for start in range(0, len(affordable), size):
+        chunk = affordable[start:start + size]
+        results = composer.compose_batch(chunk)
+        state.incr_claude_calls(len(chunk))
+        state.incr_claude_calls_hour(len(chunk))
+        for item, result in zip(chunk, results):
+            # Pace only ACTUAL posts. This used to sleep after every item,
+            # skipped ones included — 60 candidates meant two minutes of
+            # sleeping to space out the handful that published.
+            if process_item(item, result):
+                time.sleep(2)  # small gap between posts, looks less bot-bursty
 
     u = composer.USAGE
     print(f"Claude usage this cycle: {u['calls']} calls, {u['input']} in / "
