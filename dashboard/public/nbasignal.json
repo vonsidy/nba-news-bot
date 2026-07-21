@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T20:44:00Z",
+  "updated": "2026-07-21T22:08:11Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Jamarion Sharp signs two-way deal with the Clippers. The G League Defensive Player of the Year went undrafted out of Ole Miss in 2024.",
+      "cat": "Official",
+      "ts": 1784668688.6464584,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: NBA investigating Gary Trent Jr.'s $64M contract with the Bucks. Via AOL.",
       "cat": "Report",
@@ -113,7 +119,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784656420
+      "newest_ts": 1784666357
     },
     {
       "label": "ESPN",
@@ -172,14 +178,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 5,
+  "posts_today": 6,
   "cap": null,
   "claude": {
-    "items_today": 43,
+    "items_today": 45,
     "items_cap": 340,
     "items_this_hour": 0,
     "items_cap_hour": 14,
-    "spent_usd": 0.0206,
+    "spent_usd": 0.0216,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
