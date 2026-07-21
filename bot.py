@@ -422,7 +422,14 @@ def process_item(item: sources.NewsItem) -> None:
             bg = f"photo:{star}" if photo else "arena"
             print(f"  generated score card ({bg}): {result.get('away_team')} {result.get('away_score')}"
                   f" @ {result.get('home_team')} {result.get('home_score')}")
-    elif result.get("is_trade") and result.get("player") and result.get("to_team"):
+    # Gate the card on _is_player_move, NOT on is_trade — the same reason the
+    # dedup had to stop trusting it. A signing arrives as "Lakers sign Arthur
+    # Kaluma to a two-way contract" with is_trade unset but player and to_team
+    # both filled, which cleared every dedup check and then silently failed
+    # this one, so the post went out bare. Signings are most of the summer
+    # feed, so most of the timeline lost its card. Still requires player and
+    # to_team, because make_trade_card cannot draw a move without both ends.
+    elif _is_player_move(result) and result.get("player") and result.get("to_team"):
         photo, credit = None, None
         # Every traded/signed player gets a photo: a free Wikimedia action shot
         # when one exists, else the player's official headshot. Only a total
