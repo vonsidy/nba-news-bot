@@ -8,7 +8,7 @@ JSON file for local development when Redis env vars are absent.
 import json
 import os
 import time
-from datetime import date, timezone, datetime
+from datetime import date, timedelta, timezone, datetime
 
 import config
 
@@ -31,11 +31,27 @@ _LOCAL = config.STATE_FILE
 
 
 def _today() -> str:
-    return datetime.now(timezone.utc).date().isoformat()
+    """Today's date in US Eastern — the boundary every daily counter turns on.
+
+    This was UTC, which put the reset at 8pm ET (EDT). That is the worst
+    possible moment: it lands in the middle of NBA evening news, so a busy
+    night was split across two budget days, one player could be posted about
+    twice in a single evening, and the owner — who works in ET — could not
+    reconcile a balance against a "day" that ended at dinner time.
+
+    ET matches both the news cycle and the person reading the numbers.
+    bot._et_hour() already picked America/New_York for the same reason.
+    """
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York")).date().isoformat()
+    except Exception:
+        # No tzdata (bare containers): EDT-ish is far closer than UTC.
+        return (datetime.now(timezone.utc) - timedelta(hours=4)).date().isoformat()
 
 
 def today_key() -> str:
-    """Public UTC date string, used to scope per-day dedup keys."""
+    """Public ET date string, used to scope per-day dedup keys."""
     return _today()
 
 
