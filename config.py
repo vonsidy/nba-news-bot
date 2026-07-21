@@ -70,6 +70,19 @@ ENABLE_DEBATE_POSTS = os.getenv("ENABLE_DEBATE_POSTS", "0").strip().lower() in (
 # Set INCLUDE_SOURCE_LINK=1 to bring them back, knowing the 20x cost.
 INCLUDE_SOURCE_LINK = os.getenv("INCLUDE_SOURCE_LINK", "0").strip().lower() in ("1", "true", "yes")
 
+# Every post carries a graphic or it doesn't go out at all. Owner's call
+# 2026-07-21: a bare text post reads as a scraper, and the card is the whole
+# visual identity of the account. It costs nothing to insist on — X bills
+# image+text at the same $0.015 as text alone.
+#
+# This DOES cost coverage, and knowingly: only player moves (trade card) and
+# finished games (score card) have a generator, so items with no card are
+# dropped rather than posted bare — rumors with no destination named, coaching
+# and front-office moves, and highlights that aren't final scores. Set
+# REQUIRE_IMAGE=0 to let those post as text again, or add a generator for them
+# to card.py and they start qualifying automatically.
+REQUIRE_IMAGE = os.getenv("REQUIRE_IMAGE", "1").strip().lower() in ("1", "true", "yes")
+
 # How recent (in minutes) an item must be to still be worth posting. Breaking
 # news lives or dies on latency — a game score that's hours old gets no traction,
 # so keep this tight. Anything older is dropped instead of posted stale.

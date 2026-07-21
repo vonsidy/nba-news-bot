@@ -449,6 +449,16 @@ def process_item(item: sources.NewsItem) -> None:
             kind = "photo" if photo else "design"
             print(f"  generated {kind} trade card: {result['player']} -> {result['to_team']}")
 
+    # One image per post, or it doesn't go out (config.REQUIRE_IMAGE). Checked
+    # here rather than earlier so the decision is made on the card we actually
+    # produced — a generator that returns None (missing logo, unresolvable
+    # player, CDN hiccup) drops the post exactly like a category with no
+    # generator at all, instead of quietly posting bare.
+    if image is None and config.REQUIRE_IMAGE:
+        print(f"  no card for this item (category={result.get('category') or '?'}), "
+              f"skipping — REQUIRE_IMAGE is on")
+        return
+
     if tweeter.post(text, image=image):
         state.incr_posts()
         state.record_post(result["tweet"].strip(), result.get("category", ""), bool(image))
