@@ -1,14 +1,3 @@
 {
-  "$comment": [
-    "No crons. The X stats sync (/api/cron/snapshot) is the only thing in this",
-    "system that READS from X, and reads were ~99% of the X bill — posting ran",
-    "5-14 requests/day while reads ran 700-6,400. The sync's OAuth 2.0 client",
-    "secret was regenerated on 2026-07-21 without being redeployed, so the sync",
-    "cannot authenticate; removing the schedule stops it retrying daily.",
-    "",
-    "To turn stats back on: set X_CLIENT_SECRET in Vercel to the new value,",
-    "reconnect X on the dashboard, and restore the cron below. Be aware that",
-    "re-enables the read cost.",
-    "  { \"path\": \"/api/cron/snapshot\", \"schedule\": \"0 13 * * *\" }"
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }

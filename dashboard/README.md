@@ -1,5 +1,28 @@
 # NBA Bot Dashboard (Vercel)
 
+## Why there are no crons in `vercel.json`
+
+`/api/cron/snapshot` is the only thing in this system that READS from X, and
+reads are billed per resource returned. Its OAuth 2.0 client secret was
+regenerated on 2026-07-21 and deliberately not redeployed, so the sync can no
+longer authenticate; dropping the schedule stops it retrying daily.
+
+To turn stats back on: set `X_CLIENT_SECRET` in Vercel to the new value,
+reconnect X on the dashboard, and restore the schedule:
+
+```json
+{ "crons": [{ "path": "/api/cron/snapshot", "schedule": "0 13 * * *" }] }
+```
+
+Be aware that re-enables the read cost.
+
+> This note lives here rather than in `vercel.json` because that file is
+> schema-validated: a `$comment` key fails the build with *"should NOT have
+> additional property `$comment`"*, and it did — every deployment from
+> 2026-07-21 e048e2c onward errored until it was removed. JSON has no comments;
+> put the reasoning in Markdown.
+
+
 Web dashboard for the NBA news bot: connect your X account with one click,
 see engagement stats, and get data-driven "when to post / how much to post"
 recommendations.
