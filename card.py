@@ -151,19 +151,27 @@ def _center(draw, cx, y, text, font, fill):
 
 
 CREDIT_BOTTOM_MARGIN = 30   # air between the credit glyphs and the canvas edge
+CREDIT_GAP_BELOW_SOURCE = 6  # air between the VIA <source> line and the credit
 
 
-def _credit_line(draw, W, H, credit, size, fill):
-    """Draw the CC photo attribution a real margin above the bottom edge.
+def _credit_line(draw, W, H, credit, size, fill, top=None):
+    """Draw the CC photo attribution.
 
     Positioned by MEASURING the text rather than from a fixed y, because
     _center takes y as the TOP of the string: the old `H - 32` with a 22px
     font put the glyph bottoms ~6px from the edge, so the line read as though
     it were cut off. Measuring keeps the gap constant if the font size ever
-    changes."""
+    changes.
+
+    `top` anchors the line directly under the VIA <source> line so the two
+    attribution lines read as one block. Bottom-anchoring both of them was the
+    bug: VIA's glyphs ran to y=1032 while the credit started at y=1024, so they
+    overlapped. Without `top` the line falls back to sitting
+    CREDIT_BOTTOM_MARGIN above the canvas edge."""
     font = _font(size)
     text_h = draw.textbbox((0, 0), credit, font=font)[3]
-    _center(draw, W / 2, H - CREDIT_BOTTOM_MARGIN - text_h, credit, font, fill)
+    y = top if top is not None else H - CREDIT_BOTTOM_MARGIN - text_h
+    _center(draw, W / 2, y, credit, font, fill)
 
 
 def _brand(draw, W, y, fill, shadow=False):
@@ -222,7 +230,12 @@ def _breaking_box(d, W, y_top, source=None):
     # vertically center the text inside the box (offset out the bbox's top gap)
     _center(d, W / 2, by0 + pad_y - box[1], bn, bn_font, (255, 255, 255))
     if source:
-        _center(d, W / 2, by1 + 18, f"VIA {source.upper()}", _font(30), (232, 232, 236))
+        via_font = _font(30)
+        via = f"VIA {source.upper()}"
+        _center(d, W / 2, by1 + 18, via, via_font, (232, 232, 236))
+        # Return the bottom of the VIA line, not of the box — the photo credit
+        # tucks directly under it, and anchoring to the box would overlap it.
+        return by1 + 18 + d.textbbox((0, 0), via, font=via_font)[3]
     return by1
 
 
@@ -420,11 +433,13 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     badge_gap = 34           # space between the badges and the BREAKING box
     badge_cy = breaking_top - badge_gap - badge_r
     _draw_team_badges(img, d, W, badge_cy, from_abbr, to_abbr, r=badge_r)
-    _breaking_box(d, W, breaking_top, source=source)
+    source_bottom = _breaking_box(d, W, breaking_top, source=source)
 
-    # required CC photo attribution, small at the very bottom
+    # required CC photo attribution, tucked under the VIA <source> line so the
+    # two attribution lines read as one block rather than two stray captions
     if credit:
-        _credit_line(d, W, H, credit, size=22, fill=(206, 209, 215))
+        _credit_line(d, W, H, credit, size=17, fill=(206, 209, 215),
+                     top=source_bottom + CREDIT_GAP_BELOW_SOURCE)
 
     out = io.BytesIO()
     img.save(out, format="PNG")
