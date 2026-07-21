@@ -65,12 +65,31 @@ _JUNK_RE = re.compile(
     r"|live stream|recruiting|preseason schedule|schedule release"
     r"|power rankings?|mock draft|way-too-early|offseason grades"
     r"|reasons why|winners and losers|(top|best) \d+ .*this week"
-    r"|summer league (recap|grades|review|takeaways|standings))\b"
+    r"|summer league (recap|grades|review|takeaways|standings)"
+    # Opinion, listicle and roundup framings. Added 2026-07-21 after measuring
+    # a live cycle: 61 items reached the paid Claude call and only ~10 posts a
+    # day come out the other end. These 12 shapes are never a postable scoop —
+    # they are somebody's take, a countdown, or an all-30-teams digest. Rumor
+    # and free-agency chatter is deliberately NOT filtered here: the composer
+    # wants it, and it is the highest-engagement content the account posts.
+    r"|why (can.?t|won.?t|is|are|the|\w+ should)|predicting|prediction"
+    r"|superlatives|\bargues?\b|\bproves?\b|looking ahead|open thread"
+    r"|youtube gold|biggest storylines|salary.?cap sheet|countdown"
+    r"|\bnotes:|\bintel:|every .{0,30}(deal|trade).{0,30}all 30 teams)\b"
 )
 _OTHER_SPORT_RE = re.compile(
     r"(?i)\b(NFL|NHL|MLB|MLS|WNBA|cricket|rugby|premier league|la liga|bundesliga"
     r"|euroleague|serie a|formula 1|nascar|pga|ufc|maple leafs|canadiens"
-    r"|\bjets\b|yankees|dodgers|red sox|packers|cowboys)\b"
+    r"|\bjets\b|yankees|dodgers|red sox|packers|cowboys"
+    # Football (pro and college) leaked through constantly — a live cycle
+    # carried Mahomes' training camp, Eagles, Duke Football and Giants' Malik
+    # Nabers, none of which name a league. Every nickname below is checked
+    # against the NBA team list: none collide (Hawks/Seahawks and
+    # Kings/anything are kept apart by the word boundaries).
+    r"|football|eagles|giants|chiefs|patriots|ravens|steelers|bengals|browns"
+    r"|titans|colts|jaguars|texans|broncos|chargers|raiders|seahawks|49ers"
+    r"|rams|vikings|lions|bears|buccaneers|falcons|panthers|saints"
+    r"|commanders|bills)\b"
 )
 # NBA signal = the word "NBA" or any team city/nickname (>=4 chars to avoid noise).
 _NBA_TOKENS = sorted(
