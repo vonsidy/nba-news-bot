@@ -38,8 +38,17 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
 # Hard ceiling on paid Claude calls per UTC day. This is a spend cap, not an
 # editorial one: it counts compose() ATTEMPTS, because a call costs the same
 # whether the item is posted or discarded by the dedup that runs after it.
-# 0 = uncapped. At roughly $0.0025 a call, 400 is about $1/day.
-MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 400)
+# 0 = uncapped. Roughly $0.0025 a call, so 150 is about $0.38/day, $11/month.
+#
+# Sized against what the bot actually does, not what it fetches. Measured on
+# 2026-07-21: a 5h45m run made 113 calls (236,599 in / 10,690 out) — about 20
+# an hour, ~470/day uncapped, ~$36/month. Against MAX_POSTS_PER_DAY=10 that is
+# ~47 paid calls per published post: almost everything compose() is paid for is
+# then thrown away by the freshness, per-subject and trade-dedup checks that
+# run after it. 150 still leaves ~15 calls per post, which is ample headroom;
+# the honest fix is to move those checks in front of compose() so the cap stops
+# being the thing that bounds the bill.
+MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 150)
 # Daily post cap. 0 = uncapped.
 # CORRECTION (2026-07-21): this used to say posting cost nothing, because reads
 # ran in the hundreds of requests/day against 5-14 for posts. That read the
