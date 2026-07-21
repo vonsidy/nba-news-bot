@@ -163,3 +163,53 @@ if __name__ == "__main__":
     test_every_post_needs_a_card()
     test_which_categories_can_produce_a_card()
     print("\nPASS")
+
+
+# ---------------------------------------------------------------------------
+# Regressions from the 2026-07-21 timeline: the same signing posted twice, and
+# a linkified publisher in the body.
+# ---------------------------------------------------------------------------
+def test_sportsnet_ca_is_defused():
+    """`.ca` was not in the TLD list, so "Sportsnet.ca" reached the timeline as
+    a live link and X billed that post at $0.200 instead of $0.015."""
+    import sources
+    body = "REPORT: Sharp signs two-way deal with Clippers via Sportsnet.ca"
+    out = bot._delink(body)
+    assert "Sportsnet.ca" not in out, out
+    assert "Sportsnet" in out, f"attribution lost entirely: {out}"
+    assert not bot._LINKIFIED.search(out), f"still linkifiable: {out}"
+    # and the upstream half, which is what should have caught it first
+    assert sources._publisher_name("Sportsnet.ca") == "Sportsnet"
+    # country codes generally, not just the one that bit us
+    for dom in ("TSN.ca", "Marca.es", "Bild.de", "smh.com.au", "Sport.it"):
+        assert not bot._LINKIFIED.search(bot._delink(f"per {dom}")), dom
+    print("sportsnet.ca and other country-code domains defused  OK")
+
+
+def test_bare_surname_dedups_against_full_name():
+    """"Jamarion Sharp" then "Sharp" keyed as two different players, so the
+    same two-way signing posted twice 57 minutes apart."""
+    import state
+    real = state.posted_names_today
+    try:
+        state.posted_names_today = lambda: ["Jamarion Sharp"]
+        full = {"player": "Jamarion Sharp", "is_trade": True, "to_team": "LAC"}
+        part = {"player": "Sharp", "is_trade": True, "to_team": "Clippers"}
+        assert bot._subject_key(full, "") == bot._subject_key(part, ""), \
+            f"{bot._subject_key(full,'')} != {bot._subject_key(part,'')}"
+        assert bot._trade_player_flag(full) == bot._trade_player_flag(part)
+
+        # ...but do NOT merge two different players who share a surname.
+        state.posted_names_today = lambda: ["Jrue Holiday", "Aaron Holiday"]
+        amb = {"player": "Holiday", "is_trade": True, "to_team": "BOS"}
+        assert bot._subject_key(amb, "") == "p:holiday", \
+            "ambiguous surname must not silently pick one of two Holidays"
+        assert bot._subject_key({"player": "Jrue Holiday"}, "") == "p:jholiday"
+    finally:
+        state.posted_names_today = real
+    print("bare surname collapses to the full name, ambiguous ones do not  OK")
+
+
+test_sportsnet_ca_is_defused()
+test_bare_surname_dedups_against_full_name()
+print("\nPASS")

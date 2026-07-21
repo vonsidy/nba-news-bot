@@ -42,7 +42,23 @@ def _clean(text: str) -> str:
 # "per roundtable.io" quietly costs 13x what "per Roundtable" costs, for the
 # same information — and it defeats INCLUDE_SOURCE_LINK=0, since the model
 # writes the domain into the tweet body where no link-append gate can see it.
-_TLD = re.compile(r"\.(?:io|com|net|org|co|uk|tv|us|gg|app|news)$", re.I)
+# The TLD list both this module and bot._delink match against. ONE list, because
+# they are two halves of the same defence and a tld missing from either is a
+# post billed at $0.200 instead of $0.015.
+#
+# It was 11 entries and it cost real money on 2026-07-21: "Sportsnet.ca" is a
+# Canadian outlet, `ca` was not in the list, so the domain survived
+# _publisher_name AND _delink, went out in the tweet body, and X linkified it.
+# Enumerating "the tlds we happen to have seen" is the wrong shape — X linkifies
+# every real tld, so anything not listed is a live 13x charge waiting for the
+# first outlet that uses it. Country codes are the obvious gap in a league with
+# Canadian teams and a global press.
+_TLDS = (
+    "io|com|net|org|co|uk|tv|us|gg|app|news|ca|de|fr|au|jp|in|it|es|nl|br|mx"
+    "|ru|ch|se|no|fi|dk|pl|at|be|nz|za|ie|sg|hk|kr|cn|info|biz|me|cc|ly|to|sh"
+    "|am|fm|gl|xyz|online|site|press|media|sport|sports|club|team|live|blog"
+)
+_TLD = re.compile(rf"(?:\.(?:{_TLDS}))+$", re.I)
 
 
 def _publisher_name(src: str) -> str:

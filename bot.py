@@ -26,10 +26,10 @@ import tweeter
 # it linkifies on sight. Matching this in a tweet body means paying $0.200 for
 # that post instead of $0.015.
 _LINKIFIED = re.compile(
-    r"(?i)(https?://\S+|\b[a-z0-9][a-z0-9-]*\.(?:io|com|net|org|co|uk|tv|us|gg|app|news)\b)"
+    rf"(?i)(https?://\S+|\b[a-z0-9][a-z0-9-]*(?:\.(?:{sources._TLDS}))+\b)"
 )
 _BARE_DOMAIN = re.compile(
-    r"(?i)\b([a-z0-9][a-z0-9-]*)\.(?:io|com|net|org|co|uk|tv|us|gg|app|news)\b"
+    rf"(?i)\b([a-z0-9][a-z0-9-]*)(?:\.(?:{sources._TLDS}))+\b"
 )
 
 
@@ -435,8 +435,40 @@ def _trade_player_flag(result: dict) -> str | None:
     `dest or 'x'` fallback used to produce a DIFFERENT key whenever to_team came
     back empty, so the same signing posted again. A player moves once; that's the
     whole key."""
-    p = _player_key(result.get("player"))
+    p = _player_key(_resolve_partial_name(result.get("player") or ""))
     return f"moved:{p}" if p else None
+
+
+def _resolve_partial_name(name: str) -> str:
+    """Expand a bare surname to a full name already posted about today.
+
+    The composer returns whatever the article called the player, and articles
+    are inconsistent: one wrote "Jamarion Sharp", the next "Summer leaguer
+    Sharp". _player_key keys on first-initial + surname, so those became
+    'jsharp' and 'sharp' — different subjects, and the same signing posted
+    twice 57 minutes apart on 2026-07-21.
+
+    Widening _player_key to surname-only would fix it and break something
+    worse: Jrue and Aaron Holiday would collapse into one player. So this stays
+    narrow — a SINGLE-token name is expanded only when exactly one name posted
+    today ends with it. Two Holidays posted today means no match and no merge,
+    which is the correct answer rather than a guess.
+    """
+    parts = [p for p in re.sub(r"[^a-z ]+", " ", _deaccent(name).lower()).split()
+             if p and p not in _SUFFIXES]
+    if len(parts) != 1:
+        return name
+    surname = parts[0]
+    matches = {
+        n for n in state.posted_names_today()
+        if (t := [p for p in re.sub(r"[^a-z ]+", " ", _deaccent(n).lower()).split()
+                  if p and p not in _SUFFIXES]) and len(t) > 1 and t[-1] == surname
+    }
+    if len(matches) == 1:
+        full = matches.pop()
+        print(f"  resolved partial name {name!r} -> {full!r} (posted today)")
+        return full
+    return name
 
 
 def _subject_key(result: dict, title: str) -> str:
@@ -451,7 +483,7 @@ def _subject_key(result: dict, title: str) -> str:
 
     Player and team keys live in separate namespaces, so a team's player news and
     its coaching news never compete for the same daily allowance."""
-    p = _player_key(result.get("player"))
+    p = _player_key(_resolve_partial_name(result.get("player") or ""))
     if p:
         return f"p:{p}"
     teams = _trade_team_set(result, title)
