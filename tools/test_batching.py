@@ -9,6 +9,7 @@ import bot, composer, config, sources, state, tweeter
 
 config.REQUIRE_IMAGE = False          # isolate batching from card generation
 config.MAX_POSTS_PER_DAY = 0
+config.INSIDER_X_ENABLED = False
 config.SKIP_COVERED_SUBJECTS = True
 
 # ---- in-memory state ------------------------------------------------------
@@ -181,4 +182,55 @@ assert BUDGET["day"] == expected, f"charged {BUDGET['day']}, expected {expected}
 print(f"OK 6 items (3 un-batched) charged {BUDGET['day']} units, not 6 — "
       f"a broken batch can no longer spend 4x silently\n")
 
-print("ALL CYCLE TESTS PASSED")
+
+
+# ===========================================================================
+print("--- 7. insider-only cycles do not touch RSS ---")
+SEEN.clear(); POSTS.clear(); PLAYERS.clear(); CALLS.clear(); NAMES.clear()
+BUDGET.update(day=0, hour=0)
+config.CLAUDE_BATCH_SIZE = 25
+config.MAX_CLAUDE_ITEMS_PER_HOUR = 100
+config.INSIDER_X_ENABLED = True
+
+composer.client = types.SimpleNamespace(
+    messages=types.SimpleNamespace(create=fake_create))   # not test 6's dropper
+
+RSS_CALLS = []
+_real_fetch = sources.fetch_all
+sources.fetch_all = lambda: (RSS_CALLS.append(1), list(ITEMS))[1]
+
+import insiders
+TWEETS = []
+insiders.fetch_insider_items = lambda: list(TWEETS)
+
+HEALTH = []
+state.set_feed_health = lambda h: HEALTH.append(h)
+
+bot.run_cycle(include_rss=False)
+assert not RSS_CALLS, "insider-only cycle still hit the RSS feeds"
+assert not HEALTH, "insider-only cycle republished a stale feed-health snapshot"
+print("OK include_rss=False: 0 RSS fetches, feed health untouched")
+
+bot.run_cycle(include_rss=True)
+assert len(RSS_CALLS) == 1 and len(HEALTH) == 1
+print("OK include_rss=True: RSS fetched once, health written once")
+
+# a tweet arriving on an insider-only cycle still flows all the way through
+SEEN.clear(); POSTS.clear(); PLAYERS.clear(); CALLS.clear(); RSS_CALLS.clear()
+BUDGET.update(day=0, hour=0)
+TWEETS.append(sources.NewsItem(
+    id="x:999", source="@ShamsCharania",
+    title="Lakers are signing LeBron James to a two-year deal, sources tell ESPN",
+    summary="", link="", published_ts=time.time()))
+bot.run_cycle(include_rss=False)
+assert not RSS_CALLS, "RSS was fetched on an insider-only cycle"
+assert len(CALLS) == 1, f"tweet did not reach Claude ({len(CALLS)} calls)"
+assert POSTS, "tweet reached Claude but never posted"
+charged = BUDGET["day"]
+assert charged == composer.FALLBACK_COST_WEIGHT, (
+    f"single-item cycle charged {charged}; a stale fallback count from an "
+    f"earlier cycle is leaking into the budget")
+print(f"OK tweet-only cycle posted without touching RSS: {POSTS[0][:52]}")
+
+sources.fetch_all = _real_fetch
+print("\nALL CYCLE TESTS PASSED")

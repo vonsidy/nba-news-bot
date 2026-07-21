@@ -820,13 +820,23 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
     return False
 
 
-def run_cycle() -> None:
+def run_cycle(include_rss: bool = True) -> None:
+    """One pass. `include_rss=False` polls only the insider X accounts.
+
+    The two sources are polled at different rates because they are limited by
+    different things. Google News throttles on REQUEST RATE — 60s polling got
+    the runner's IP blocked for four hours on 2026-07-21 — so RSS wants a slow,
+    polite cadence. The X reader is bounded by tweets RETURNED, and `since_id`
+    means an idle poll returns none and bills $0.005 x 0. Polling it three times
+    as often is therefore free, and it is the source that breaks news first.
+    """
     # Evergreen debate post (once/day, evening ET) — runs even when there's no
     # news, which is the whole point: it fills the quiet stretches.
-    try:
-        maybe_post_engagement()
-    except Exception as e:
-        print(f"engagement post error (continuing): {e}")
+    if include_rss:
+        try:
+            maybe_post_engagement()
+        except Exception as e:
+            print(f"engagement post error (continuing): {e}")
 
     # Pull candidates up to the widest window (trades stay newsworthy for hours);
     # the tighter per-type freshness is enforced in process_item once Claude has
@@ -834,19 +844,24 @@ def run_cycle() -> None:
     candidate_age = max(config.FRESH_MAX_AGE_MIN, config.TRADE_MAX_AGE_MIN) * 60
     # is_fresh (local, free) is checked BEFORE is_seen (a Redis read), so we only
     # hit Redis for items new enough to matter — far fewer Redis commands.
-    all_items = sources.fetch_all()
+    all_items = []
     # Insider tweets join the same funnel as RSS. They arrive first — a scoop
     # read from the tweet beats the same scoop read from an article about the
     # tweet — and _insider_first() below keeps them at the front of the queue.
     try:
-        all_items = insiders.fetch_insider_items() + all_items
+        all_items = insiders.fetch_insider_items()
     except Exception as e:
         print(f"insider X read error (continuing): {e}")
-    # Snapshot which feeds are live/quiet/down for the dashboard's "sources" view.
-    try:
-        state.set_feed_health(sources.LAST_HEALTH)
-    except Exception as e:
-        print(f"feed-health snapshot error (continuing): {e}")
+    if include_rss:
+        all_items = all_items + sources.fetch_all()
+        # Snapshot which feeds are live/quiet/down for the dashboard's "sources"
+        # view. Only on RSS cycles — LAST_HEALTH is untouched on an
+        # insider-only pass, and writing it anyway would republish a stale
+        # snapshot as if it were fresh.
+        try:
+            state.set_feed_health(sources.LAST_HEALTH)
+        except Exception as e:
+            print(f"feed-health snapshot error (continuing): {e}")
     fresh = [i for i in all_items
              if sources.is_fresh(i, candidate_age) and not state.is_seen(i.id)]
 
@@ -975,16 +990,26 @@ def main() -> None:
         return
 
     cap = f"max {config.MAX_POSTS_PER_DAY} posts/day" if config.MAX_POSTS_PER_DAY else "no daily post cap"
-    print(f"Polling {len(config.FEEDS)} feeds every {config.POLL_SECONDS}s, {cap}\n")
+    tick = max(5, min(config.INSIDER_POLL_SECONDS, config.POLL_SECONDS))
+    print(f"Polling {len(config.FEEDS)} feeds every {config.POLL_SECONDS}s, "
+          f"{len(config.INSIDER_X_ACCOUNTS)} X account(s) every {tick}s, {cap}\n")
+    # The loop ticks at the FASTER rate and gates the slow source on elapsed
+    # time, rather than running two threads. One thread means no lock around
+    # the Redis counters or the per-cycle Claude budget, and the whole job is
+    # network wait anyway.
+    last_rss = 0.0
     while True:
         try:
-            run_cycle()
+            due = (time.time() - last_rss) >= config.POLL_SECONDS
+            if due:
+                last_rss = time.time()
+            run_cycle(include_rss=due)
         except KeyboardInterrupt:
             print("\nStopping.")
             break
         except Exception as e:
             print(f"Cycle error (continuing): {e}")
-        time.sleep(config.POLL_SECONDS)
+        time.sleep(tick)
 
 
 if __name__ == "__main__":

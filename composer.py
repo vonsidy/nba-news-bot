@@ -259,9 +259,17 @@ def compose_batch(items: list[NewsItem]) -> list[dict | None]:
     back). Anything the batch did not answer for is retried individually, so a
     malformed or partial reply costs money, never coverage.
     """
+    # Reset FIRST. Both early returns below skip the accounting at the bottom,
+    # so without this the caller charges the budget using the PREVIOUS cycle's
+    # fallback count — a cycle with one item was billed 10 units instead of 4
+    # because three items had fallen back on the cycle before it.
+    LAST_FALLBACKS[0] = 0
     if not items:
         return []
     if len(items) == 1:
+        # One item is an un-batched call by definition: it pays the solo rate,
+        # so it is charged the solo weight.
+        LAST_FALLBACKS[0] = 1
         return [compose(items[0])]
 
     user_msg = "\n".join(f"Item {n}:\n{_render(it)}" for n, it in enumerate(items))

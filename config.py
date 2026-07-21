@@ -38,6 +38,24 @@ INSIDER_X_ACCOUNTS = [
 # case per account per cycle, and anything above it is picked up next poll.
 INSIDER_X_MAX_PER_POLL = int(os.getenv("INSIDER_X_MAX_PER_POLL") or 10)
 
+# How often to poll the insider accounts, independent of POLL_SECONDS.
+#
+# 30s against RSS's 90s, because the two are limited by different things and
+# there is no reason to hold the fast one back to protect the slow one.
+#
+# Google News throttles on REQUEST RATE — 60s polling got the runner's IP
+# blocked for four hours on 2026-07-21, costing six of eight sources — so RSS
+# needs a polite cadence. X bills on tweets RETURNED, and `since_id` means an
+# idle poll returns none: three times as many idle polls is three times $0.00.
+# What it buys is the thing worth buying, since these accounts break the news
+# the articles are later written about: average detection lag on a Shams scoop
+# drops from ~45s to ~15s.
+#
+# Rate limits are the real ceiling here, not cost. Two accounts at 30s is 240
+# requests/hour, comfortably inside the v2 user-timeline allowance, and
+# insiders.py already treats a 429 as "skip this cycle" rather than an error.
+INSIDER_POLL_SECONDS = int(os.getenv("INSIDER_POLL_SECONDS") or 30)
+
 X_API_KEY = os.getenv("X_API_KEY", "")
 # App-only bearer token. /2/users/:id/tweets is happiest with app auth; tweepy
 # falls back to the OAuth1 user context below when this is unset.
