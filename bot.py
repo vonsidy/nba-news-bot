@@ -28,6 +28,30 @@ from composer import compose
 _LINKIFIED = re.compile(
     r"(?i)(https?://\S+|\b[a-z0-9][a-z0-9-]*\.(?:io|com|net|org|co|uk|tv|us|gg|app|news)\b)"
 )
+_BARE_DOMAIN = re.compile(
+    r"(?i)\b([a-z0-9][a-z0-9-]*)\.(?:io|com|net|org|co|uk|tv|us|gg|app|news)\b"
+)
+
+
+def _delink(text: str) -> str:
+    """Guarantee the body holds nothing X would turn into a t.co link, so the
+    post cannot bill at $0.200 instead of $0.015.
+
+    _publisher_name already defuses the usual cause upstream (a bare-domain
+    publisher from Google News), so this is the backstop for the model lifting
+    a domain out of a headline or summary. A full url is dropped outright; a
+    bare domain keeps its name and loses the tld, so "per roundtable.io" still
+    reads as "per Roundtable" rather than losing the attribution entirely."""
+    def _name(m):
+        n = m.group(1).replace("-", " ")
+        return n.upper() if len(n) <= 4 else n[:1].upper() + n[1:]
+
+    out = re.sub(r"(?i)\bhttps?://\S+", "", text)
+    out = _BARE_DOMAIN.sub(_name, out)
+    out = re.sub(r"\s+([,.!?])", r"\1", re.sub(r"[ \t]+", " ", out)).strip()
+    if out != text:
+        print(f"  de-linked tweet body (would have billed 13x): {text!r} -> {out!r}")
+    return out
 
 
 # ---- Free prefilter: drop obvious non-news BEFORE paying for a Claude call ----
@@ -357,12 +381,8 @@ def process_item(item: sources.NewsItem) -> None:
     text = result["tweet"].strip()
     if item.link and config.INCLUDE_SOURCE_LINK:
         text = f"{text}\n{item.link}"
-    elif _LINKIFIED.search(text):
-        # X charges $0.200 for a post containing a url against $0.015 without,
-        # and it linkifies bare domains, so "per roundtable.io" pays the 13x
-        # rate. _publisher_name defuses the usual cause, but the model can
-        # still lift a domain out of a headline — say so rather than pay quietly.
-        print(f"  NOTE: link-like token in tweet body ({_LINKIFIED.search(text).group(0)}) — 13x post cost")
+    else:
+        text = _delink(text)
 
     # Auto-generate a graphic: a FINAL score card for game results (attaching
     # our own media also stops X from showing the linked article's ugly
