@@ -169,6 +169,28 @@ _NOT_NAME_WORDS = {
 }
 
 
+# The reporters who break NBA news first. An item sourced to one of them is
+# worth more than the same story reprinted by an aggregator, so when the budget
+# is tight these go through first.
+_INSIDER_RE = re.compile(
+    r"(?i)\b(shams(\s+charania)?|charania|woj|wojnarowski|marc\s+stein"
+    r"|chris\s+haynes|jake\s+fischer|adrian\s+wojnarowski)\b"
+)
+
+
+def _insider_first(items: list) -> list:
+    """Scoops before reprints, recency preserved within each group.
+
+    The hourly pace allows only a few paid calls, and without this an insider
+    scoop competes for those slots on equal terms with an aggregator's opinion
+    piece that happens to be newer. Same budget, better posts."""
+    ranked = sorted(
+        enumerate(items),
+        key=lambda p: (0 if _INSIDER_RE.search(f"{p[1].title} {p[1].summary}") else 1, p[0]),
+    )
+    return [i for _, i in ranked]
+
+
 def _headline_names(title: str) -> set[str]:
     """People a headline is about, normalised. Empty when it names nobody."""
     out = set()
@@ -722,6 +744,9 @@ def run_cycle() -> None:
 
     # Free prefilter: junk never reaches Claude.
     worth = [i for i in deduped if _worth_composing(i)]
+    # Scoops first, so a tight hourly budget buys the insider break rather than
+    # whichever aggregator reprinted it a minute later.
+    worth = _insider_first(worth)
     if config.SKIP_COVERED_SUBJECTS:
         before = len(worth)
         worth = _collapse_same_story(worth)

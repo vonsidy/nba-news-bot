@@ -199,7 +199,15 @@ FEEDS = [
     # Whatever the top insiders break, however it's phrased — their bylines are
     # the most reliable marker of a real scoop, and this catches stories worded
     # in ways the keyword queries miss ("finalizing a deal", "intends to sign").
-    ("Google News", _GNEWS + "(%22Shams%20Charania%22%20OR%20%22Marc%20Stein%22%20OR%20%22Chris%20Haynes%22%20OR%20%22Jake%20Fischer%22)%20when%3A1h"),
+    # when:1h -> 3h on 2026-07-21. These four break most NBA news first, so this
+    # is the highest-value feed in the list — and at a one-hour window it
+    # returned NOTHING on every check, because in any given hour none of them
+    # has filed. The scoops were still arriving, just second-hand from
+    # aggregators an hour later. Measured at 3h it returns 6 items including
+    # "Lakers sign free-agent forward Matisse Thybulle on 1-year, $3.3M" — the
+    # signing WITH its contract figure, which is the ideal post. Kept at 3h
+    # rather than 12h so the account stays a breaking-news account.
+    ("Google News", _GNEWS + "(%22Shams%20Charania%22%20OR%20%22Marc%20Stein%22%20OR%20%22Chris%20Haynes%22%20OR%20%22Jake%20Fischer%22)%20when%3A3h"),
     # Free-agency / trade chatter / decision-watch — the speculation that drives
     # the most engagement ("star reportedly deciding today", "weighing offers",
     # "requested a trade", "suitors"). The keyword feeds above only catch DONE
