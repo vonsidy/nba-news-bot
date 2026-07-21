@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T15:58:17Z",
+  "updated": "2026-07-21T18:13:50Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -71,70 +71,49 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784648818
+      "newest_ts": 1784655792
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1784647500
-    },
-    {
-      "label": "Star highlights",
-      "publisher": "Google News",
-      "status": "ok",
       "count": 10,
-      "newest_ts": 1784648888
+      "newest_ts": 1784657470
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784649274
+      "count": 1,
+      "newest_ts": 1784654675
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784649120
+      "count": 4,
+      "newest_ts": 1784656440
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1784646745
+      "count": 5,
+      "newest_ts": 1784656570
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784649022
-    },
-    {
-      "label": "Game finals",
-      "publisher": "Google News",
-      "status": "stale",
-      "count": 0,
-      "newest_ts": 0.0
+      "newest_ts": 1784657082
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784639010
-    },
-    {
-      "label": "HoopsHype",
-      "publisher": "HoopsHype",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0
+      "newest_ts": 1784652655
     },
     {
       "label": "ESPN",
@@ -142,27 +121,6 @@
       "status": "stale",
       "count": 0,
       "newest_ts": 0.0
-    },
-    {
-      "label": "Yahoo Sports",
-      "publisher": "Yahoo Sports",
-      "status": "ok",
-      "count": 20,
-      "newest_ts": 1784647577
-    },
-    {
-      "label": "CBS Sports",
-      "publisher": "CBS Sports",
-      "status": "ok",
-      "count": 20,
-      "newest_ts": 1784647186
-    },
-    {
-      "label": "SB Nation",
-      "publisher": "SB Nation",
-      "status": "stale",
-      "count": 10,
-      "newest_ts": 1784558165
     }
   ],
   "content": [],
@@ -215,5 +173,14 @@
   ],
   "growth": [],
   "posts_today": 5,
-  "cap": null
+  "cap": null,
+  "claude": {
+    "items_today": 42,
+    "items_cap": 340,
+    "items_this_hour": 14,
+    "items_cap_hour": 14,
+    "spent_usd": 0.0202,
+    "budget_usd": 0.1632,
+    "day_resets": "midnight ET"
+  }
 }
