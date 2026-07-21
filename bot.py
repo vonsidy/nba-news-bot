@@ -22,6 +22,14 @@ import tweeter
 from composer import compose
 
 
+# Anything X would turn into a t.co link: an explicit scheme, or a bare domain
+# it linkifies on sight. Matching this in a tweet body means paying $0.200 for
+# that post instead of $0.015.
+_LINKIFIED = re.compile(
+    r"(?i)(https?://\S+|\b[a-z0-9][a-z0-9-]*\.(?:io|com|net|org|co|uk|tv|us|gg|app|news)\b)"
+)
+
+
 # ---- Free prefilter: drop obvious non-news BEFORE paying for a Claude call ----
 # Conservative by design: a false negative silently loses a real story, so we
 # only drop on POSITIVE junk signals (never merely for lacking a team name — that
@@ -349,6 +357,12 @@ def process_item(item: sources.NewsItem) -> None:
     text = result["tweet"].strip()
     if item.link and config.INCLUDE_SOURCE_LINK:
         text = f"{text}\n{item.link}"
+    elif _LINKIFIED.search(text):
+        # X charges $0.200 for a post containing a url against $0.015 without,
+        # and it linkifies bare domains, so "per roundtable.io" pays the 13x
+        # rate. _publisher_name defuses the usual cause, but the model can
+        # still lift a domain out of a headline — say so rather than pay quietly.
+        print(f"  NOTE: link-like token in tweet body ({_LINKIFIED.search(text).group(0)}) — 13x post cost")
 
     # Auto-generate a graphic: a FINAL score card for game results (attaching
     # our own media also stops X from showing the linked article's ugly

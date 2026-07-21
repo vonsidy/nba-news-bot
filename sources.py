@@ -34,6 +34,31 @@ def _clean(text: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text or "")).strip()
 
 
+# Google News hands back some publishers as a bare domain ("roundtable.io",
+# "nba.com") rather than a name. That matters for cost, not just for looks: X
+# auto-links anything that parses as a domain, and a post containing a url
+# bills at $0.200 against $0.015 for one without. So an attribution reading
+# "per roundtable.io" quietly costs 13x what "per Roundtable" costs, for the
+# same information — and it defeats INCLUDE_SOURCE_LINK=0, since the model
+# writes the domain into the tweet body where no link-append gate can see it.
+_TLD = re.compile(r"\.(?:io|com|net|org|co|uk|tv|us|gg|app|news)$", re.I)
+
+
+def _publisher_name(src: str) -> str:
+    """A source name safe to drop into tweet text without X linkifying it."""
+    name = (src or "").strip()
+    if not name or " " in name:  # a real name already ("The Athletic")
+        return name
+    stripped = _TLD.sub("", name)
+    if stripped == name:  # no tld — nothing to defuse
+        return name
+    stripped = stripped.replace("-", " ").strip()
+    if not stripped:
+        return name
+    # Short all-lowercase remnants are acronyms ("nba" -> "NBA", not "Nba").
+    return stripped.upper() if len(stripped) <= 4 else stripped[:1].upper() + stripped[1:]
+
+
 # Stopwords + generic NBA/newswire tokens that carry no story-identity, dropped
 # when building the dedup signature so two outlets' wording collapses to one key.
 _STOP = {
@@ -95,6 +120,7 @@ def fetch_all() -> list[NewsItem]:
                     src = esrc["title"].strip()
                 elif " - " in title:
                     src = title.rsplit(" - ", 1)[1].strip()
+                src = _publisher_name(src)
                 if " - " in title:
                     title = title.rsplit(" - ", 1)[0].strip()
             ts = _entry_ts(entry)
