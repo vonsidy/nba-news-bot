@@ -56,6 +56,18 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 90)
 # behaviour, and it is why the cap is an env var: raise it the moment there is
 # more credit, and see the calls-per-post note above for the real fix.
 MAX_CLAUDE_CALLS_PER_DAY = int(os.getenv("MAX_CLAUDE_CALLS_PER_DAY") or 66)
+
+# Require the HEADLINE to assert an event before paying to compose it — see
+# bot._EVENT_RE. This is the difference between spending the daily budget on
+# 66 headlines and spending it on 66 STORIES: measured on a live cycle it cuts
+# what reaches the paid call by ~53% while keeping every transaction and all
+# the free-agency chatter. The commentary layer (summer league grades, "why X
+# was positive", scout takes) is what goes.
+#
+# On by default because the budget forces it. Set REQUIRE_NEWS_EVENT=0 to go
+# back to the old "when in doubt, let it through" behaviour once there is
+# credit to spend on maybes.
+REQUIRE_NEWS_EVENT = os.getenv("REQUIRE_NEWS_EVENT", "1").strip().lower() in ("1", "true", "yes")
 # Daily post cap. 0 = uncapped.
 # CORRECTION (2026-07-21): this used to say posting cost nothing, because reads
 # ran in the hundreds of requests/day against 5-14 for posts. That read the

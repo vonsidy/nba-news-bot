@@ -75,7 +75,8 @@ _JUNK_RE = re.compile(
     r"|why (can.?t|won.?t|is|are|the|\w+ should)|predicting|prediction"
     r"|superlatives|\bargues?\b|\bproves?\b|looking ahead|open thread"
     r"|youtube gold|biggest storylines|salary.?cap sheet|countdown"
-    r"|\bnotes:|\bintel:|every .{0,30}(deal|trade).{0,30}all 30 teams)\b"
+    r"|\bnotes:|\bintel:|every .{0,30}(deal|trade).{0,30}all 30 teams"
+    r"|ranking the|grading every|grades for|worst .{0,20}contracts)\b"
 )
 _OTHER_SPORT_RE = re.compile(
     r"(?i)\b(NFL|NHL|MLB|MLS|WNBA|cricket|rugby|premier league|la liga|bundesliga"
@@ -89,7 +90,7 @@ _OTHER_SPORT_RE = re.compile(
     r"|football|eagles|giants|chiefs|patriots|ravens|steelers|bengals|browns"
     r"|titans|colts|jaguars|texans|broncos|chargers|raiders|seahawks|49ers"
     r"|rams|vikings|lions|bears|buccaneers|falcons|panthers|saints"
-    r"|commanders|bills)\b"
+    r"|commanders|bills|bucs|mayfield|gmfb)\b"
 )
 # NBA signal = the word "NBA" or any team city/nickname (>=4 chars to avoid noise).
 _NBA_TOKENS = sorted(
@@ -99,14 +100,46 @@ _NBA_TOKENS = sorted(
 _NBA_RE = re.compile(r"(?i)\b(nba|" + "|".join(re.escape(x) for x in _NBA_TOKENS) + r")\b")
 
 
+# Does the HEADLINE assert something happened? Transactions, roster and staff
+# moves, availability, results, and the free-agency chatter the composer
+# explicitly wants. Deliberately generous — "reportedly", "in talks",
+# "suitors", "decision" all count, because build-up is the account's best
+# content. What it excludes is the commentary layer around the news: summer
+# league grades, "why X was positive", scout takes, franchise-status columns.
+#
+# Matched against the TITLE only, not the summary. A summary mentions a signing
+# in passing all the time; a title that asserts one is a story.
+_EVENT_RE = re.compile(
+    r"(?i)("
+    r"\bsigns?\b|\bsigned\b|\bsigning\b|\bwaives?\b|\bwaived\b|\bre-?signs?\b"
+    r"|\btrades?\b|\btraded\b|\bacquires?\b|\bdealt\b|\bagree[sd]?\b|\bclaims?\b"
+    r"|\bextension\b|\bextends?\b|\bbuyout\b|\bdeclines?\b|\bpicks? up\b"
+    r"|\breleases?d?\b|\bconverts?\b|\bguarantee\b|\bhires?\b|\bfired\b|\bnamed\b"
+    r"|\bparts? ways\b|\bout for\b|\bruled out\b|\binjur(y|ed)\b|\bsuspend"
+    r"|\bsurgery\b|free agen|\brumor|\breportedly\b|\bsources? say\b"
+    r"|\bdecision\b|\btimetable\b|\bmeeting with\b|\bin talks\b|\bsuitors?\b"
+    r"|\bexpected to\b|\bintends? to\b|\bfinalizing\b|\bbeat\b|\bdefeat"
+    r"|\bfinal score\b|career-high|triple-double)"
+)
+
+
 def _worth_composing(item: sources.NewsItem) -> bool:
-    """True if the item is worth a paid Claude call. Drops clear junk (betting,
-    fantasy, listicles, schedules) and other-sports items that carry no NBA
-    signal. Everything else goes to Claude — when in doubt, let it through."""
+    """True if the item is worth a paid Claude call.
+
+    This filter is FREE and the Claude call is not, so it is where the bill is
+    actually decided. Measured on a live cycle: 61 items were reaching the paid
+    call and the account publishes ~10/day — roughly 47 paid reads per tweet.
+
+    The event gate inverts the old 'when in doubt, let it through' rule, which
+    was the right default when calls were assumed free and the wrong one at
+    $0.0025 each. Set REQUIRE_NEWS_EVENT=0 to restore it when there is budget
+    to be generous again."""
     t = f"{item.title} {item.summary}"
     if _JUNK_RE.search(t):
         return False
     if _OTHER_SPORT_RE.search(t) and not _NBA_RE.search(t):
+        return False
+    if config.REQUIRE_NEWS_EVENT and not _EVENT_RE.search(item.title):
         return False
     return True
 
