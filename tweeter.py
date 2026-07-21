@@ -49,6 +49,45 @@ def creds_report() -> str:
     )
 
 
+def _upload_media_v2(image: bytes) -> str | None:
+    """Upload a PNG via POST /2/media/upload, signed with the same OAuth 1.0
+    credentials the bot posts with. Returns the media id, or None.
+
+    Exists because tweepy only speaks the v1.1 upload host. Kept deliberately
+    dependency-free beyond requests + requests-oauthlib, both of which tweepy
+    already pulls in, so this adds nothing to requirements.txt."""
+    try:
+        import requests
+        from requests_oauthlib import OAuth1
+    except ImportError as e:
+        print(f"  v2 upload unavailable ({e})")
+        return None
+
+    auth = OAuth1(config.X_API_KEY, config.X_API_SECRET,
+                  config.X_ACCESS_TOKEN, config.X_ACCESS_SECRET)
+    try:
+        r = requests.post(
+            "https://api.x.com/2/media/upload",
+            auth=auth,
+            files={"media": ("card.png", image, "image/png")},
+            data={"media_category": "tweet_image"},
+            timeout=30,
+        )
+    except Exception as e:
+        print(f"  v2 upload request error: {e}")
+        return None
+    if r.status_code >= 400:
+        print(f"  v2 upload HTTP {r.status_code}: {r.text[:200]}")
+        return None
+    try:
+        j = r.json()
+    except ValueError:
+        print("  v2 upload returned non-JSON")
+        return None
+    # v2 nests it under data.id; older shapes used media_id_string at the root.
+    return (j.get("data") or {}).get("id") or j.get("media_id_string") or j.get("id")
+
+
 def post(text: str, image: bytes | None = None) -> bool:
     """Post a tweet, optionally with a PNG image. Returns True on success
     (or in dry-run mode)."""
@@ -66,16 +105,25 @@ def post(text: str, image: bytes | None = None) -> bool:
 
     media_ids = None
     if image:
-        # Image upload uses the v1.1 endpoint. If it fails (e.g. API access
-        # tier), don't lose the whole story — fall back to a text-only tweet.
+        # tweepy's media_upload targets upload.twitter.com/1.1, and X has been
+        # retiring v1.1 for pay-per-use tiers — posting via v2 (create_tweet)
+        # keeps working while the upload 403s, which shows up as cards being
+        # generated and then silently never appearing on the timeline. Try
+        # v1.1, fall back to POST /2/media/upload with the same OAuth 1.0
+        # credentials, and only then give up.
         try:
             media = _get_api_v1().media_upload(
                 filename="trade.png", file=io.BytesIO(image)
             )
             media_ids = [media.media_id]
         except tweepy.TweepyException as e:
-            print(f"  image upload failed ({e}); posting text-only")
-            media_ids = None
+            print(f"  v1.1 media upload failed ({e}); trying v2")
+            mid = _upload_media_v2(image)
+            media_ids = [mid] if mid else None
+            if mid:
+                print("  v2 media upload succeeded")
+            else:
+                print("  v2 media upload also failed; posting text-only")
 
     try:
         _get_client().create_tweet(text=text, media_ids=media_ids)
