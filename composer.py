@@ -37,6 +37,13 @@ Editorial rules (non-negotiable):
   * highlight — a standout individual performance by a star/notable player (see below)
   * final     — a game that JUST ended, when the item states the final score
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
+- When the source states CONTRACT TERMS — years, total value, guarantees, player
+  or team option — put them in the tweet. "two years, $8.4M" is the detail
+  followers actually want, and there is room for it. Copy the figure exactly as
+  the source gives it; never estimate, round, convert, or infer a number the
+  source did not state. Most two-way and 10-day deals carry no figure at all
+  because the value is set by the league — say nothing about money on those
+  rather than reaching for one.
 - Free-agency and trade CHATTER about a notable player IS newsworthy — a star
   reportedly deciding today, weighing offers, drawing interest from teams, or
   requesting a trade. Post it as category "rumor" (or "report" if a named
