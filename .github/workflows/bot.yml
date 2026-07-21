@@ -57,7 +57,10 @@ jobs:
           # news along with the noise. This used to be hardcoded to "6" here,
           # silently overriding config.py.
           MAX_POSTS_PER_DAY: ${{ vars.MAX_POSTS_PER_DAY }}
-          POLL_SECONDS: "90"
+          # POLL_SECONDS deliberately NOT set here. It was pinned to "90",
+          # which silently overrode config.py exactly the way MAX_POSTS_PER_DAY
+          # used to — the default moved to 60 and nothing changed, because this
+          # line won. config.py is the one place that decides it.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY: ${{ secrets.X_API_KEY }}
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
@@ -68,4 +71,9 @@ jobs:
         # 5h45m, comfortably inside GitHub's 6h job ceiling. `timeout` exits 124
         # when it fires, which is the expected path — treat only a real crash as
         # a failure so the Actions tab stays honest.
-        run: timeout 20700 python bot.py || [ $? -eq 124 ]
+        # -u because stdout is a pipe here, not a tty, so Python block-buffers
+        # it: on a cancelled run the buffer is discarded and the whole cycle
+        # log — every "generated ... card", "Posted", "skipping" line — is lost
+        # with it. That made the bot unobservable exactly when it needed
+        # checking. Unbuffered costs nothing at this volume.
+        run: timeout 20700 python -u bot.py || [ $? -eq 124 ]

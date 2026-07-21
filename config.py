@@ -24,7 +24,9 @@ DRY_RUN = os.getenv("DRY_RUN", "true").strip().lower() != "false"
 # feeds concurrently (~1s, was ~7.4s serial) — the cycle is nearly all sleep.
 # Raise it if the dashboard's feed-health view starts showing errors: polling
 # Google News harder risks throttling, which costs more latency than it buys.
-POLL_SECONDS = int(os.getenv("POLL_SECONDS", "60"))
+# `or 60` not a default: an unset GitHub Actions variable arrives as an EMPTY
+# STRING, not absent, and int("") raises — the same trap MAX_POSTS_PER_DAY hit.
+POLL_SECONDS = int(os.getenv("POLL_SECONDS") or 60)
 # Daily post cap. 0 = uncapped.
 # CORRECTION (2026-07-21): this used to say posting cost nothing, because reads
 # ran in the hundreds of requests/day against 5-14 for posts. That read the
