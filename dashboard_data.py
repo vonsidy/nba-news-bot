@@ -238,7 +238,31 @@ def build() -> dict:
             # ET, like every other day boundary — see state._today().
             "day_resets": "midnight ET",
         },
+        # Proof the insider X reader is actually authenticating. Written by
+        # insiders.py on every successful poll; absent means it has never
+        # completed one, which is the difference between "quiet" and "broken"
+        # and is otherwise invisible until the 5h45m job ends.
+        "insiders": _insider_status(),
     }
+
+
+def _insider_status() -> list[dict]:
+    out = []
+    for handle in config.INSIDER_X_ACCOUNTS:
+        raw = state.get_str(f"xstat:{handle.lower()}")
+        if not raw:
+            out.append({"handle": handle, "ok": False,
+                        "note": "no successful poll yet"})
+            continue
+        ts, _, n = raw.partition("|")
+        out.append({
+            "handle": handle,
+            "ok": True,
+            "last_poll_secs_ago": max(0, int(time.time()) - int(ts)),
+            "tweets_last_poll": int(n or 0),
+            "watermark": state.get_str(f"xsince:{handle.lower()}"),
+        })
+    return out
 
 
 def publish() -> str:

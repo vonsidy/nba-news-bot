@@ -23,6 +23,7 @@ the same tweet twice, so there is nothing to deduplicate.
 """
 
 import re
+import time
 
 import tweepy
 
@@ -137,6 +138,12 @@ def fetch_insider_items() -> list[NewsItem]:
 
         tweets = list(resp.data or [])
         USAGE["tweets"] += len(tweets)
+        # Leave a breadcrumb the DASHBOARD can read. USAGE above is per-process
+        # and the bot runs one 5h45m job, so without this the only proof the
+        # reader authenticated at all is a log nobody can see until the job
+        # ends. "Working but unverifiable for six hours" is not working.
+        state.set_str(f"xstat:{handle.lower()}",
+                      f"{int(time.time())}|{len(tweets)}")
         if not tweets:
             continue
 
