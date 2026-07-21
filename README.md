@@ -106,7 +106,7 @@ bot every ~10 minutes on GitHub's servers. Dedup state lives in Upstash Redis
 |---|---|
 | `bot.py` | Entry point. `python bot.py` (loop) or `--once` (single cron pass) |
 | `sources.py` | RSS fetching and normalization |
-| `composer.py` | Claude API call: classify, write the tweet, extract trade info |
+| `composer.py` | Claude API call: classify, write the tweet, extract trade info. Batches up to `CLAUDE_BATCH_SIZE` items per call |
 | `card.py` | Generates the TRADE ALERT graphic (Pillow) |
 | `photos.py` | Fetches a CC/public-domain player photo + credit from Wikimedia |
 | `tweeter.py` | X API posting with optional image (tweepy), dry-run support |

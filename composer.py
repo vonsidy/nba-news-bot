@@ -138,30 +138,74 @@ TWEET_SCHEMA = {
 }
 
 
-def compose(item: NewsItem) -> dict | None:
-    """Returns {"newsworthy": bool, "category": str, "tweet": str} or None on failure."""
-    user_msg = (
+# ---- Batching ---------------------------------------------------------------
+# SYSTEM_PROMPT + TWEET_SCHEMA are ~1,600 tokens and identical on every request;
+# a headline+summary is ~64. One call per item therefore spent ~96% of its input
+# re-sending the same instructions, and prompt caching can't rescue that (Haiku
+# 4.5 won't cache a prefix under 4096 tokens — this one is well under).
+#
+# So we send many items per call instead. The overhead is paid once per batch,
+# which drops per-item input from ~1,650 tokens to ~150, and collapses a cycle's
+# N sequential round-trips into one.
+
+_BATCH_ADDENDUM = """
+
+You will be given SEVERAL numbered news items in one message. Apply the rules
+above to each item INDEPENDENTLY — judge every item on its own content only, and
+never let one item influence the verdict on another.
+
+Return one result object per item in "results", each carrying the "index" of the
+item it describes. Include EVERY item you were given, even the ones that aren't
+newsworthy (return those with newsworthy=false and an empty tweet)."""
+
+BATCH_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "results": {
+            "type": "array",
+            "description": "One object per input item, in the order given.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "index": {
+                        "type": "integer",
+                        "description": "The number of the item this result is for, as labelled in the message.",
+                    },
+                    **TWEET_SCHEMA["properties"],
+                },
+                "required": ["index", *TWEET_SCHEMA["required"]],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["results"],
+    "additionalProperties": False,
+}
+
+
+def _render(item: NewsItem) -> str:
+    return (
         f"Source: {item.source}\n"
         f"Headline: {item.title}\n"
         f"Summary: {item.summary}\n"
     )
+
+
+def _call(system: str, user_msg: str, schema: dict, max_tokens: int) -> dict | None:
+    """One Claude request returning parsed structured output, or None."""
     # "low" effort keeps latency/cost down and is plenty for classify + rewrite.
-    # Not every model accepts the effort hint, so if the request is rejected for
-    # it we retry once without it — otherwise a model swap could silently stop
-    # the whole bot (every compose returning None = nothing ever posts).
-    fmt = {"type": "json_schema", "schema": TWEET_SCHEMA}
+    # Not every model accepts the effort hint (Haiku 4.5 rejects it), so if the
+    # request is refused for it we retry once without — otherwise a model swap
+    # could silently stop the whole bot (every compose returning None = nothing
+    # ever posts). One wasted round-trip per BATCH now, not per item.
+    fmt = {"type": "json_schema", "schema": schema}
     configs = [{"effort": "low", "format": fmt}, {"format": fmt}]
-    # SYSTEM_PROMPT is byte-identical every call, so mark a cache breakpoint.
-    # NOTE: Haiku 4.5's minimum cacheable prefix is 2048 tokens; this prompt is
-    # ~700, so this is likely a no-op (cache_creation stays 0) — USAGE logging
-    # tells us empirically. Harmless either way.
-    system = [{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}]
     response = None
     for i, output_config in enumerate(configs):
         try:
             response = client.messages.create(
                 model=ANTHROPIC_MODEL,
-                max_tokens=1024,
+                max_tokens=max_tokens,
                 output_config=output_config,
                 system=system,
                 messages=[{"role": "user", "content": user_msg}],
@@ -169,7 +213,7 @@ def compose(item: NewsItem) -> dict | None:
             _account(response)
             break
         except anthropic.RateLimitError:
-            print("  Claude API rate limited — skipping this cycle's item")
+            print("  Claude API rate limited — skipping")
             return None
         except anthropic.APIStatusError as e:
             # On the first try, a 4xx may just be the effort hint — retry lean.
@@ -180,14 +224,58 @@ def compose(item: NewsItem) -> dict | None:
         except anthropic.APIConnectionError:
             print("  Network error reaching the Claude API")
             return None
-    if response is None:
+    if response is None or response.stop_reason == "refusal":
         return None
-
-    if response.stop_reason == "refusal":
+    # A truncated reply is unparseable JSON anyway, but say so plainly — a silent
+    # None here would look identical to "nothing was newsworthy".
+    if response.stop_reason == "max_tokens":
+        print("  Claude reply hit max_tokens (batch too large?) — falling back")
         return None
-
     text = next((b.text for b in response.content if b.type == "text"), "")
     try:
         return json.loads(text)
     except json.JSONDecodeError:
         return None
+
+
+def compose(item: NewsItem) -> dict | None:
+    """Classify + rewrite ONE item. Returns the result dict, or None on failure.
+
+    Kept as the per-item fallback for anything compose_batch() couldn't answer.
+    """
+    return _call(SYSTEM_PROMPT, _render(item), TWEET_SCHEMA, 1024)
+
+
+def compose_batch(items: list[NewsItem]) -> list[dict | None]:
+    """Classify + rewrite up to CLAUDE_BATCH_SIZE items in a single call.
+
+    Returns a list positionally aligned with `items` (None where no verdict came
+    back). Any item the batch didn't answer for is retried individually, so a
+    malformed or partial reply costs money, never coverage.
+    """
+    if not items:
+        return []
+    if len(items) == 1:
+        return [compose(items[0])]
+
+    user_msg = "\n".join(f"Item {n}:\n{_render(it)}" for n, it in enumerate(items))
+    # ~200 output tokens per item (14 fields + a 250-char tweet), plus headroom.
+    data = _call(SYSTEM_PROMPT + _BATCH_ADDENDUM, user_msg, BATCH_SCHEMA,
+                 min(8192, 400 * len(items) + 512))
+
+    out: list[dict | None] = [None] * len(items)
+    for r in (data or {}).get("results") or []:
+        # Trust the index, not the position: a dropped or reordered result would
+        # otherwise shift every verdict after it onto the wrong headline, which
+        # is far worse than losing one — it posts the wrong tweet for a story.
+        n = r.get("index")
+        if isinstance(n, int) and 0 <= n < len(items) and out[n] is None:
+            out[n] = r
+
+    missing = [n for n, r in enumerate(out) if r is None]
+    if missing:
+        print(f"  batch returned {len(items) - len(missing)}/{len(items)}; "
+              f"retrying {len(missing)} individually")
+        for n in missing:
+            out[n] = compose(items[n])
+    return out

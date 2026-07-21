@@ -13,6 +13,18 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 # Override with ANTHROPIC_MODEL in the environment to go back to a bigger model.
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
+# How many news items go into a single Claude call. The system prompt + JSON
+# schema are ~1,600 tokens and identical every time; a headline is ~64. At one
+# item per call that overhead WAS 96% of the bill, and prompt caching can't fix
+# it (Haiku 4.5 won't cache a prefix shorter than 4096 tokens). Batching pays it
+# once per N items instead, and turns a cycle's N round-trips into one.
+#
+# Bigger is cheaper but raises the blast radius of a malformed reply and the
+# chance the model gets sloppy across a long list; 25 is the tested balance.
+# Anything the batch fails to answer for is retried individually, so raising
+# this trades money for coverage, never the reverse.
+CLAUDE_BATCH_SIZE = int(os.getenv("CLAUDE_BATCH_SIZE") or 25)
+
 X_API_KEY = os.getenv("X_API_KEY", "")
 X_API_SECRET = os.getenv("X_API_SECRET", "")
 X_ACCESS_TOKEN = os.getenv("X_ACCESS_TOKEN", "")

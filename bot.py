@@ -19,7 +19,6 @@ import photos
 import sources
 import state
 import tweeter
-from composer import compose
 
 
 # ---- Free prefilter: drop obvious non-news BEFORE paying for a Claude call ----
@@ -249,25 +248,22 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
-def process_item(item: sources.NewsItem) -> None:
-    # Mark seen first — a bad item shouldn't be retried forever
-    state.mark_seen(item.id)
+def process_item(item: sources.NewsItem, result: dict | None) -> None:
+    """Decide whether `result` (Claude's verdict on `item`) should post, and post it.
 
+    The item is already marked seen and already past the free/Redis-only gates —
+    run_cycle applies those BEFORE composing, so nothing that can't post ever
+    reaches a paid call.
+    """
     # A cap of 0 means uncapped (the default) — see config.MAX_POSTS_PER_DAY.
+    # Re-checked here as well as pre-compose: posts land during this loop, so the
+    # cap can be reached partway through a batch we've already paid for.
     if config.MAX_POSTS_PER_DAY and state.posts_today() >= config.MAX_POSTS_PER_DAY:
         print("Daily post cap reached; skipping remaining items")
         return
 
-    # Skip a story we've already posted from another outlet/feed. The Google
-    # News feeds aggregate every publisher, so the same trade surfaces many
-    # times with different links — dedup on the headline's meaning, and do it
-    # before the Claude call so duplicates cost nothing.
     sig = sources.content_key(item.title)
-    if sig and state.is_seen(f"sig:{sig}"):
-        print(f"  duplicate story, skipping: {item.title[:60]}")
-        return
 
-    result = compose(item)
     if not result or not result.get("newsworthy") or not result.get("tweet"):
         print(f"  skipped: {item.title[:70]}")
         return
@@ -450,11 +446,48 @@ def run_cycle() -> None:
     worth = [i for i in deduped if _worth_composing(i)]
     if not fresh:
         return
-    print(f"{len(fresh)} fresh | -{len(fresh) - len(deduped)} cross-feed dupes | "
-          f"-{len(deduped) - len(worth)} prefiltered junk | {len(worth)} -> Claude")
+
+    # Last unpaid gate, applied BEFORE composing so a duplicate story costs
+    # nothing. The Google News feeds aggregate every publisher, so the same trade
+    # surfaces many times with different links — dedup on the headline's meaning.
+    # Marking seen here (not after posting) keeps the old guarantee that a bad
+    # item is never retried forever.
+    #
+    # The daily post cap is also checked here, not just in process_item: once
+    # it's hit, composing a batch means paying for verdicts we're guaranteed to
+    # throw away. Items are still marked seen while capped, exactly as before, so
+    # a capped stretch doesn't queue a backlog flood for when the cap resets.
+    capped = bool(config.MAX_POSTS_PER_DAY) and state.posts_today() >= config.MAX_POSTS_PER_DAY
+    pending = []
     for item in worth:
-        process_item(item)
-        time.sleep(2)  # small gap between posts, looks less bot-bursty
+        state.mark_seen(item.id)
+        if capped:
+            continue
+        sig = sources.content_key(item.title)
+        if sig and state.is_seen(f"sig:{sig}"):
+            print(f"  duplicate story, skipping: {item.title[:60]}")
+            continue
+        pending.append(item)
+
+    if capped:
+        print(f"Daily post cap reached; {len(worth)} items marked seen, none composed")
+        return
+
+    print(f"{len(fresh)} fresh | -{len(fresh) - len(deduped)} cross-feed dupes | "
+          f"-{len(deduped) - len(worth)} prefiltered junk | "
+          f"-{len(worth) - len(pending)} already-posted stories | "
+          f"{len(pending)} -> Claude")
+
+    # One call per CLAUDE_BATCH_SIZE items instead of one per item. Post each
+    # batch's verdicts as soon as they land rather than composing everything
+    # first — on a busy cycle that gets the freshest story out sooner.
+    size = max(1, config.CLAUDE_BATCH_SIZE)
+    for start in range(0, len(pending), size):
+        chunk = pending[start:start + size]
+        results = composer.compose_batch(chunk)
+        for item, result in zip(chunk, results):
+            process_item(item, result)
+            time.sleep(2)  # small gap between posts, looks less bot-bursty
 
     u = composer.USAGE
     print(f"Claude usage this cycle: {u['calls']} calls, {u['input']} in / "
