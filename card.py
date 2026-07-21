@@ -152,6 +152,11 @@ def _center(draw, cx, y, text, font, fill):
 
 CREDIT_BOTTOM_MARGIN = 30   # air between the credit glyphs and the canvas edge
 CREDIT_GAP_BELOW_SOURCE = 6  # air between the VIA <source> line and the credit
+# Font size for the CC photo attribution. Owner picked it off a rendered
+# comparison at 22 -> 17 -> 15; it is deliberately much smaller than the VIA
+# line, which is the credit a reader is meant to notice. Change this one number
+# to resize it on both the trade card and the score card.
+CREDIT_SIZE = 15
 
 
 def _credit_line(draw, W, H, credit, size, fill, top=None):
@@ -438,7 +443,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     # required CC photo attribution, tucked under the VIA <source> line so the
     # two attribution lines read as one block rather than two stray captions
     if credit:
-        _credit_line(d, W, H, credit, size=17, fill=(206, 209, 215),
+        _credit_line(d, W, H, credit, size=CREDIT_SIZE, fill=(206, 209, 215),
                      top=source_bottom + CREDIT_GAP_BELOW_SOURCE)
 
     out = io.BytesIO()
@@ -555,11 +560,18 @@ def make_score_card(away_team: str, home_team: str, away_score: int,
             # thin divider between the two lines
             d.rectangle([row_x0, cy + 125 - 1, row_x1, cy + 125 + 1], fill=(255, 255, 255, 40))
 
+    source_bottom = None
     if source:
-        _center(d, W / 2, H - 90, f"VIA {source.upper()}", _font(30), (200, 204, 212))
+        via_font = _font(30)
+        via = f"VIA {source.upper()}"
+        _center(d, W / 2, H - 90, via, via_font, (200, 204, 212))
+        source_bottom = H - 90 + d.textbbox((0, 0), via, font=via_font)[3]
     if credit:
-        # required CC photo attribution, small at the very bottom
-        _credit_line(d, W, H, credit, size=20, fill=(170, 174, 182))
+        # Same tuck as the trade card: anchor under VIA when there is one, so
+        # the two attribution lines can't drift into each other.
+        _credit_line(d, W, H, credit, size=CREDIT_SIZE, fill=(170, 174, 182),
+                     top=None if source_bottom is None
+                     else source_bottom + CREDIT_GAP_BELOW_SOURCE)
 
     out = io.BytesIO()
     img.save(out, format="PNG")
