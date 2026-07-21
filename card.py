@@ -150,6 +150,22 @@ def _center(draw, cx, y, text, font, fill):
     draw.text((cx - (box[2] - box[0]) / 2, y), text, font=font, fill=fill)
 
 
+CREDIT_BOTTOM_MARGIN = 30   # air between the credit glyphs and the canvas edge
+
+
+def _credit_line(draw, W, H, credit, size, fill):
+    """Draw the CC photo attribution a real margin above the bottom edge.
+
+    Positioned by MEASURING the text rather than from a fixed y, because
+    _center takes y as the TOP of the string: the old `H - 32` with a 22px
+    font put the glyph bottoms ~6px from the edge, so the line read as though
+    it were cut off. Measuring keeps the gap constant if the font size ever
+    changes."""
+    font = _font(size)
+    text_h = draw.textbbox((0, 0), credit, font=font)[3]
+    _center(draw, W / 2, H - CREDIT_BOTTOM_MARGIN - text_h, credit, font, fill)
+
+
 def _brand(draw, W, y, fill, shadow=False):
     """Stamp the account handle in the top-right corner."""
     bf = _font(30)
@@ -408,7 +424,7 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
 
     # required CC photo attribution, small at the very bottom
     if credit:
-        _center(d, W / 2, H - 32, credit, _font(22), (206, 209, 215))
+        _credit_line(d, W, H, credit, size=22, fill=(206, 209, 215))
 
     out = io.BytesIO()
     img.save(out, format="PNG")
@@ -528,7 +544,7 @@ def make_score_card(away_team: str, home_team: str, away_score: int,
         _center(d, W / 2, H - 90, f"VIA {source.upper()}", _font(30), (200, 204, 212))
     if credit:
         # required CC photo attribution, small at the very bottom
-        _center(d, W / 2, H - 40, credit, _font(20), (170, 174, 182))
+        _credit_line(d, W, H, credit, size=20, fill=(170, 174, 182))
 
     out = io.BytesIO()
     img.save(out, format="PNG")
