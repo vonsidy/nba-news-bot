@@ -213,3 +213,45 @@ def test_bare_surname_dedups_against_full_name():
 test_sportsnet_ca_is_defused()
 test_bare_surname_dedups_against_full_name()
 print("\nPASS")
+
+
+def test_other_league_teams_never_post():
+    """A Dallas Stars (NHL) story posted on 2026-07-22 because "stars" was in
+    no block list. The words that overlap normal NBA phrasing can only
+    disqualify an item carrying NO NBA signal, or they'd eat real news."""
+    import time, sources
+    def it(t):
+        return sources.NewsItem(id="x", source="ESPN", title=t, summary="",
+                                link="", published_ts=time.time())
+    for t in ["Stars GM Nill hopeful to extend Robertson after 1-year deal",
+              "Dallas Stars sign goaltender to extension",
+              "Minnesota Wild trade forward to Rangers",
+              "Dolphins sign Jordyn Brooks to extension",
+              "White Sox catcher placed on injured list",
+              "Liverpool agree deal for midfielder"]:
+        assert not bot._worth_composing(it(t)), f"other-league story kept: {t}"
+    for t in ["NBA stars react as Lakers sign LeBron James",
+              "Wild finish as Celtics beat Knicks 112-110",
+              "Lightning-quick Suns guard signs extension",
+              "Kings sign guard to a two-year deal",
+              "Knicks trade Karl-Anthony Towns to the Suns"]:
+        assert bot._worth_composing(it(t)), f"real NBA story dropped: {t}"
+
+    # no hard-blocked name may collide with an NBA team or alias
+    import card
+    nba = {v[0].lower() for v in card.TEAMS.values()} | set(card._ALIASES)
+    pat = bot._HARD_OTHER_SPORT_RE.pattern
+    alts = [a for a in pat.split("(", 1)[1].rsplit(")", 1)[0].split("|") if a]
+    clash = [a for a in alts if a in nba]
+    assert not clash, f"hard-blocks an NBA name: {clash}"
+    # Skip alternatives containing regex syntax — the probe below is a literal
+    # string, so \.? can't match itself. Their behaviour is covered above.
+    literal = [a for a in alts if not any(c in a for c in "\\?*+[](){}|^\$")]
+    unmatched = [a for a in literal
+                 if not bot._HARD_OTHER_SPORT_RE.search(f"The {a} sign a player")]
+    assert not unmatched, f"unmatchable (fused join?): {unmatched}"
+    print(f"other-league filter: {len(alts)} hard names, 0 NBA collisions  OK")
+
+
+test_other_league_teams_never_post()
+print("\nPASS")

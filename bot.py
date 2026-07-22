@@ -107,16 +107,32 @@ _HARD_OTHER_SPORT_RE = re.compile(
     # NFL
     r"dolphins|bengals|steelers|ravens|browns|jaguars|texans|colts|titans"
     r"|broncos|chargers|raiders|seahawks|49ers|niners|buccaneers|commanders"
-    r"|patriots|packers|vikings|panthers|cardinals"
+    r"|patriots|packers|vikings"
+    # NHL
+    r"|canucks|oilers|flames|sabres|penguins|blackhawks|bruins|canadiens"
+    r"|maple leafs|golden knights|red wings|dallas stars|minnesota wild"
+    r"|tampa bay lightning|st\.? louis blues|new york rangers"
     # MLB
     r"|white sox|red sox|yankees|dodgers|mets|cubs|braves|astros|phillies"
-    r"|orioles|padres|mariners|rays|guardians|brewers|reds|marlins|nationals"
-    # NHL
-    r"|canucks|oilers|flames|senators|sabres|penguins|blackhawks|bruins"
+    r"|orioles|padres|mariners|guardians|brewers|marlins"
     # Soccer
-    r"|liverpool|arsenal|chelsea|tottenham|everton|villa|fulham|wolves fc"
-    r"|man utd|manchester united|manchester city|carlisle united|real madrid"
-    r"|barcelona|juventus|psg"
+    r"|liverpool|arsenal|chelsea|tottenham|everton|fulham|juventus|barcelona"
+    r"|psg|man utd|manchester united|manchester city|carlisle united|real madrid"
+    r")\b"
+)
+
+# Ambiguous names: real non-NBA teams whose nickname is also an ordinary
+# basketball word. "NBA stars", "a wild finish", "lightning-quick" are all
+# normal NBA phrasing, so these can only disqualify an item that carries NO
+# NBA signal at all. That is what caught "Stars GM Nill hopeful to extend
+# Robertson" — a Dallas Stars (NHL) story with no NBA word anywhere in it,
+# which posted on 2026-07-22.
+_SOFT_OTHER_SPORT_RE = re.compile(
+    r"(?i)\b("
+    r"stars|wild|lightning|blues|rangers|islanders|devils|flyers|capitals"
+    r"|hurricanes|sharks|ducks|avalanche|predators|kraken|senators"
+    r"|bills|eagles|cowboys|lions|bears|falcons|saints|rams|chiefs|jets"
+    r"|giants|cardinals|panthers|reds|rays|nationals"
     r")\b"
 )
 
@@ -300,7 +316,8 @@ def _worth_composing(item: sources.NewsItem) -> bool:
     # injury and an English soccer signing inside one 14-item batch.
     if _HARD_OTHER_SPORT_RE.search(t):
         return False
-    if _OTHER_SPORT_RE.search(t) and not _NBA_RE.search(t):
+    if (_OTHER_SPORT_RE.search(t) or _SOFT_OTHER_SPORT_RE.search(t)) \
+            and not _NBA_RE.search(t):
         return False
     # The event gate is exempted for insider tweets, on purpose.
     #
