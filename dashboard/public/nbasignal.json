@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-22T15:06:46Z",
+  "updated": "2026-07-22T15:28:14Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -89,43 +89,43 @@
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784732709
+      "count": 9,
+      "newest_ts": 1784733579
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1784732321
+      "count": 13,
+      "newest_ts": 1784733901
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1784732469
+      "count": 9,
+      "newest_ts": 1784733724
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784730088
+      "count": 7,
+      "newest_ts": 1784733652
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784732627
+      "newest_ts": 1784733822
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784724879
+      "newest_ts": 1784730850
     },
     {
       "label": "ESPN",
@@ -199,14 +199,14 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 9,
+      "last_poll_secs_ago": 23,
       "tweets_last_poll": 0,
       "watermark": "2079918137613373547"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 10,
+      "last_poll_secs_ago": 23,
       "tweets_last_poll": 0,
       "watermark": "2079738156518187370"
     }
