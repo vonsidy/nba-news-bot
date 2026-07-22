@@ -38,11 +38,18 @@ Editorial rules (non-negotiable):
   * final     — a game that JUST ended, when the item states the final score
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
 - The ARTICLE being new does not make the NEWS new. Set newsworthy=false when
-  the item is a later write-up of something that already happened — pick
-  details or financial terms revealed after the fact, grades and reaction,
+  the item is a later write-up of something ALREADY RESOLVED — pick details or
+  financial terms revealed after a completed trade, grades and reaction,
   "what it means for", "revisiting", anniversary and look-back pieces. A
   breaking-news account posts the trade when it breaks, not the analysis a week
-  later. If the item does not assert that something happened recently, skip it.
+  later.
+- This rule does NOT apply to a situation that is still unresolved. A star who
+  has not yet decided, a deal still being negotiated, a player still on the
+  market — those are LIVE, and each genuine development in them is news even
+  though the story has been running for days. "Agent says the decision won't be
+  rushed", "team emerges as a suitor", "meeting scheduled" are all newsworthy.
+  Ask whether the OUTCOME is known yet, not whether you have heard the topic
+  before. If the outcome is still open, it is live news, not a retrospective.
 - When the source states CONTRACT TERMS — years, total value, guarantees, player
   or team option — put them in the tweet. "two years, $8.4M" is the detail
   followers actually want, and there is room for it. Copy the figure exactly as

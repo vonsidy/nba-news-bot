@@ -639,8 +639,19 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
 
     sig = sources.content_key(item.title)
 
-    if not result or not result.get("newsworthy") or not result.get("tweet"):
-        print(f"  skipped: {item.title[:70]}")
+    # These three used to share one "skipped:" line, which is why a day of zero
+    # posts was indistinguishable from a day of API failures — 184 paid items
+    # produced one identical message whether Claude had judged them or never
+    # answered at all. Name which it was; the money is spent either way, but
+    # only one of them is a bug.
+    if result is None:
+        print(f"  COMPOSE FAILED (paid, no verdict): {item.title[:66]}")
+        return False
+    if not result.get("newsworthy"):
+        print(f"  not newsworthy [{result.get('category') or '?'}]: {item.title[:60]}")
+        return False
+    if not result.get("tweet"):
+        print(f"  newsworthy but EMPTY TWEET (bug): {item.title[:60]}")
         return False
 
     # Semantic dedup: block a repeat of the SAME event even when the headline is
