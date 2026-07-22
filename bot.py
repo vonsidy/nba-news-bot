@@ -788,6 +788,28 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
             kind = "photo" if photo else "design"
             print(f"  generated {kind} trade card: {result['player']} -> {result['to_team']}")
 
+    # Last resort before the REQUIRE_IMAGE gate below: a generic news card.
+    #
+    # Only finals and player moves had a generator, so an investigation, a
+    # coaching hire, a suspension or an injury reached this point with no image
+    # and was dropped — after being fetched, filtered and PAID for. Three real
+    # stories died this way overnight on 2026-07-21. Buying the news and then
+    # binning it for want of a picture is the worst of both.
+    if image is None:
+        try:
+            image = card.make_news_card(
+                headline=result["tweet"].strip(),
+                # Whatever teams the story touches, for colour and logos. Empty
+                # is fine — the card falls back to a neutral league wash rather
+                # than returning None, which is what was losing the post.
+                teams=sorted(_trade_team_set(result, f"{item.title} {item.summary}")),
+                source=item.source,
+            )
+            if image:
+                print(f"  generated news card (category={result.get('category') or '?'})")
+        except Exception as e:
+            print(f"  news card failed (continuing): {e}")
+
     # One image per post, or it doesn't go out (config.REQUIRE_IMAGE). Checked
     # here rather than earlier so the decision is made on the card we actually
     # produced — a generator that returns None (missing logo, unresolvable

@@ -10,6 +10,7 @@ hiccup never breaks a post and the safe mode is one env var away.
 from __future__ import annotations
 
 import io
+import re
 import os
 import urllib.request
 
@@ -704,6 +705,93 @@ def make_trade_card(player: str, to_team: str, from_team: str | None = None,
         except Exception:
             pass  # bad/undecodable image -> fall back to design card
     return _design_card(player, to_abbr, from_abbr, prim, to_name, source)
+
+
+_EMOJI = re.compile(
+    "[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0001F1E6-\U0001F1FF\uFE0F]")
+
+
+def _wrap_headline(text: str, max_chars: int = 26, max_lines: int = 4) -> list[str]:
+    """Break a headline into balanced lines, trimming with an ellipsis if long."""
+    words, lines, cur = (text or "").split(), [], ""
+    for w in words:
+        trial = f"{cur} {w}".strip()
+        if len(trial) <= max_chars or not cur:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = w
+            if len(lines) == max_lines:
+                break
+    if cur and len(lines) < max_lines:
+        lines.append(cur)
+    if len(lines) == max_lines and len(" ".join(lines)) < len(text or ""):
+        lines[-1] = lines[-1].rstrip(" ,.;:") + "…"
+    return lines or [""]
+
+
+def make_news_card(headline: str, teams: list | None = None,
+                   source: str | None = None, photo: bytes | None = None,
+                   credit: str | None = None) -> bytes | None:
+    """A card for news that is neither a final score nor a player move.
+
+    This generator did not exist, and REQUIRE_IMAGE is on — so every item that
+    was not a trade, signing or box score reached the end of process_item with
+    image=None and was dropped with "no card for this item". The story had
+    already been fetched, filtered and PAID FOR by then. An investigation, a
+    coaching hire, a suspension, an injury: all newsworthy, all bought, all
+    binned for want of a picture.
+
+    Deliberately tolerant about teams. It colours from a team when one can be
+    resolved and falls back to a neutral league wash when none can, because the
+    alternative — returning None — is the exact behaviour that was losing the
+    posts. A card that is merely plain still ships the news.
+    """
+    # Strip the category emoji and prefix. The card has its own BREAKING NEWS
+    # banner, so "REPORT:" is redundant — and the display font has no emoji
+    # glyphs, so a leading 📰 renders as a hollow box, which is worse than
+    # nothing on the one asset people actually look at.
+    headline = re.sub(r"^\s*[^\w(\"']*\s*", "", headline or "")
+    headline = re.sub(r"^(OFFICIAL|REPORT|RUMOR|BREAKING)\s*:\s*", "", headline,
+                      flags=re.I)
+    headline = _EMOJI.sub("", headline).strip()
+    if not headline:
+        return None
+    abbrs = [a for a in (resolve_team(t) for t in (teams or [])) if a][:2]
+    prim = _hex(TEAMS[abbrs[0]][1]) if abbrs else (29, 155, 240)
+
+    W, H = 1080, 1080
+    img = _vgradient((W, H), (13, 13, 17), (26, 27, 33)).convert("RGBA")
+    img = Image.alpha_composite(img, _glow((W, H), (W - 170, 360), 560, prim, 165))
+    if len(abbrs) > 1:
+        img = Image.alpha_composite(
+            img, _glow((W, H), (170, 360), 500, _hex(TEAMS[abbrs[1]][1]), 125))
+    img = img.convert("RGB")
+    d = ImageDraw.Draw(img)
+    _brand(d, W, 52, (214, 218, 226))
+
+    if abbrs:
+        _draw_team_badges(img, d, W, 330,
+                          abbrs[1] if len(abbrs) > 1 else None, abbrs[0], r=112)
+        top = 632
+    else:
+        # No team to show: give the headline the space the logos would have used
+        # rather than leaving a hole where they should be.
+        top = 470
+
+    lines = _wrap_headline(headline)
+    cap = 96 if len(lines) <= 2 else 74
+    fonts = [_fit_font(d, ln, W - 150, cap, min_size=40) for ln in lines]
+    block_h = sum(f.size for f in fonts) + 10 * (len(lines) - 1)
+    y = top - block_h / 2
+    for ln, f in zip(lines, fonts):
+        _center(d, W / 2, y, ln, f, (255, 255, 255))
+        y += f.size + 10
+
+    _breaking_box(d, W, 824, source=source)
+    out = io.BytesIO()
+    img.save(out, format="PNG")
+    return out.getvalue()
 
 
 if __name__ == "__main__":
