@@ -210,10 +210,19 @@ def _glow(size, center, radius, color, alpha):
     return layer.filter(ImageFilter.GaussianBlur(150))
 
 
-def _cover(im, size, focus_y=0.5):
+def _cover(im, size, focus_y=0.5, max_top_frac=None):
     """Resize + crop an image to fill `size`. focus_y picks the vertical
     center of the crop (0=top, 0.5=middle) — bias toward the top for portraits
-    so faces don't get cut off."""
+    so faces don't get cut off.
+
+    focus_y alone is a FRACTION of the overflow, so the taller the source the
+    more it removes: Jaylen Brown's photo is 630x1144, which fills the frame at
+    1080x1961 and leaves 881px to lose — at focus_y=0.2 that took 176px off the
+    top, straight through the top of his head. max_top_frac caps the trim as a
+    share of the scaled height instead, so a very tall portrait keeps its head
+    however much overflow there is. Losing the bottom costs nothing here: the
+    label and the BREAKING NEWS box already cover the lower third.
+    """
     tw, th = size
     w, h = im.size
     scale = max(tw / w, th / h)
@@ -221,6 +230,8 @@ def _cover(im, size, focus_y=0.5):
     im = im.resize((nw, nh))
     x = (nw - tw) // 2
     y = int((nh - th) * focus_y)
+    if max_top_frac is not None:
+        y = min(y, int(nh * max_top_frac))
     y = max(0, min(y, nh - th))
     return im.crop((x, y, x + tw, y + th))
 
@@ -490,7 +501,8 @@ def _photo_bg(photo, W, H, away_prim, home_prim, blur=11,
     white/dimmed score text stays legible, plus a subtle team-color glow from
     each side. Uses the same CC/public-domain Wikimedia photo the trade cards
     use — real NBA players, no copyrighted game photography."""
-    base = _cover(Image.open(io.BytesIO(photo)).convert("RGB"), (W, H), focus_y=0.2)
+    base = _cover(Image.open(io.BytesIO(photo)).convert("RGB"), (W, H),
+                  focus_y=0.2, max_top_frac=0.03)
     base = base.filter(ImageFilter.GaussianBlur(blur))
     img = base.convert("RGBA")
     # top + bottom darker than the middle so FINAL and the source credit read,
