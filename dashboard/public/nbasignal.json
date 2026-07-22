@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-22T15:28:14Z",
+  "updated": "2026-07-22T15:41:58Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -83,34 +83,34 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784732498
+      "newest_ts": 1784734020
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
       "count": 9,
-      "newest_ts": 1784733579
+      "newest_ts": 1784734400
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 13,
-      "newest_ts": 1784733901
+      "count": 11,
+      "newest_ts": 1784734415
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
+      "count": 8,
       "newest_ts": 1784733724
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
+      "count": 8,
       "newest_ts": 1784733652
     },
     {
@@ -118,7 +118,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784733822
+      "newest_ts": 1784734500
     },
     {
       "label": "RealGM",
@@ -187,11 +187,11 @@
   "posts_today": 0,
   "cap": null,
   "claude": {
-    "items_today": 184,
+    "items_today": 198,
     "items_cap": 340,
-    "items_this_hour": 14,
-    "items_cap_hour": 14,
-    "spent_usd": 0.0883,
+    "items_this_hour": 28,
+    "items_cap_hour": 28,
+    "spent_usd": 0.095,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
@@ -199,14 +199,14 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 23,
+      "last_poll_secs_ago": 27,
       "tweets_last_poll": 0,
       "watermark": "2079918137613373547"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 23,
+      "last_poll_secs_ago": 27,
       "tweets_last_poll": 0,
       "watermark": "2079738156518187370"
     }
