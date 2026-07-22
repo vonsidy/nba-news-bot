@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-22T16:08:48Z",
+  "updated": "2026-07-22T17:41:30Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,30 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udc40 RUMOR: LeBron free agency rumors swirl after Heat YouTube post, via Roundtable.",
+      "cat": "Rumor",
+      "ts": 1784739666.0050726,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Stars GM Nill hopeful to extend Robertson after 1-year deal: 'We want to make this work', per theScore.",
+      "cat": "Report",
+      "ts": 1784739663.0865371,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udc40 RUMOR: Heat's pursuit of Klay Thompson takes a surprise turn amid Mavericks trade buzz, via Yahoo Sports.",
+      "cat": "Rumor",
+      "ts": 1784739660.1920674,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Wizards will have extension talks with Anthony Davis, per HoopsHype.",
+      "cat": "Report",
+      "ts": 1784739657.2957833,
+      "media": true
+    },
     {
       "text": "\ud83d\udc40 Bennedict Mathurin drawing sign-and-trade interest; Clippers among interested teams in re-signing him, per HoopsHype.",
       "cat": "Report",
@@ -75,12 +99,6 @@
       "cat": "Report",
       "ts": 1784583587.173965,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Lakers agree to one-year deal with former All-Defensive wing Matisse Thybulle",
-      "cat": "Official",
-      "ts": 1784582243.2949235,
-      "media": true
     }
   ],
   "sources": [
@@ -89,42 +107,42 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784734680
+      "newest_ts": 1784738217
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1784736000
+      "count": 4,
+      "newest_ts": 1784741211
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784735820
+      "count": 13,
+      "newest_ts": 1784741558
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1784734698
+      "count": 10,
+      "newest_ts": 1784741159
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784736300
+      "count": 9,
+      "newest_ts": 1784740079
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784736114
+      "newest_ts": 1784741961
     },
     {
       "label": "RealGM",
@@ -190,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 1,
+  "posts_today": 5,
   "cap": null,
   "claude": {
-    "items_today": 218,
+    "items_today": 257,
     "items_cap": 340,
-    "items_this_hour": 20,
+    "items_this_hour": 29,
     "items_cap_hour": 28,
-    "spent_usd": 0.1046,
+    "spent_usd": 0.1234,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
@@ -205,16 +223,16 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 0,
+      "last_poll_secs_ago": 5,
       "tweets_last_poll": 0,
       "watermark": "2079918137613373547"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 0,
+      "last_poll_secs_ago": 4,
       "tweets_last_poll": 0,
-      "watermark": "2079738156518187370"
+      "watermark": "2079975158505230758"
     }
   ]
 }
