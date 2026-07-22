@@ -99,6 +99,28 @@ _OTHER_SPORT_RE = re.compile(
     r"|rams|vikings|lions|bears|buccaneers|falcons|panthers|saints"
     r"|commanders|bills|bucs|mayfield|gmfb)\b"
 )
+# Team names that belong to exactly one non-NBA league and collide with no NBA
+# nickname. Matching one of these ends it — no NBA-signal rescue — because a
+# shared CITY is not evidence the story is basketball.
+_HARD_OTHER_SPORT_RE = re.compile(
+    r"(?i)\b("
+    # NFL
+    r"dolphins|bengals|steelers|ravens|browns|jaguars|texans|colts|titans"
+    r"|broncos|chargers|raiders|seahawks|49ers|niners|buccaneers|commanders"
+    r"|patriots|packers|vikings|panthers|cardinals"
+    # MLB
+    r"|white sox|red sox|yankees|dodgers|mets|cubs|braves|astros|phillies"
+    r"|orioles|padres|mariners|rays|guardians|brewers|reds|marlins|nationals"
+    # NHL
+    r"|canucks|oilers|flames|senators|sabres|penguins|blackhawks|bruins"
+    # Soccer
+    r"|liverpool|arsenal|chelsea|tottenham|everton|villa|fulham|wolves fc"
+    r"|man utd|manchester united|manchester city|carlisle united|real madrid"
+    r"|barcelona|juventus|psg"
+    r")\b"
+)
+
+
 # NBA signal = the word "NBA" or any team city/nickname (>=4 chars to avoid noise).
 _NBA_TOKENS = sorted(
     {a for a in card._ALIASES if len(a) >= 4} | {t.lower() for t in card.TEAMS},
@@ -269,6 +291,14 @@ def _worth_composing(item: sources.NewsItem) -> bool:
     to be generous again."""
     t = f"{item.title} {item.summary}"
     if _JUNK_RE.search(t):
+        return False
+    # An unambiguous other-league team name is disqualifying on its own. The
+    # rule used to be "other-sport AND no NBA signal", which let "Miami
+    # Dolphins" through because Miami is also an NBA city — the NBA check
+    # rescued an NFL story. Same trap for New York, LA, Chicago, Boston.
+    # On 2026-07-22 that cost paid Claude calls on an NFL extension, an MLB
+    # injury and an English soccer signing inside one 14-item batch.
+    if _HARD_OTHER_SPORT_RE.search(t):
         return False
     if _OTHER_SPORT_RE.search(t) and not _NBA_RE.search(t):
         return False
