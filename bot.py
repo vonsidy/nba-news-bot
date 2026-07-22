@@ -143,6 +143,12 @@ _NBA_TOKENS = sorted(
     key=len, reverse=True,
 )
 _NBA_RE = re.compile(r"(?i)\b(nba|" + "|".join(re.escape(x) for x in _NBA_TOKENS) + r")\b")
+# Cities are shared between leagues ("Miami" is Heat and Dolphins), so a strong
+# NBA signal is the word NBA or a team NICKNAME, never a city alone.
+_NBA_NICKS = sorted({v[0].lower() for v in card.TEAMS.values()}, key=len, reverse=True)
+_NBA_STRONG_RE = re.compile(
+    r"(?i)\b(nba|" + "|".join(re.escape(x) for x in _NBA_NICKS) + r")\b")
+
 _TEAM_WORDS = {t.lower() for t in card.TEAMS} | {a.lower() for a in card._ALIASES if len(a) > 3}
 
 
@@ -316,9 +322,30 @@ def _worth_composing(item: sources.NewsItem) -> bool:
     # injury and an English soccer signing inside one 14-item batch.
     if _HARD_OTHER_SPORT_RE.search(t):
         return False
-    if (_OTHER_SPORT_RE.search(t) or _SOFT_OTHER_SPORT_RE.search(t)) \
-            and not _NBA_RE.search(t):
+    # POSITIVE PROOF REQUIRED. This is an NBA account, so an item must show NBA
+    # evidence — the word "NBA", or an NBA team city or nickname, anywhere in
+    # the title or summary. No evidence, no post.
+    #
+    # It was a blocklist until 2026-07-22 and it leaked three times in one day:
+    # an NFL extension (Dolphins), a fused regex join that silently disabled two
+    # leagues, and finally a Dallas Stars NHL story that reached the timeline.
+    # Each fix enumerated the league that had just leaked, which is the wrong
+    # shape for a list whose job is the league that has not leaked yet. There is
+    # no end to that list — Italian basketball and a Milan soccer transfer were
+    # both in the same live sample.
+    #
+    # Measured on 49 live items: 45 carry NBA signal, 4 do not, and 3 of those 4
+    # were other leagues. The cost is the 4th — "2 Teams Listed As Suitors For
+    # Bradley Beal", real NBA news naming no team and never saying NBA. One miss
+    # in 49 to close the category permanently is the right trade for an account
+    # whose entire premise is being NBA-only.
+    if not _NBA_RE.search(t):
         return False
+    # Kept as a second gate: an item can name an NBA city and still be another
+    # league's story ("Miami Dolphins", "New York Rangers").
+    if _HARD_OTHER_SPORT_RE.search(t) or _SOFT_OTHER_SPORT_RE.search(t):
+        if not _NBA_STRONG_RE.search(t):
+            return False
     # The event gate is exempted for insider tweets, on purpose.
     #
     # _EVENT_RE was tuned against ARTICLE HEADLINES, which are written to

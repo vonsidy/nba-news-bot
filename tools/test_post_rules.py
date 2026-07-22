@@ -215,6 +215,34 @@ test_bare_surname_dedups_against_full_name()
 print("\nPASS")
 
 
+def test_nba_evidence_is_required():
+    """An NBA account posted a Dallas Stars (NHL) story on 2026-07-22. The
+    filter was a blocklist and leaked three times in one day. It now requires
+    POSITIVE NBA evidence, which closes the category instead of chasing it."""
+    import time, sources
+    def it(t):
+        return sources.NewsItem(id="x", source="ESPN", title=t, summary="",
+                                link="", published_ts=time.time())
+    # other leagues, none carrying an NBA word
+    for t in ["Nill hopeful to extend Robertson after 1-year deal",
+              "Dolomiti Energia Trentino Signs Darius Brown II on One-Year Deal",
+              "Modric Extension Won't Alter Jashari's Milan Future",
+              "Dolphins sign Jordyn Brooks to extension",
+              # names an NBA CITY but is another league — the second gate
+              "Miami Dolphins sign Jordyn Brooks to a 3-year extension",
+              "New York Rangers trade defenseman to Chicago"]:
+        assert not bot._worth_composing(it(t)), f"other league kept: {t}"
+    # real NBA stories, including ones using other leagues' nicknames as words
+    for t in ["NBA stars react as Lakers sign LeBron James",
+              "Wild finish as Celtics beat Knicks 112-110",
+              "Lightning-quick Suns guard signs extension",
+              "Kings sign guard to a two-year deal",
+              "Miami Heat sign Duncan Robinson to an extension",
+              "Knicks trade Karl-Anthony Towns to the Suns"]:
+        assert bot._worth_composing(it(t)), f"real NBA story dropped: {t}"
+    print("NBA evidence required; other leagues cannot post  OK")
+
+
 def test_other_league_teams_never_post():
     """A Dallas Stars (NHL) story posted on 2026-07-22 because "stars" was in
     no block list. The words that overlap normal NBA phrasing can only
@@ -253,5 +281,6 @@ def test_other_league_teams_never_post():
     print(f"other-league filter: {len(alts)} hard names, 0 NBA collisions  OK")
 
 
+test_nba_evidence_is_required()
 test_other_league_teams_never_post()
 print("\nPASS")
