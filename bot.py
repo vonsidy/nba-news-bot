@@ -838,8 +838,18 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
     # binning it for want of a picture is the worst of both.
     if image is None:
         try:
+            # Pull a player photo when the story names one. Without this the
+            # news card was logo-only while every trade and score card showed a
+            # player — the same news looked cheaper purely because of which
+            # generator happened to handle it.
+            nphoto, ncredit = None, None
+            if result.get("player"):
+                res = photos.get_any_photo(result["player"])
+                if res:
+                    nphoto, ncredit = res
             image = card.make_news_card(
                 headline=result["tweet"].strip(),
+                photo=nphoto, credit=ncredit,
                 # Whatever teams the story touches, for colour and logos. Empty
                 # is fine — the card falls back to a neutral league wash rather
                 # than returning None, which is what was losing the post.

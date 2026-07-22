@@ -483,14 +483,14 @@ def _arena_bg(W, H, away_prim, home_prim, seed: str):
     return img.filter(ImageFilter.GaussianBlur(6)).convert("RGB")
 
 
-def _photo_bg(photo, W, H, away_prim, home_prim):
+def _photo_bg(photo, W, H, away_prim, home_prim, blur=11):
     """Blurred real-player photo as the backdrop: fill the frame, blur it so it
     reads as game atmosphere behind the scoreboard, then a dark scrim so the
     white/dimmed score text stays legible, plus a subtle team-color glow from
     each side. Uses the same CC/public-domain Wikimedia photo the trade cards
     use — real NBA players, no copyrighted game photography."""
     base = _cover(Image.open(io.BytesIO(photo)).convert("RGB"), (W, H), focus_y=0.2)
-    base = base.filter(ImageFilter.GaussianBlur(11))
+    base = base.filter(ImageFilter.GaussianBlur(blur))
     img = base.convert("RGBA")
     # top + bottom darker than the middle so FINAL and the source credit read,
     # with a solid overall wash to hold the score lines
@@ -761,16 +761,35 @@ def make_news_card(headline: str, teams: list | None = None,
     prim = _hex(TEAMS[abbrs[0]][1]) if abbrs else (29, 155, 240)
 
     W, H = 1080, 1080
-    img = _vgradient((W, H), (13, 13, 17), (26, 27, 33)).convert("RGBA")
-    img = Image.alpha_composite(img, _glow((W, H), (W - 170, 360), 560, prim, 165))
-    if len(abbrs) > 1:
-        img = Image.alpha_composite(
-            img, _glow((W, H), (170, 360), 500, _hex(TEAMS[abbrs[1]][1]), 125))
-    img = img.convert("RGB")
+    # A real player photo as the backdrop when one was found. The photo params
+    # were accepted and then ignored when this card was first written, so every
+    # news card rendered logo-only while trade and score cards showed players —
+    # the visible difference the owner noticed on the timeline.
+    used_photo = False
+    if photo:
+        try:
+            second = _hex(TEAMS[abbrs[1]][1]) if len(abbrs) > 1 else prim
+            # blur=4, not the score card's 11. There the photo is
+            # atmosphere behind a scoreboard; here the player IS the point, and
+            # at 11 he is unrecognisable — which is the complaint that started
+            # this. Enough blur to keep the headline legible, not so much that
+            # the subject is a smear.
+            img = _photo_bg(photo, W, H, prim, second, blur=4)
+            used_photo = True
+        except Exception:
+            used_photo = False   # undecodable image -> fall through to the wash
+    if not used_photo:
+        img = _vgradient((W, H), (13, 13, 17), (26, 27, 33)).convert("RGBA")
+        img = Image.alpha_composite(img, _glow((W, H), (W - 170, 360), 560, prim, 165))
+        if len(abbrs) > 1:
+            img = Image.alpha_composite(
+                img, _glow((W, H), (170, 360), 500, _hex(TEAMS[abbrs[1]][1]), 125))
+        img = img.convert("RGB")
+        credit = None            # nothing to attribute if the photo was not used
     d = ImageDraw.Draw(img)
-    _brand(d, W, 52, (214, 218, 226))
+    _brand(d, W, 52, (214, 218, 226), shadow=used_photo)
 
-    if abbrs:
+    if abbrs and not used_photo:
         _draw_team_badges(img, d, W, 330,
                           abbrs[1] if len(abbrs) > 1 else None, abbrs[0], r=112)
         top = 632
@@ -789,6 +808,10 @@ def make_news_card(headline: str, teams: list | None = None,
         y += f.size + 10
 
     _breaking_box(d, W, 824, source=source)
+    if credit:
+        # CC attribution is a licence requirement, not decoration — it goes on
+        # whenever the photo was actually used.
+        _credit_line(d, W, H, credit, size=CREDIT_SIZE, fill=(170, 174, 182))
     out = io.BytesIO()
     img.save(out, format="PNG")
     return out.getvalue()
