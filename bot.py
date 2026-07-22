@@ -888,17 +888,27 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
             # player — the same news looked cheaper purely because of which
             # generator happened to handle it.
             nphoto, ncredit = None, None
+            story_teams = sorted(_trade_team_set(
+                result, f"{item.title} {item.summary}"))
+            # `player` now carries coaches and executives too, so a firing gets
+            # a face instead of a bare logo — Commons has coaches even though
+            # ESPN's athlete search doesn't. The teams are passed so a
+            # former-team jersey can be ranked down.
             if result.get("player"):
-                res = photos.get_any_photo(result["player"])
+                res = photos.get_any_photo(result["player"], teams=story_teams)
                 if res:
                     nphoto, ncredit = res
             image = card.make_news_card(
+                # The tweet is now only the FALLBACK. The card shows the short
+                # label the composer produced, so the detail lives in the post
+                # and the graphic carries one glanceable fact.
                 headline=result["tweet"].strip(),
+                label=card.build_label(result),
                 photo=nphoto, credit=ncredit,
                 # Whatever teams the story touches, for colour and logos. Empty
                 # is fine — the card falls back to a neutral league wash rather
                 # than returning None, which is what was losing the post.
-                teams=sorted(_trade_team_set(result, f"{item.title} {item.summary}")),
+                teams=story_teams,
                 source=item.source,
             )
             if image:

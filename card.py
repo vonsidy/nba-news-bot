@@ -713,6 +713,106 @@ _EMOJI = re.compile(
     "[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0001F1E6-\U0001F1FF\uFE0F]")
 
 
+# Geometry for the news card's lower third. The BREAKING NEWS frame is drawn at
+# NEWS_BOX_TOP, so the text block above it must END at TEXT_BOTTOM — see the
+# note in make_news_card about why this is anchored from the bottom up.
+NEWS_BOX_TOP = 824
+TEXT_BOTTOM = NEWS_BOX_TOP - 24
+LINE_GAP = 12
+# 24, not 22: "TRADED TO TRAIL BLAZERS" is 23 and must not be cut mid-team.
+LABEL_MAX = 24
+# First words that mean "this player HAS changed teams", so the destination is
+# appended. Matched on the first word so a model that ignores the prompt and
+# returns "TRADED TO THE ATLANTA HAWKS" still gets rebuilt into the clean form.
+#
+# "TRADE" is deliberately NOT here: "TRADE REQUEST" means the player asked to
+# be moved, and rewriting that to "TRADED TO <team>" would invert the story.
+# Nothing phrased "SIGNS WITH" belongs here either — see the prompt note; that
+# wording is the owner's tell for the other bot copy.
+_MOVE_LABELS = {"TRADED", "DEALT", "ACQUIRED"}
+
+
+def _clip(label: str) -> str:
+    """Trim to LABEL_MAX on a word boundary.
+
+    Only reachable when the model ignores the length rule, but a label cut
+    mid-word ("...LUGUENTZ D") reads as a rendering bug, where a slightly
+    shorter one just reads as terse.
+    """
+    if len(label) <= LABEL_MAX:
+        return label
+    cut = label[:LABEL_MAX]
+    return cut.rsplit(" ", 1)[0] or cut
+
+
+def build_label(result: dict) -> str:
+    """The short tag the news card shows, built from the composer's fields.
+
+    The card used to print the whole tweet, which covered the player it was
+    drawn over and ran its last line under the BREAKING NEWS box. It shows a
+    label instead: TRADED, FIRED, OUT 4-6 WEEKS, 2 YEARS · $104M.
+
+    Every value here is COPIED from a structured field the model filled. None of
+    it is parsed back out of the tweet sentence — that is precisely what card.py
+    cannot do reliably, and why deal_years/deal_amount/out_duration exist. A
+    field the source didn't state comes back empty, and empty just means the
+    generic label stands instead. Never synthesise a number to fill the space.
+
+    Precedence is by specificity: a stated contract or a stated absence tells a
+    scroller more than the generic tag, so those outrank card_label.
+    """
+    years = result.get("deal_years") or 0
+    amount = (result.get("deal_amount") or "").strip().upper()
+    if years or amount:
+        term = f"{years} YEAR{'S' if years != 1 else ''}" if years else ""
+        both = f"{term} · {amount}" if term and amount else (term or amount)
+        return _clip(both)
+
+    out = (result.get("out_duration") or "").strip().upper().strip(" .,")
+    if out:
+        # "OUT SEASON" isn't English. The two open-ended cases get spelled out;
+        # everything else is a span and reads fine straight after "OUT".
+        if "SEASON" in out:
+            return "OUT FOR THE SEASON"
+        if out.startswith("INDEFIN"):
+            return "OUT INDEFINITELY"
+        return _clip(f"OUT {out}")
+
+    label = _EMOJI.sub("", result.get("card_label") or "").strip().upper()
+    label = label.strip(" .,:;-")
+
+    # "TRADED TO HAWKS", not a bare "TRADED". On a photo card no team badges are
+    # drawn at all — _draw_team_badges only runs on the logo path — so without
+    # this the destination, which IS the news in a trade, appears nowhere on the
+    # graphic. Built from the resolved to_team rather than left to the model, so
+    # it is always the bare nickname and never "the Atlanta Hawks" or a city.
+    # Longest is TRADED TO TRAIL BLAZERS (23), which wraps to two lines.
+    if label.split()[:1] and label.split()[0] in _MOVE_LABELS:
+        abbr = resolve_team(result.get("to_team") or "")
+        return f"TRADED TO {TEAMS[abbr][0]}" if abbr else "TRADED"
+
+    return _clip(label)
+
+
+def _wrap_label(label: str) -> list[str]:
+    """One line when it fits, otherwise a break at the phrase joint.
+
+    Greedy wrapping gave "TRADED TO TRAIL / BLAZERS" — it split the team name
+    instead of the phrase, because it only counts characters. Breaking after
+    "TO" keeps the destination whole on its own line, which is the half a
+    scroller actually needs to read.
+    """
+    if len(label) <= 18:
+        return [label]
+    head, sep, tail = label.partition(" TO ")
+    # Only when the head is a single word ("TRADED TO ..."). Without that guard
+    # a stray long duration like "OUT 4 TO 6 WEEKS PENDING" would break at its
+    # own "TO" and read as nonsense across two lines.
+    if sep and len(head.split()) == 1:
+        return [head + " TO", tail]
+    return _wrap_headline(label, max_chars=18, max_lines=2)
+
+
 def _wrap_headline(text: str, max_chars: int = 26, max_lines: int = 4) -> list[str]:
     """Break a headline into balanced lines, trimming with an ellipsis if long."""
     words, lines, cur = (text or "").split(), [], ""
@@ -734,7 +834,8 @@ def _wrap_headline(text: str, max_chars: int = 26, max_lines: int = 4) -> list[s
 
 def make_news_card(headline: str, teams: list | None = None,
                    source: str | None = None, photo: bytes | None = None,
-                   credit: str | None = None) -> bytes | None:
+                   credit: str | None = None,
+                   label: str | None = None) -> bytes | None:
     """A card for news that is neither a final score nor a player move.
 
     This generator did not exist, and REQUIRE_IMAGE is on — so every item that
@@ -757,7 +858,8 @@ def make_news_card(headline: str, teams: list | None = None,
     headline = re.sub(r"^(OFFICIAL|REPORT|RUMOR|BREAKING)\s*:\s*", "", headline,
                       flags=re.I)
     headline = _EMOJI.sub("", headline).strip()
-    if not headline:
+    label = (label or "").strip()
+    if not (label or headline):
         return None
     abbrs = [a for a in (resolve_team(t) for t in (teams or [])) if a][:2]
     prim = _hex(TEAMS[abbrs[0]][1]) if abbrs else (29, 155, 240)
@@ -807,17 +909,38 @@ def make_news_card(headline: str, teams: list | None = None,
         # rather than leaving a hole where they should be.
         top = 470
 
-    lines = _wrap_headline(headline)
-    cap = 96 if len(lines) <= 2 else 74
+    # The LABEL, not the headline: "TRADED", "OUT 4-6 WEEKS", "2 YEARS · $104M".
+    # Printing the tweet here wrapped to four lines, which covered the player the
+    # photo was fetched for and pushed the last line under the BREAKING NEWS box.
+    # `headline` survives as the fallback for an item that produced no label, but
+    # is now capped at two lines so that path cannot collide either.
+    if label:
+        lines = _wrap_label(label)
+        cap = 132 if len(lines) == 1 else 104
+    else:
+        lines = _wrap_headline(headline, max_chars=26, max_lines=2)
+        cap = 96 if len(lines) == 1 else 74
     fonts = [_fit_font(d, ln, W - 150, cap, min_size=40) for ln in lines]
-    block_h = sum(f.size for f in fonts) + 10 * (len(lines) - 1)
+    # Measure what PIL will actually draw. block_h was sum(f.size), which runs
+    # well short of the rendered height — a "74px" line occupies more than 74px
+    # — so every position derived from it sat lower than the arithmetic claimed.
+    # That undercount is the second half of the collision: even two lines could
+    # reach the box while the layout believed they cleared it.
+    heights = [d.textbbox((0, 0), ln, font=f)[3] for ln, f in zip(lines, fonts)]
+    block_h = sum(heights) + LINE_GAP * (len(lines) - 1)
 
     if used_photo:
         # Text sits in a band UNDER the player, not across his face. Centring it
         # put the headline straight over the subject, which is the one thing the
         # photo is there for. The band is a bottom-up gradient so the type has a
         # dark bed to sit on without flattening the whole image.
-        band_top = max(430, 792 - block_h)
+        #
+        # Anchored from the BOTTOM: the block ends at TEXT_BOTTOM whatever its
+        # height, so it clears the box by construction rather than by hoping a
+        # fixed start point leaves enough room. It also means a one-word label
+        # occupies a thin strip at the foot of the card and leaves the player
+        # visible, which is the whole point of the change.
+        band_top = max(430, TEXT_BOTTOM - block_h - 34)
         panel = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         pd = ImageDraw.Draw(panel)
         for yy in range(band_top, H):
@@ -826,24 +949,24 @@ def make_news_card(headline: str, teams: list | None = None,
         img = Image.alpha_composite(img.convert("RGBA"), panel).convert("RGB")
         d = ImageDraw.Draw(img)
         _brand(d, W, 52, (236, 239, 244), shadow=True)
-        y = band_top + 18
+        y = TEXT_BOTTOM - block_h
     else:
         y = top - block_h / 2
 
-    for ln, f in zip(lines, fonts):
+    for ln, f, h in zip(lines, fonts, heights):
         if used_photo:                       # shadow keeps type readable on any photo
             box = d.textbbox((0, 0), ln, font=f)
             d.text((W / 2 - (box[2] - box[0]) / 2 + 3, y + 3), ln, font=f,
                    fill=(0, 0, 0))
         _center(d, W / 2, y, ln, f, (255, 255, 255))
-        y += f.size + 10
+        y += h + LINE_GAP
 
     # Draw the box WITHOUT its own VIA line, then place the two attribution
     # lines as one tight block centred in the gap between the box and the
     # bottom edge. _breaking_box hangs VIA just under the box and _credit_line
     # bottom-anchors the credit, which left the two stranded far apart with
     # dead space between them.
-    box_bottom = _breaking_box(d, W, 824)
+    box_bottom = _breaking_box(d, W, NEWS_BOX_TOP)
     lines = []
     if source:
         lines.append((f"VIA {source.upper()}", _font(SOURCE_SIZE), (232, 232, 236)))

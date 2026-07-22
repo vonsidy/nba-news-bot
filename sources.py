@@ -207,10 +207,16 @@ def fetch_all() -> list[NewsItem]:
 
 def is_fresh(item: NewsItem, max_age_seconds: float | None = None) -> bool:
     """Only tweet items published recently — stale news gets no engagement.
-    Defaults to config.FRESH_MAX_AGE_MIN. Items with no timestamp are treated
-    as fresh (dedup still protects us)."""
+    Defaults to config.FRESH_MAX_AGE_MIN.
+
+    An item with NO timestamp is NOT fresh. It used to auto-pass on the theory
+    that dedup would protect us, but dedup only stops the same story twice — it
+    has nothing to say about age, and process_item's per-type age check is also
+    skipped when published_ts is 0. A dateless item therefore bypassed BOTH
+    freshness gates and could post news of any age. Rare (0 of 84 items on
+    2026-07-22) but unbounded when it happens, and silent."""
     if max_age_seconds is None:
         max_age_seconds = FRESH_MAX_AGE_MIN * 60
     if item.published_ts == 0:
-        return True
+        return False
     return (time.time() - item.published_ts) <= max_age_seconds

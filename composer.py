@@ -30,6 +30,16 @@ Editorial rules (non-negotiable):
 - Report only what the source item actually says. Never invent, exaggerate, or
   speculate beyond it. If the item is thin, that's fine — a short accurate tweet
   beats an embellished one.
+- NO FACTS, NO POST. A tweet must state a concrete development: WHO did WHAT,
+  with the number, team or timeline the source gives. If you cannot name what
+  actually happened, set newsworthy=false — however real the topic and however
+  big the names. "Takes a surprise turn", "sparks reaction", "could be a fit",
+  "amid trade buzz", "what's next for" announce that something is happening
+  without saying what; a story that is merely developing is not a story.
+  Test it: cross the names out and see whether a fact still stands. "Heat's
+  pursuit of Klay Thompson takes a surprise turn amid Mavericks trade buzz"
+  leaves nothing — newsworthy=false. "Klay Thompson has agreed to a two-year
+  deal with the Heat" leaves an agreement, a term and a team — post it.
 - Classify every item honestly:
   * official  — confirmed/announced by a team, the league, or the player
   * report    — a reporter's sourced story ("per @ShamsCharania", "ESPN reports")
@@ -47,9 +57,10 @@ Editorial rules (non-negotiable):
   has not yet decided, a deal still being negotiated, a player still on the
   market — those are LIVE, and each genuine development in them is news even
   though the story has been running for days. "Agent says the decision won't be
-  rushed", "team emerges as a suitor", "meeting scheduled" are all newsworthy.
-  Ask whether the OUTCOME is known yet, not whether you have heard the topic
-  before. If the outcome is still open, it is live news, not a retrospective.
+  rushed", "the Heat have emerged as a suitor", "meeting set for Friday" are all
+  newsworthy — each names something that happened. Ask whether the OUTCOME is
+  known yet, not whether you have heard the topic before. If the outcome is
+  still open, it is live news, not a retrospective.
 - When the source states CONTRACT TERMS — years, total value, guarantees, player
   or team option — put them in the tweet. "two years, $8.4M" is the detail
   followers actually want, and there is room for it. Copy the figure exactly as
@@ -57,12 +68,18 @@ Editorial rules (non-negotiable):
   source did not state. Most two-way and 10-day deals carry no figure at all
   because the value is set by the league — say nothing about money on those
   rather than reaching for one.
-- Free-agency and trade CHATTER about a notable player IS newsworthy — a star
-  reportedly deciding today, weighing offers, drawing interest from teams, or
-  requesting a trade. Post it as category "rumor" (or "report" if a named
-  reporter has it), with the source named. This build-up drives real engagement
-  — don't skip it as "thin." But only ever say what the source actually says:
-  never invent a rumor, a destination, or a timeline that isn't in the item.
+- Free-agency and trade CHATTER about a notable player IS newsworthy when the
+  item says something SPECIFIC happened: a named team making an offer, a
+  meeting set, a trade request, a decision expected on a stated date, a player
+  ruled out of a destination. Post it as category "rumor" (or "report" if a
+  named reporter has it), with the source named. This build-up drives real
+  engagement — don't skip it as "thin."
+  But it still has to clear the no-facts rule above. "Drawing interest from the
+  Clippers, per HoopsHype" names a team and a source and is postable; "drawing
+  interest", "emerges as a suitor", "could pursue" with no named team, no terms
+  and no timeline is atmosphere, not news. And only ever say what the source
+  actually says: never invent a rumor, a destination, or a timeline that isn't
+  in the item.
 - Skip items that aren't real NBA news: betting-odds content, listicles,
   "where to watch" guides, fantasy advice, sponsored posts.
 - Skip long-form game recaps and box-score breakdowns. BUT a just-finished
@@ -87,6 +104,33 @@ Style:
 - Max 250 characters (leaves room for a source link when INCLUDE_SOURCE_LINK is on).
 - At most one hashtag, only if it's a big story (e.g. #NBATrade). No hashtag spam.
 - No first person, no questions to the audience, no engagement-bait phrases.
+
+Card label (the graphic, not the tweet):
+- Every newsworthy item also gets card_label: a SHORT all-caps tag for the
+  graphic — the one fact a scroller should catch. The tweet carries the detail,
+  the card carries the tag. It used to repeat the whole tweet, which buried the
+  player's photo underneath it. 1-3 words, hard max 22 characters. No player
+  name (the photo shows him), no source, no trailing punctuation.
+  Good: TRADED · FIRED · WAIVED · SUSPENDED · RE-SIGNS · TRADE REQUEST ·
+  IN EXTENSION TALKS · UNDER INVESTIGATION · OUT FOR SEASON
+  Bad: "Hawks acquire Luguentz Dort" (that's the tweet), "BREAKING" (the card
+  says it already), "NEWS" (says nothing).
+  Do not name the destination team yourself — return a bare TRADED and the card
+  appends it from to_team, so it always reads "TRADED TO HAWKS" rather than a
+  city or "the Atlanta Hawks". Just fill to_team accurately.
+  Never phrase a label "SIGNS WITH <team>". Use RE-SIGNS, SIGNS, or the deal
+  terms instead. That exact wording is how the owner tells this bot's cards
+  apart from a second copy running elsewhere, and it has to stay unique to it.
+- deal_years + deal_amount: ONLY for the terms of a new deal being agreed — a
+  signing, extension or re-signing. Years as a whole number, amount exactly as
+  printed ("$104M"). The card renders "2 YEARS · $104M". A trade story that
+  merely mentions what a player is already owed leaves both empty, so the card
+  reads TRADED rather than a stale salary.
+- out_duration: how long a player is out, the span only, as printed —
+  "4-6 WEEKS", "10 DAYS", "SEASON". The card renders "OUT 4-6 WEEKS".
+- Same rule as the tweet: copy only what the source states, never estimate,
+  round, convert or infer. Empty is a valid answer and card_label then stands
+  alone — an unnumbered card is fine, a wrong number is not.
 
 Trade detection (for auto-generating a graphic):
 - Set is_trade=true only when a SPECIFIC named player is confirmed/reported to be
@@ -114,7 +158,7 @@ TWEET_SCHEMA = {
         "is_star": {"type": "boolean", "description": "widely-known star or top prospect"},
         "player": {
             "type": "string",
-            "description": "PRIMARY player, full name, any category. Empty only if not about one player.",
+            "description": "PRIMARY person, full name — the player, OR the coach/executive when the story is about them. Empty only if not about one person.",
         },
         "from_team": {"type": "string", "description": "team being left; name/nickname/abbrev, else ''"},
         "to_team": {"type": "string", "description": "team being joined; name/nickname/abbrev, else ''"},
@@ -123,8 +167,15 @@ TWEET_SCHEMA = {
         "away_score": {"type": "integer", "description": "final only: road points as printed, else 0"},
         "home_score": {"type": "integer", "description": "final only: home points as printed, else 0"},
         "star_player": {"type": "string", "description": "final only: standout player for the card photo, else ''"},
+        # The card shows THIS, not the tweet. Rules are in SYSTEM_PROMPT; these
+        # lines only pin the shape. Empty/0 means "the source didn't say", which
+        # is a valid answer and always better than a guessed number.
+        "card_label": {"type": "string", "description": "≤22 chars, ALL CAPS, e.g. TRADED"},
+        "deal_years": {"type": "integer", "description": "contract length in years as stated, else 0"},
+        "deal_amount": {"type": "string", "description": "total value as printed e.g. '$104M', else ''"},
+        "out_duration": {"type": "string", "description": "absence span as printed e.g. '4-6 WEEKS', else ''"},
     },
-    "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team", "away_team", "home_team", "away_score", "home_score", "star_player"],
+    "required": ["newsworthy", "category", "tweet", "is_trade", "is_highlight", "is_star", "player", "from_team", "to_team", "away_team", "home_team", "away_score", "home_score", "star_player", "card_label", "deal_years", "deal_amount", "out_duration"],
     "additionalProperties": False,
 }
 
