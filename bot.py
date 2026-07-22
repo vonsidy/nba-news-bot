@@ -343,7 +343,8 @@ def _worth_composing(item: sources.NewsItem) -> bool:
         return False
     # Kept as a second gate: an item can name an NBA city and still be another
     # league's story ("Miami Dolphins", "New York Rangers").
-    if _HARD_OTHER_SPORT_RE.search(t) or _SOFT_OTHER_SPORT_RE.search(t):
+    if (_OTHER_SPORT_RE.search(t) or _HARD_OTHER_SPORT_RE.search(t)
+            or _SOFT_OTHER_SPORT_RE.search(t)):
         if not _NBA_STRONG_RE.search(t):
             return False
     # The event gate is exempted for insider tweets, on purpose.
