@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21T23:11:36Z",
+  "updated": "2026-07-22T00:10:16Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -83,42 +83,42 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784673675
+      "newest_ts": 1784676856
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 11,
-      "newest_ts": 1784675145
+      "count": 9,
+      "newest_ts": 1784678281
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1784674684
+      "count": 2,
+      "newest_ts": 1784677085
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1784675249
+      "count": 3,
+      "newest_ts": 1784676780
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
       "count": 2,
-      "newest_ts": 1784669000
+      "newest_ts": 1784674174
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784674986
+      "newest_ts": 1784678400
     },
     {
       "label": "RealGM",
@@ -187,11 +187,11 @@
   "posts_today": 7,
   "cap": null,
   "claude": {
-    "items_today": 73,
+    "items_today": 87,
     "items_cap": 340,
     "items_this_hour": 14,
     "items_cap_hour": 14,
-    "spent_usd": 0.035,
+    "spent_usd": 0.0418,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
@@ -199,14 +199,14 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 31,
+      "last_poll_secs_ago": 19,
       "tweets_last_poll": 0,
       "watermark": "2079380857119273451"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 30,
+      "last_poll_secs_ago": 19,
       "tweets_last_poll": 0,
       "watermark": "2079613422153433153"
     }
