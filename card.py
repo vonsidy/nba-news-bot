@@ -838,11 +838,25 @@ def make_news_card(headline: str, teams: list | None = None,
         _center(d, W / 2, y, ln, f, (255, 255, 255))
         y += f.size + 10
 
-    _breaking_box(d, W, 824, source=source)
+    # Draw the box WITHOUT its own VIA line, then place the two attribution
+    # lines as one tight block centred in the gap between the box and the
+    # bottom edge. _breaking_box hangs VIA just under the box and _credit_line
+    # bottom-anchors the credit, which left the two stranded far apart with
+    # dead space between them.
+    box_bottom = _breaking_box(d, W, 824)
+    lines = []
+    if source:
+        lines.append((f"VIA {source.upper()}", _font(SOURCE_SIZE), (232, 232, 236)))
     if credit:
-        # CC attribution is a licence requirement, not decoration — it goes on
-        # whenever the photo was actually used.
-        _credit_line(d, W, H, credit, size=CREDIT_SIZE, fill=(170, 174, 182))
+        lines.append((credit, _font(CREDIT_SIZE), (170, 174, 182)))
+    if lines:
+        GAP = 7                              # tight: they read as one block
+        heights = [d.textbbox((0, 0), t, font=f)[3] for t, f, _ in lines]
+        block = sum(heights) + GAP * (len(lines) - 1)
+        y = box_bottom + (H - box_bottom - block) / 2
+        for (t, f, fill), h in zip(lines, heights):
+            _center(d, W / 2, y, t, f, fill)
+            y += h + GAP
     out = io.BytesIO()
     img.save(out, format="PNG")
     return out.getvalue()
