@@ -483,7 +483,8 @@ def _arena_bg(W, H, away_prim, home_prim, seed: str):
     return img.filter(ImageFilter.GaussianBlur(6)).convert("RGB")
 
 
-def _photo_bg(photo, W, H, away_prim, home_prim, blur=11):
+def _photo_bg(photo, W, H, away_prim, home_prim, blur=11,
+              scrim_mid=120, scrim_edge=110, glow_alpha=80):
     """Blurred real-player photo as the backdrop: fill the frame, blur it so it
     reads as game atmosphere behind the scoreboard, then a dark scrim so the
     white/dimmed score text stays legible, plus a subtle team-color glow from
@@ -498,11 +499,12 @@ def _photo_bg(photo, W, H, away_prim, home_prim, blur=11):
     sd = ImageDraw.Draw(scrim)
     for y in range(H):
         t = abs((y / H) - 0.5) * 2          # 0 at middle -> 1 at top/bottom
-        a = int(120 + 110 * (t ** 1.6))
+        a = int(scrim_mid + scrim_edge * (t ** 1.6))
         sd.line([(0, y), (W, y)], fill=(6, 8, 12, min(a, 235)))
     img = Image.alpha_composite(img, scrim)
-    img = Image.alpha_composite(img, _glow((W, H), (150, 430), 420, away_prim, 80))
-    img = Image.alpha_composite(img, _glow((W, H), (W - 150, 430), 420, home_prim, 80))
+    if glow_alpha:
+        img = Image.alpha_composite(img, _glow((W, H), (150, 430), 420, away_prim, glow_alpha))
+        img = Image.alpha_composite(img, _glow((W, H), (W - 150, 430), 420, home_prim, glow_alpha))
     return img.convert("RGB")
 
 
@@ -774,7 +776,14 @@ def make_news_card(headline: str, teams: list | None = None,
             # at 11 he is unrecognisable — which is the complaint that started
             # this. Enough blur to keep the headline legible, not so much that
             # the subject is a smear.
-            img = _photo_bg(photo, W, H, prim, second, blur=4)
+            # The score card's treatment (blur 11, scrim alpha 120-230, two
+            # colour glows) is built to sit BEHIND a scoreboard, and applied
+            # here it rendered the player as an almost-black wash — the owner
+            # could not tell there was a photo at all. Here the player is the
+            # subject, so: barely any blur, a much lighter scrim, no glows.
+            # Text stays legible via the drop shadow added below instead.
+            img = _photo_bg(photo, W, H, prim, second, blur=2,
+                            scrim_mid=25, scrim_edge=95, glow_alpha=0)
             used_photo = True
         except Exception:
             used_photo = False   # undecodable image -> fall through to the wash
@@ -802,8 +811,30 @@ def make_news_card(headline: str, teams: list | None = None,
     cap = 96 if len(lines) <= 2 else 74
     fonts = [_fit_font(d, ln, W - 150, cap, min_size=40) for ln in lines]
     block_h = sum(f.size for f in fonts) + 10 * (len(lines) - 1)
-    y = top - block_h / 2
+
+    if used_photo:
+        # Text sits in a band UNDER the player, not across his face. Centring it
+        # put the headline straight over the subject, which is the one thing the
+        # photo is there for. The band is a bottom-up gradient so the type has a
+        # dark bed to sit on without flattening the whole image.
+        band_top = max(430, 792 - block_h)
+        panel = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        pd = ImageDraw.Draw(panel)
+        for yy in range(band_top, H):
+            t = (yy - band_top) / max(1, H - band_top)
+            pd.line([(0, yy), (W, yy)], fill=(6, 8, 12, int(215 * (t ** 0.55))))
+        img = Image.alpha_composite(img.convert("RGBA"), panel).convert("RGB")
+        d = ImageDraw.Draw(img)
+        _brand(d, W, 52, (236, 239, 244), shadow=True)
+        y = band_top + 18
+    else:
+        y = top - block_h / 2
+
     for ln, f in zip(lines, fonts):
+        if used_photo:                       # shadow keeps type readable on any photo
+            box = d.textbbox((0, 0), ln, font=f)
+            d.text((W / 2 - (box[2] - box[0]) / 2 + 3, y + 3), ln, font=f,
+                   fill=(0, 0, 0))
         _center(d, W / 2, y, ln, f, (255, 255, 255))
         y += f.size + 10
 
