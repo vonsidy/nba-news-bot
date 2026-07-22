@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-22T15:41:58Z",
+  "updated": "2026-07-22T16:08:48Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udc40 Bennedict Mathurin drawing sign-and-trade interest; Clippers among interested teams in re-signing him, per HoopsHype.",
+      "cat": "Report",
+      "ts": 1784736247.720824,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: Summer leaguer Sharp signs two-way deal with Clippers via Sportsnet.ca",
       "cat": "Report",
@@ -83,42 +89,42 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784734020
+      "newest_ts": 1784734680
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
       "count": 9,
-      "newest_ts": 1784734400
+      "newest_ts": 1784736000
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 11,
-      "newest_ts": 1784734415
+      "count": 7,
+      "newest_ts": 1784735820
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784733724
+      "count": 6,
+      "newest_ts": 1784734698
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784733652
+      "count": 7,
+      "newest_ts": 1784736300
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784734500
+      "newest_ts": 1784736114
     },
     {
       "label": "RealGM",
@@ -184,14 +190,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 1,
   "cap": null,
   "claude": {
-    "items_today": 198,
+    "items_today": 218,
     "items_cap": 340,
-    "items_this_hour": 28,
+    "items_this_hour": 20,
     "items_cap_hour": 28,
-    "spent_usd": 0.095,
+    "spent_usd": 0.1046,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
@@ -199,14 +205,14 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 27,
+      "last_poll_secs_ago": 0,
       "tweets_last_poll": 0,
       "watermark": "2079918137613373547"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 27,
+      "last_poll_secs_ago": 0,
       "tweets_last_poll": 0,
       "watermark": "2079738156518187370"
     }
