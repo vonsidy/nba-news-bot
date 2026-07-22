@@ -156,7 +156,17 @@ MAX_CLAUDE_CALLS_PER_DAY = MAX_CLAUDE_ITEMS_PER_DAY
 # widens each hour rather than letting the whole thing burn at once. Unused
 # hours do NOT roll over — that is the point; a quiet morning must not fund a
 # spike that empties the day by noon.
-CLAUDE_SPEND_HOURS = int(os.getenv("CLAUDE_SPEND_HOURS") or 24)
+# Spread the daily budget over this many hours. 24 gives 14 items/hour, which
+# on 2026-07-22 became the binding constraint rather than the safety net: the
+# bot sat at 14/14 for most of the day while real news went unread, and a
+# prompt fix could not even be evaluated because nothing new could be composed
+# until the clock rolled over.
+#
+# 12 gives ~28/hour. The DAILY cap is unchanged, so this cannot spend more
+# money — it only lets the bot catch up inside an hour instead of trickling.
+# The original worry (burning the day by lunchtime) is still covered by the
+# daily ceiling, which is the thing that actually protects the balance.
+CLAUDE_SPEND_HOURS = int(os.getenv("CLAUDE_SPEND_HOURS") or 12)
 MAX_CLAUDE_ITEMS_PER_HOUR = max(1, MAX_CLAUDE_ITEMS_PER_DAY // max(1, CLAUDE_SPEND_HOURS))
 MAX_CLAUDE_CALLS_PER_HOUR = MAX_CLAUDE_ITEMS_PER_HOUR  # old name, see above
 
