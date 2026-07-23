@@ -386,6 +386,33 @@ def _draw_team_badges(img, d, W, cy, from_abbr, to_abbr, r=58):
         mark(W / 2, to_abbr)
 
 
+def _corner_badges(img, d, from_abbr, to_abbr, left=60, top=58, r=46):
+    """Team mark(s) anchored in the TOP-LEFT corner, small.
+
+    The photo card used to centre the badge over the middle of the frame, which
+    is exactly where an action shot puts the player's face — on 2026-07-23 the
+    Celtics logo sat on Jordan Walsh's mouth mid-dunk. A corner mirrors the
+    @handle top-right and can never land on the subject."""
+    box = int(r * 2.35)
+    cy = top + r
+
+    def mark(cx, abbr):
+        logo = _team_logo(abbr)
+        if logo:
+            _paste_logo(img, logo, cx, cy, box)
+        else:
+            _team_badge(d, cx, cy, r, abbr)
+
+    if from_abbr and from_abbr != to_abbr:
+        aw, gap = 40, 22
+        mark(left + r, from_abbr)
+        ax = left + 2 * r + gap
+        _arrow(d, ax, cy, aw, (238, 238, 238))
+        mark(ax + aw + gap + r, to_abbr)
+    else:
+        mark(left + r, to_abbr)
+
+
 def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
     """Photo-free card for a player with no free-licensed photo (rookies, deep
     bench). The big real team logo(s) carry the visual weight instead of a photo,
@@ -466,13 +493,11 @@ def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit
     # @handle stays as the only top mark)
     _brand(d, W, 52, (235, 238, 245), shadow=True)
 
-    # No player name — the photo identifies them (like the ESPN card). Team
-    # badges sit above the ESPN-style BREAKING NEWS banner, near the bottom.
+    # No player name — the photo identifies them (like the ESPN card). The team
+    # mark sits in the TOP-LEFT corner, not centred over the frame: a centred
+    # badge lands on the player's face on any action shot.
     breaking_top = 838
-    badge_r = 58
-    badge_gap = 34           # space between the badges and the BREAKING box
-    badge_cy = breaking_top - badge_gap - badge_r
-    _draw_team_badges(img, d, W, badge_cy, from_abbr, to_abbr, r=badge_r)
+    _corner_badges(img, d, from_abbr, to_abbr)
     source_bottom = _breaking_box(d, W, breaking_top, source=source)
 
     # required CC photo attribution, tucked under the VIA <source> line so the
