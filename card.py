@@ -428,8 +428,28 @@ def _design_card(player, to_abbr, from_abbr, prim, to_name, source) -> bytes:
 def _photo_card(player, to_abbr, from_abbr, prim, to_name, source, photo, credit) -> bytes:
     """Card built on a real (CC/public-domain) player photo with attribution."""
     W, H = 1080, 1080
-    # Bias the crop toward the top so the player's face stays in frame
-    base = _cover(Image.open(io.BytesIO(photo)).convert("RGB"), (W, H), focus_y=0.15)
+    src = Image.open(io.BytesIO(photo))
+    # An ESPN headshot is a CUT-OUT with a transparent background, and
+    # .convert("RGB") does not remove that background — it flattens it to
+    # BLACK. That is the black slab around Isaiah Crawford's hair on
+    # 2026-07-23: not a rough matte, the alpha channel thrown away. Commons
+    # photos are opaque and unaffected, which is why this only ever showed up
+    # on the players too obscure to have a Commons photo.
+    if src.mode in ("RGBA", "LA") or (src.mode == "P" and "transparency" in src.info):
+        src = src.convert("RGBA")
+        bb = src.getbbox()          # drop the empty margin before scaling
+        if bb:
+            src = src.crop(bb)
+        cut = _cover(src, (W, H), focus_y=0.04)
+        # Feather the matte. ESPN's edge is hard and slightly aliased, which
+        # reads as jagged once it is scaled up against a dark card.
+        cut.putalpha(cut.getchannel("A").filter(ImageFilter.GaussianBlur(0.7)))
+        # Stand him on his team's colour rather than a void.
+        bg = _vgradient((W, H), prim, tuple(int(c * 0.30) for c in prim)).convert("RGBA")
+        base = Image.alpha_composite(bg, cut).convert("RGB")
+    else:
+        # Bias the crop toward the top so the player's face stays in frame
+        base = _cover(src.convert("RGB"), (W, H), focus_y=0.15)
 
     # Darkening scrim — keep the photo bright and full up top, and concentrate
     # the dark wash in the lower third where the name/badges/banner sit.
@@ -501,8 +521,24 @@ def _photo_bg(photo, W, H, away_prim, home_prim, blur=11,
     white/dimmed score text stays legible, plus a subtle team-color glow from
     each side. Uses the same CC/public-domain Wikimedia photo the trade cards
     use — real NBA players, no copyrighted game photography."""
-    base = _cover(Image.open(io.BytesIO(photo)).convert("RGB"), (W, H),
-                  focus_y=0.2, max_top_frac=0.03)
+    src = Image.open(io.BytesIO(photo))
+    if src.mode in ("RGBA", "LA") or (src.mode == "P" and "transparency" in src.info):
+        # Same trap as _photo_card: an ESPN cut-out is transparent, and
+        # .convert("RGB") does not drop that background, it paints it BLACK.
+        # Composite onto the team colour first so a player with no Commons
+        # photo gets a backdrop instead of a void.
+        src = src.convert("RGBA")
+        bb = src.getbbox()
+        if bb:
+            src = src.crop(bb)
+        cut = _cover(src, (W, H), focus_y=0.04)
+        cut.putalpha(cut.getchannel("A").filter(ImageFilter.GaussianBlur(0.7)))
+        wash = _vgradient((W, H), away_prim,
+                          tuple(int(c * 0.30) for c in home_prim)).convert("RGBA")
+        base = Image.alpha_composite(wash, cut).convert("RGB")
+    else:
+        base = _cover(src.convert("RGB"), (W, H),
+                      focus_y=0.2, max_top_frac=0.03)
     base = base.filter(ImageFilter.GaussianBlur(blur))
     img = base.convert("RGBA")
     # top + bottom darker than the middle so FINAL and the source credit read,
