@@ -9,14 +9,31 @@ no longer authenticate; the schedule was dropped to stop it retrying daily.
 
 The schedule is now back (2026-07-23, owner's call — the account stats had
 been frozen for two days and the shared dashboard was showing them as live).
-**It will keep failing until the secret is restored**, which costs one failed
-invocation a day and nothing else. Two steps, both requiring a login, finish
-the job:
+**It will keep failing until the OAuth credentials exist**, which costs one
+failed invocation a day and nothing else.
 
-1. Vercel → the `nba-news-bot` project → Settings → Environment Variables →
-   set `X_CLIENT_SECRET` to the regenerated value, then redeploy.
-2. Open the dashboard and reconnect X (the OAuth flow writes the token the
+BOTH variables are missing from the Vercel project, not just the secret —
+checked 2026-07-23, the project holds only APP_URL, CRON_SECRET and the KV /
+Upstash keys. Setting the secret alone will not work; the login route needs
+the id to start the flow at all.
+
+1. developer.x.com → your app → **Keys and tokens** → *OAuth 2.0 Client ID
+   and Client Secret*. Copy the id; regenerate the secret and copy it
+   immediately, X shows it once.
+2. Vercel → `nba-news-bot` → Settings → Environment Variables → add
+   **`X_CLIENT_ID`** and **`X_CLIENT_SECRET`**, both scoped to Production.
+3. Deployments → newest → ⋯ → **Redeploy**. Env vars only bind on a new build,
+   so skipping this makes step 4 fail with a confusing error.
+4. Open the dashboard and connect X (the OAuth flow writes the token the
    snapshot uses).
+
+If step 4 fails with a vague OAuth error, it is almost always the callback:
+in the X portal under *User authentication settings*, the redirect URI must
+match `APP_URL` + `/api/auth/x/callback` exactly — scheme included, no
+trailing slash.
+
+To watch it work without waiting for 13:00 UTC: Vercel → the project → Cron
+Jobs → Run.
 
 Once those land, the cron writes `x:user` / `x:tweets` / `x:history` to the
 shared Upstash Redis, `dashboard_data.publish()` picks them up on its next
