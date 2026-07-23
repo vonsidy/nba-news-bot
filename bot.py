@@ -680,9 +680,24 @@ def _affordable(items: list) -> list:
         return items
     day_left = config.MAX_CLAUDE_ITEMS_PER_DAY - state.claude_calls_today()
     if day_left <= 0:
+        # The counters are keyed on the ET date (state._today), not UTC — the
+        # message said UTC midnight, which is 8pm ET and the wrong answer to
+        # "when does it come back".
         print(f"  Claude daily budget spent ({config.MAX_CLAUDE_ITEMS_PER_DAY} items), "
-              f"holding until UTC midnight")
+              f"holding until midnight ET")
         return []
+    # Keep the evening's share for the evening. The hourly pace below stops one
+    # cycle emptying the day, but nothing stopped the MORNING emptying it —
+    # see config.CLAUDE_EVENING_RESERVE. Same money, spent when anyone is
+    # reading.
+    if _et_hour() < config.CLAUDE_EVENING_HOUR:
+        spendable = day_left - config.CLAUDE_EVENING_RESERVE
+        if spendable <= 0:
+            print(f"  {day_left} item(s) left are the evening reserve; holding "
+                  f"until {config.CLAUDE_EVENING_HOUR}:00 ET")
+            return []
+    else:
+        spendable = day_left
     # Pace it. Without this the day's budget goes in the first busy hour and the
     # account is dark for the other 23 — the cap protects the balance, this
     # protects the coverage.
@@ -691,7 +706,7 @@ def _affordable(items: list) -> list:
         print(f"  hourly pace reached ({config.MAX_CLAUDE_ITEMS_PER_HOUR} items); "
               f"{len(items)} item(s) held for the next hour, not dropped")
         return []
-    n = min(len(items), day_left, hour_left)
+    n = min(len(items), spendable, hour_left)
     if n < len(items):
         print(f"  budget allows {n} of {len(items)} item(s) this cycle; "
               f"the rest stay unseen and come back later")
@@ -797,7 +812,15 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
     # (a performance, a score, a quote) is stale within the tight window.
     if item.published_ts:
         age_min = (time.time() - item.published_ts) / 60
-        wide = result.get("is_trade") or result.get("category") in ("rumor", "report")
+        # "official" belongs with them. It was on the TIGHT window, which meant
+        # a confirmed announcement — a coach fired, a signing the team posted,
+        # a suspension — was dropped 45 minutes after it broke, and those are
+        # exactly the stories that surface slowly as each outlet writes them up.
+        # A trade rumour got six hours while the club's own confirmation got
+        # three quarters of one. Only a performance or a final score actually
+        # goes cold that fast, so those keep the tight window.
+        wide = result.get("is_trade") or result.get("category") in (
+            "rumor", "report", "official")
         max_age = config.TRADE_MAX_AGE_MIN if wide else config.FRESH_MAX_AGE_MIN
         if age_min > max_age:
             print(f"  too stale ({int(age_min)}m old), skipping: {item.title[:60]}")

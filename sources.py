@@ -106,6 +106,16 @@ _USER_AGENT = (
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
 
+# Sent with every feed request alongside _USER_AGENT. A real browser asking for
+# a feed sends all of these; feedparser on its own sends none of them, which is
+# a free tell for an edge deciding whether to serve a datacenter IP.
+_REQUEST_HEADERS = {
+    "Accept": "application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.7",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+}
+
 LAST_HEALTH: list[dict] = []
 
 
@@ -121,10 +131,23 @@ def _fetch_one(source: str, url: str) -> tuple[list[NewsItem], dict]:
         # 2026-07-21 blackout — the identical URLs worked from a laptop on the
         # default agent, so that was the runner's IP — but there is no upside
         # to volunteering "I am a script" to a host that is already throttling.
-        feed = feedparser.parse(url, agent=_USER_AGENT)
+        # A browser agent alone was not enough for ESPN, which served the
+        # Actions runner a body that parsed to ZERO entries while the identical
+        # URL returned 16 items from a laptop — the datacenter IP again, the
+        # same shape as the Google News block. A request that carries no Accept
+        # at all is the cheapest thing for an edge to refuse, so send the
+        # headers a browser would.
+        feed = feedparser.parse(url, agent=_USER_AGENT, request_headers=_REQUEST_HEADERS)
         entries = feed.entries[:20]
+        status = getattr(feed, "status", 0)
         if getattr(feed, "bozo", 0) and not entries:
             ok, err = False, "parse error"
+        elif not entries:
+            # Zero entries used to leave ok=True, which the dashboard renders as
+            # "stale" — indistinguishable from a genuinely quiet feed. ESPN sat
+            # like that, count 0, for days. A news feed with nothing in it is a
+            # failure; say so, and carry the HTTP status that explains it.
+            ok, err = False, f"no entries (HTTP {status or '?'})"
     except Exception as e:
         ok, err, entries = False, str(e)[:80], []
     count, newest = 0, 0.0

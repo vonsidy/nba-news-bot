@@ -170,6 +170,26 @@ CLAUDE_SPEND_HOURS = int(os.getenv("CLAUDE_SPEND_HOURS") or 12)
 MAX_CLAUDE_ITEMS_PER_HOUR = max(1, MAX_CLAUDE_ITEMS_PER_DAY // max(1, CLAUDE_SPEND_HOURS))
 MAX_CLAUDE_CALLS_PER_HOUR = MAX_CLAUDE_ITEMS_PER_HOUR  # old name, see above
 
+# Items of the daily cap that may only be spent in the evening.
+#
+# The cap decides HOW MUCH is spent; nothing decided WHEN. With the day turning
+# over at midnight ET and 12 spend-hours at ~28 items each, a day running at
+# rate is empty by mid-afternoon — which is exactly what happened on
+# 2026-07-22: last post 13:01 ET, budget gone at 16:46 ET, and the account
+# silent through the 7-11pm window that dashboard_data's own learning note
+# calls the best-performing one of the day. The blackout was structural, not
+# bad luck; every day is shaped that way.
+#
+# This spends no extra money. It fences off part of the SAME cap: before
+# CLAUDE_EVENING_HOUR only (cap - reserve) is available, after it the rest
+# unlocks. 100 of 340 leaves 240 for the 18 hours to 6pm and guarantees the
+# evening 100 no matter how busy the morning was. The hourly pace still
+# applies on top, so the reserve is drawn down over the evening rather than
+# dumped in one cycle. Set CLAUDE_EVENING_RESERVE=0 to go back to first-come
+# first-served.
+CLAUDE_EVENING_RESERVE = int(os.getenv("CLAUDE_EVENING_RESERVE") or 100)
+CLAUDE_EVENING_HOUR = int(os.getenv("CLAUDE_EVENING_HOUR") or 18)
+
 # How many items ride in one Claude request. This is what makes the ceiling
 # above affordable — see composer.compose_batch. Bigger is cheaper per item but
 # raises the blast radius of a malformed reply and gives the model a longer list
