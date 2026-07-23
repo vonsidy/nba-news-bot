@@ -7,6 +7,7 @@ design-only card when None (no free-licensed photo exists for that player).
 
 import html
 import json
+import os
 import re
 import urllib.parse
 import urllib.request
@@ -16,6 +17,13 @@ _UA = "NBANewsBot/1.0 (https://github.com/vonsidy/nba-news-bot; educational)"
 
 # License strings we accept (must permit commercial reuse; attribution ok).
 _FREE = ("public domain", "cc0", "cc-by", "cc by", "attribution", "creative commons")
+
+# Shortest source side, in pixels, a photo must have to be used on the card.
+# The card renders at 1080px; below this the frame is filled by upscaling, and
+# a small gym photo turns to grain. Anything under it is skipped in favour of
+# the logo card. 640 keeps the plentiful ~1000px+ Commons shots and rejects the
+# genuinely tiny ones without leaving most players logo-only.
+MIN_PHOTO_PX = int(os.getenv("MIN_PHOTO_PX") or 640)
 
 
 def _get_json(params: dict) -> dict:
@@ -317,6 +325,15 @@ def _score(fname: str, name: str, lead: str | None,
             s -= 5
         elif ar <= 1.1:
             s += 2      # portrait/square: subject fills the frame
+        # Prefer resolution. The card fills 1080px, so a source much smaller
+        # than that is upscaled into the grain you can see on a low-res gym
+        # photo. Reward bigger sources up to a cap, and dock the genuinely tiny
+        # ones, so a sharp photo beats a small one when there is a choice.
+        short = min(dims[0], dims[1])
+        if short >= 900:
+            s += 2
+        elif short < MIN_PHOTO_PX:
+            s -= 6
     if _NATIONAL_RE.search(haystack):
         s -= 12  # a Team USA / FIBA / college shot is the wrong jersey entirely
 
@@ -430,6 +447,16 @@ def get_player_photo(name: str, width: int = 1000, teams=None, strict=False):
             ).lower()
             if not any(h in lic for h in _FREE):
                 continue  # copyrighted / unknown license — do NOT use
+            # Resolution floor. A source whose short side is well under the
+            # 1080px card looks like grain once it fills the frame — the Ohio
+            # State Jae'Sean Tate photo on 2026-07-23 was exactly this. Skip it
+            # and let the caller fall back to the clean logo card; a crisp logo
+            # beats a smeared upscale. Only the ORIGINAL dimensions count here,
+            # not the 1000px thumb Commons renders from a smaller original.
+            w, h = info.get("width") or 0, info.get("height") or 0
+            if w and h and min(w, h) < MIN_PHOTO_PX:
+                print(f"  photo too low-res ({w}x{h}), skipping: {fname[:50]}")
+                continue
             artist = _strip(meta.get("Artist", {}).get("value", "")) or "Wikimedia Commons"
             if len(artist) > 42:
                 artist = artist[:39] + "..."
