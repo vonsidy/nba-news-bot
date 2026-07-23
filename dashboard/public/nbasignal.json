@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-23T16:26:15Z",
+  "updated": "2026-07-23T17:58:44Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -107,23 +107,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784823543,
+      "newest_ts": 1784828140,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 12,
-      "newest_ts": 1784823320,
+      "count": 8,
+      "newest_ts": 1784829165,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 15,
-      "newest_ts": 1784823429,
+      "count": 12,
+      "newest_ts": 1784829154,
       "error": ""
     },
     {
@@ -131,15 +131,15 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 8,
-      "newest_ts": 1784823429,
+      "newest_ts": 1784829019,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1784822618,
+      "count": 8,
+      "newest_ts": 1784829154,
       "error": ""
     },
     {
@@ -147,7 +147,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784823428,
+      "newest_ts": 1784829161,
       "error": ""
     },
     {
@@ -231,16 +231,16 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 22,
+      "last_poll_secs_ago": 19,
       "tweets_last_poll": 0,
       "watermark": "2080313772053352795"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 22,
+      "last_poll_secs_ago": 19,
       "tweets_last_poll": 0,
-      "watermark": "2080167825004535914"
+      "watermark": "2080350390285938735"
     }
   ]
 }
