@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-23T06:38:30Z",
+  "updated": "2026-07-23T12:16:09Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,24 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 Bulls acquire Nic Claxton in a three-team trade with the Nets and Timberwolves.",
+      "cat": "Report",
+      "ts": 1784805206.7683642,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 Pelicans trade Jose Alvarado to the Knicks for Dalen Terry and two second-round picks.",
+      "cat": "Report",
+      "ts": 1784805199.905724,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: David Jones Garcia signs two-way deal with the Spurs.",
+      "cat": "Official",
+      "ts": 1784791478.5704846,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: Pelicans exploring trade market for Jordan Hawkins; Grizzlies interested, per The Stein Line.",
       "cat": "Report",
@@ -81,24 +99,6 @@
       "cat": "Report",
       "ts": 1784635283.2778478,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Hawks acquire Luguentz Dort in trade. Full pick details revealed.",
-      "cat": "Official",
-      "ts": 1784612224.7887874,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Jalen Wilson agrees to a two-way deal with the Atlanta Hawks. The 2023 draft pick spent last season with Brooklyn.",
-      "cat": "Official",
-      "ts": 1784603840.2759771,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Mavs sign Jett Howard to a two-way contract.",
-      "cat": "Official",
-      "ts": 1784599998.263211,
-      "media": false
     }
   ],
   "sources": [
@@ -107,42 +107,42 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784785800
+      "newest_ts": 1784808248
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1784787252
+      "count": 6,
+      "newest_ts": 1784808136
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1784785932
+      "count": 7,
+      "newest_ts": 1784808763
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1784786466
+      "count": 6,
+      "newest_ts": 1784808395
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
       "count": 7,
-      "newest_ts": 1784786933
+      "newest_ts": 1784808589
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 14,
-      "newest_ts": 1784786205
+      "count": 20,
+      "newest_ts": 1784808589
     },
     {
       "label": "RealGM",
@@ -154,7 +154,7 @@
     {
       "label": "ESPN",
       "publisher": "ESPN",
-      "status": "stale",
+      "status": "down",
       "count": 0,
       "newest_ts": 0.0
     }
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 4,
+  "posts_today": 7,
   "cap": null,
   "claude": {
-    "items_today": 73,
+    "items_today": 170,
     "items_cap": 340,
-    "items_this_hour": 11,
+    "items_this_hour": 10,
     "items_cap_hour": 28,
-    "spent_usd": 0.035,
+    "spent_usd": 0.0816,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
@@ -223,14 +223,14 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 1041,
+      "last_poll_secs_ago": 22,
       "tweets_last_poll": 0,
       "watermark": "2080042715765469571"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 1041,
+      "last_poll_secs_ago": 22,
       "tweets_last_poll": 0,
       "watermark": "2080167825004535914"
     }
