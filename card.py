@@ -883,115 +883,162 @@ def _wrap_headline(text: str, max_chars: int = 26, max_lines: int = 4) -> list[s
 def make_news_card(headline: str, teams: list | None = None,
                    source: str | None = None, photo: bytes | None = None,
                    credit: str | None = None,
-                   label: str | None = None,
-                   player: str | None = None) -> bytes | None:
-    """News card: sharp player photo up top, a solid team-coloured lower panel
-    carrying the who and the what.
+                   label: str | None = None) -> bytes | None:
+    """A card for news that is neither a final score nor a player move.
 
-    Redesigned 2026-07-23 from a centred-text-over-blurred-photo layout with a
-    red-outline BREAKING box, which read as a generic template. The panel design
-    is the broadcast lower-third every real sports-media card uses: the photo
-    stays sharp and dominant, the type sits on a solid bed instead of floating,
-    and team colour brands the card instead of a lone red rectangle.
+    This generator did not exist, and REQUIRE_IMAGE is on — so every item that
+    was not a trade, signing or box score reached the end of process_item with
+    image=None and was dropped with "no card for this item". The story had
+    already been fetched, filtered and PAID FOR by then. An investigation, a
+    coaching hire, a suspension, an injury: all newsworthy, all bought, all
+    binned for want of a picture.
 
-    Tolerant about teams and photos: colours from a team when one resolves, a
-    neutral wash otherwise; shows the photo when one was found, a logo-forward
-    layout when not. A plain card still ships the news — returning None was the
-    old bug that lost posts.
+    Deliberately tolerant about teams. It colours from a team when one can be
+    resolved and falls back to a neutral league wash when none can, because the
+    alternative — returning None — is the exact behaviour that was losing the
+    posts. A card that is merely plain still ships the news.
     """
+    # Strip the category emoji and prefix. The card has its own BREAKING NEWS
+    # banner, so "REPORT:" is redundant — and the display font has no emoji
+    # glyphs, so a leading 📰 renders as a hollow box, which is worse than
+    # nothing on the one asset people actually look at.
     headline = re.sub(r"^\s*[^\w(\"']*\s*", "", headline or "")
     headline = re.sub(r"^(OFFICIAL|REPORT|RUMOR|BREAKING)\s*:\s*", "", headline,
                       flags=re.I)
     headline = _EMOJI.sub("", headline).strip()
-    label = _EMOJI.sub("", (label or "")).strip()
-    player = _EMOJI.sub("", (player or "")).strip()
-    if not (label or headline or player):
+    label = (label or "").strip()
+    if not (label or headline):
         return None
-
     abbrs = [a for a in (resolve_team(t) for t in (teams or [])) if a][:2]
     prim = _hex(TEAMS[abbrs[0]][1]) if abbrs else (29, 155, 240)
-    sec = _hex(TEAMS[abbrs[0]][2]) if abbrs else (255, 255, 255)
-    accent = _brighten(sec, target=170)
-    W, H = 1080, 1080
-    PANEL_TOP = 672
-    M = 64                                    # left margin for panel content
 
-    # 1. Background — sharp photo filling the frame, else a team-colour wash.
+    W, H = 1080, 1080
+    # A real player photo as the backdrop when one was found. The photo params
+    # were accepted and then ignored when this card was first written, so every
+    # news card rendered logo-only while trade and score cards showed players —
+    # the visible difference the owner noticed on the timeline.
     used_photo = False
     if photo:
         try:
-            img = _photo_bg(photo, W, H, prim, prim, blur=0,
-                            scrim_mid=0, scrim_edge=0, glow_alpha=0).convert("RGBA")
+            second = _hex(TEAMS[abbrs[1]][1]) if len(abbrs) > 1 else prim
+            # blur=4, not the score card's 11. There the photo is
+            # atmosphere behind a scoreboard; here the player IS the point, and
+            # at 11 he is unrecognisable — which is the complaint that started
+            # this. Enough blur to keep the headline legible, not so much that
+            # the subject is a smear.
+            # The score card's treatment (blur 11, scrim alpha 120-230, two
+            # colour glows) is built to sit BEHIND a scoreboard, and applied
+            # here it rendered the player as an almost-black wash — the owner
+            # could not tell there was a photo at all. Here the player is the
+            # subject, so: barely any blur, a much lighter scrim, no glows.
+            # Text stays legible via the drop shadow added below instead.
+            img = _photo_bg(photo, W, H, prim, second, blur=2,
+                            scrim_mid=25, scrim_edge=95, glow_alpha=0)
             used_photo = True
         except Exception:
-            used_photo = False
+            used_photo = False   # undecodable image -> fall through to the wash
     if not used_photo:
-        img = _vgradient((W, H), tuple(min(255, int(c * 0.30) + 12) for c in prim),
-                         (12, 13, 18)).convert("RGBA")
-        img = Image.alpha_composite(img, _glow((W, H), (W // 2, 300), 640, prim, 150))
-        if abbrs:
-            _draw_team_badges(img, ImageDraw.Draw(img), W, 300,
-                              abbrs[1] if len(abbrs) > 1 else None, abbrs[0], r=116)
-        credit = None
-
-    # 2. Lower panel — a soft fade from the photo into a solid team-tinted bed.
-    panel = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    pd = ImageDraw.Draw(panel)
-    fade = 150
-    for yy in range(PANEL_TOP - fade, PANEL_TOP):
-        t = (yy - (PANEL_TOP - fade)) / fade
-        pd.line([(0, yy), (W, yy)], fill=(8, 10, 14, int(240 * (t ** 1.5))))
-    panel_col = tuple(min(255, int(c * 0.22) + 9) for c in prim)
-    pd.rectangle([0, PANEL_TOP, W, H], fill=panel_col + (255,))
-    img = Image.alpha_composite(img, panel)
+        img = _vgradient((W, H), (13, 13, 17), (26, 27, 33)).convert("RGBA")
+        img = Image.alpha_composite(img, _glow((W, H), (W - 170, 360), 560, prim, 165))
+        if len(abbrs) > 1:
+            img = Image.alpha_composite(
+                img, _glow((W, H), (170, 360), 500, _hex(TEAMS[abbrs[1]][1]), 125))
+        img = img.convert("RGB")
+        credit = None            # nothing to attribute if the photo was not used
     d = ImageDraw.Draw(img)
+    _brand(d, W, 52, (214, 218, 226), shadow=used_photo)
 
-    # Team-colour accent bar across the panel's top edge.
-    d.rectangle([0, PANEL_TOP, W, PANEL_TOP + 9], fill=accent)
+    if abbrs and not used_photo:
+        _draw_team_badges(img, d, W, 330,
+                          abbrs[1] if len(abbrs) > 1 else None, abbrs[0], r=112)
+        top = 632
+    else:
+        # No team to show: give the headline the space the logos would have used
+        # rather than leaving a hole where they should be.
+        top = 470
 
-    # 3. Panel content, left-aligned.
-    y = PANEL_TOP + 40
+    # The LABEL, not the headline: "TRADED", "OUT 4-6 WEEKS", "2 YEARS · $104M".
+    # Printing the tweet here wrapped to four lines, which covered the player the
+    # photo was fetched for and pushed the last line under the BREAKING NEWS box.
+    # `headline` survives as the fallback for an item that produced no label, but
+    # is now capped at two lines so that path cannot collide either.
+    if label:
+        lines = _wrap_label(label)
+        cap = 132 if len(lines) == 1 else 104
+    else:
+        lines = _wrap_headline(headline, max_chars=26, max_lines=2)
+        cap = 96 if len(lines) == 1 else 74
+    fonts = [_fit_font(d, ln, W - 150, cap, min_size=40) for ln in lines]
+    # Measure what PIL will actually draw. block_h was sum(f.size), which runs
+    # well short of the rendered height — a "74px" line occupies more than 74px
+    # — so every position derived from it sat lower than the arithmetic claimed.
+    # That undercount is the second half of the collision: even two lines could
+    # reach the box while the layout believed they cleared it.
+    heights = [d.textbbox((0, 0), ln, font=f)[3] for ln, f in zip(lines, fonts)]
+    block_h = sum(heights) + LINE_GAP * (len(lines) - 1)
 
-    # BREAKING pill — small, solid red, the way a wire tag reads. Not a big box.
-    pill_f = _font(30)
-    pill_txt = "BREAKING"
-    tb = d.textbbox((0, 0), pill_txt, font=pill_f)
-    pw, ph = tb[2] - tb[0], tb[3] - tb[1]
-    d.rounded_rectangle([M, y, M + pw + 40, y + ph + 22], radius=8,
-                        fill=(228, 24, 46))
-    d.text((M + 20, y + 10 - tb[1]), pill_txt, font=pill_f, fill=(255, 255, 255))
-    y += ph + 22 + 26
+    if used_photo:
+        # Text sits in a band UNDER the player, not across his face. Centring it
+        # put the headline straight over the subject, which is the one thing the
+        # photo is there for. The band is a bottom-up gradient so the type has a
+        # dark bed to sit on without flattening the whole image.
+        #
+        # Anchored from the BOTTOM: the block ends at TEXT_BOTTOM whatever its
+        # height, so it clears the box by construction rather than by hoping a
+        # fixed start point leaves enough room. It also means a one-word label
+        # occupies a thin strip at the foot of the card and leaves the player
+        # visible, which is the whole point of the change.
+        band_top = max(430, TEXT_BOTTOM - block_h - 34)
+        panel = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        pd = ImageDraw.Draw(panel)
+        for yy in range(band_top, H):
+            t = (yy - band_top) / max(1, H - band_top)
+            pd.line([(0, yy), (W, yy)], fill=(6, 8, 12, int(215 * (t ** 0.55))))
+        img = Image.alpha_composite(img.convert("RGBA"), panel).convert("RGB")
+        d = ImageDraw.Draw(img)
+        _brand(d, W, 52, (236, 239, 244), shadow=True)
+        y = TEXT_BOTTOM - block_h
+    else:
+        y = top - block_h / 2
 
-    # Player name — the WHO, big and white.
-    if player:
-        nf = _fit_font(d, player.upper(), W - 2 * M, 66, min_size=40, step=4)
-        d.text((M, y), player.upper(), font=nf, fill=(255, 255, 255))
-        y += d.textbbox((0, 0), player.upper(), font=nf)[3] + 12
+    for ln, f, h in zip(lines, fonts, heights):
+        if used_photo:                       # shadow keeps type readable on any photo
+            box = d.textbbox((0, 0), ln, font=f)
+            d.text((W / 2 - (box[2] - box[0]) / 2 + 3, y + 3), ln, font=f,
+                   fill=(0, 0, 0))
+        _center(d, W / 2, y, ln, f, (255, 255, 255))
+        y += h + LINE_GAP
 
-    # The fact — the WHAT. The label if we have one ("2 YEARS · $104M",
-    # "TRADED TO HAWKS"), else the headline. Team-accent colour so it pops off
-    # the panel and the eye lands on it.
-    fact = label or headline
-    fact_lines = _wrap_label(fact) if label else _wrap_headline(fact, max_chars=30, max_lines=2)
-    fact_cap = 60 if player else (96 if len(fact_lines) == 1 else 76)
-    for ln in fact_lines:
-        ff = _fit_font(d, ln, W - 2 * M, fact_cap, min_size=38, step=4)
-        d.text((M, y), ln, font=ff, fill=accent if player else (255, 255, 255))
-        y += d.textbbox((0, 0), ln, font=ff)[3] + 8
-
-    # 4. Attribution — one quiet line at the foot of the panel.
-    bits = []
+    # Draw the box WITHOUT its own VIA line, then place the two attribution
+    # lines as one tight block centred in the gap between the box and the
+    # bottom edge. _breaking_box hangs VIA just under the box and _credit_line
+    # bottom-anchors the credit, which left the two stranded far apart with
+    # dead space between them.
+    box_bottom = _breaking_box(d, W, NEWS_BOX_TOP)
+    lines = []
     if source:
-        bits.append(f"via {source}")
+        lines.append((f"VIA {source.upper()}", _font(SOURCE_SIZE), (232, 232, 236)))
     if credit:
-        bits.append(credit)
-    if bits:
-        cf = _font(21)
-        d.text((M, H - 52), "   ·   ".join(bits), font=cf, fill=(150, 156, 166))
-
-    # 5. Account handle, top corner, shadowed so it holds on any photo.
-    _brand(d, W, 44, (236, 239, 244), shadow=used_photo)
-
+        lines.append((credit, _font(CREDIT_SIZE), (170, 174, 182)))
+    if lines:
+        GAP = 7                              # tight: they read as one block
+        heights = [d.textbbox((0, 0), t, font=f)[3] for t, f, _ in lines]
+        block = sum(heights) + GAP * (len(lines) - 1)
+        y = box_bottom + (H - box_bottom - block) / 2
+        for (t, f, fill), h in zip(lines, heights):
+            _center(d, W / 2, y, t, f, fill)
+            y += h + GAP
     out = io.BytesIO()
-    img.convert("RGB").save(out, format="PNG")
+    img.save(out, format="PNG")
     return out.getvalue()
+
+
+if __name__ == "__main__":
+    import photos
+    res = photos.get_player_photo("Jaylen Brown")
+    photo, credit = res if res else (None, None)
+    png = make_trade_card("Jaylen Brown", to_team="76ers", from_team="Celtics",
+                          source="ESPN", photo=photo, credit=credit)
+    with open("sample_card.png", "wb") as f:
+        f.write(png)
+    print(f"wrote sample_card.png (photo: {'yes' if photo else 'no'})")

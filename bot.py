@@ -1017,9 +1017,6 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
                 # is fine — the card falls back to a neutral league wash rather
                 # than returning None, which is what was losing the post.
                 teams=story_teams,
-                # The subject's name, printed big on the card's panel — the WHO
-                # above the WHAT. Coaches and executives ride in `player` too.
-                player=result.get("player") or result.get("star_player") or "",
                 # Whoever the tweet credits, or nothing. Falling back to the
                 # feed stamped VIA REALGM / VIA GOOGLE NEWS on announcements
                 # nobody "reported" — crediting an aggregator for a signing the
