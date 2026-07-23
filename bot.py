@@ -282,6 +282,20 @@ def _collapse_same_story(items: list) -> list:
     return kept
 
 
+_SOURCE_RE = re.compile(
+    r"(?:\b(?:per|via|according to)\b|\bsources?\b|\breports?\b|@\w)", re.I)
+
+
+def _names_a_source(text: str) -> bool:
+    """True if the tweet credits somebody for the claim.
+
+    Deliberately generous — "per ESPN", "via HoopsHype", "sources tell", "Shams
+    reports", "@ShamsCharania" all pass. The point is not to police wording but
+    to catch the tweet that asserts a transaction with no reporter behind it at
+    all, which is what both stale trades looked like."""
+    return bool(_SOURCE_RE.search(text))
+
+
 def _covered_subject_in(title: str) -> str | None:
     """The name of a player already posted about today that this headline is
     about, or None.
@@ -827,6 +841,27 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
             return False
 
     text = result["tweet"].strip()
+
+    # A report or rumour must name who reported it. SYSTEM_PROMPT has said so
+    # from the start — "Rumors and reports MUST name the source in the tweet" —
+    # but nothing enforced it, and on 2026-07-23 two five-month-old trades went
+    # out seven seconds apart as bare assertions: "Pelicans trade Jose Alvarado
+    # to the Knicks for Dalen Terry and two second-round picks." Both were
+    # category=report, both carried the 🚨 official prefix they were not
+    # entitled to, and neither said who was reporting it.
+    #
+    # That combination is the tell. A model that has dropped the attribution has
+    # stopped describing what an ARTICLE SAYS and started asserting the event
+    # itself as fact — which is exactly the voice a stale recap gets rewritten
+    # into. We cannot verify the date (Google News hides the publisher URL
+    # behind an opaque redirect, so there is no article date to read), but we
+    # can refuse to publish an unsourced claim, and that catches this case.
+    if result.get("category") in ("rumor", "report"):
+        if not _names_a_source(text):
+            print(f"  {result.get('category')} with no source named, skipping: "
+                  f"{text[:88]}")
+            return False
+
     if item.link and config.INCLUDE_SOURCE_LINK:
         text = f"{text}\n{item.link}"
     else:
@@ -950,6 +985,18 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
         return False
 
     if tweeter.post(text, image=image):
+        # What went out, and what it came from. Every SKIP was logged and every
+        # POST was silent, so the one event worth auditing left no trace: when
+        # two stale trades went out on 2026-07-23 the logs could not say which
+        # feed carried them, how old the item claimed to be, or what the source
+        # headline was. Three runs were searched for "Alvarado" and matched
+        # nothing, because a successful post printed no text at all.
+        age = (f"{int((time.time() - item.published_ts) / 60)}m"
+               if item.published_ts else "undated")
+        print(f"  POSTED [{result.get('category') or '?'}] age={age} "
+              f"feed={item.source} :: {text[:100]}\n"
+              f"    from: {item.title[:110]}\n"
+              f"    link: {item.link[:110]}")
         state.incr_posts()
         state.record_post(result["tweet"].strip(), result.get("category", ""), bool(image))
         if is_highlight:
