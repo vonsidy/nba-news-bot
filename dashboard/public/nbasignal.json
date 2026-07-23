@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-23T17:58:44Z",
+  "updated": "2026-07-23T21:40:22Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: Jordan Walsh agrees to multi-year extension with the Celtics, per 98.5 The Sports Hub.",
+      "cat": "Report",
+      "ts": 1784833464.4002612,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Jae'Sean Tate re-signs with the Rockets.",
+      "cat": "Official",
+      "ts": 1784833458.7474995,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Minnesota extends head coach Niko Medved after a promising first season.",
       "cat": "Official",
@@ -87,18 +99,6 @@
       "cat": "Report",
       "ts": 1784739657.2957833,
       "media": true
-    },
-    {
-      "text": "\ud83d\udc40 Bennedict Mathurin drawing sign-and-trade interest; Clippers among interested teams in re-signing him, per HoopsHype.",
-      "cat": "Report",
-      "ts": 1784736247.720824,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Summer leaguer Sharp signs two-way deal with Clippers via Sportsnet.ca",
-      "cat": "Report",
-      "ts": 1784672082.9859884,
-      "media": true
     }
   ],
   "sources": [
@@ -107,31 +107,31 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784828140,
+      "newest_ts": 1784838168,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784829165,
+      "count": 7,
+      "newest_ts": 1784842334,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 12,
-      "newest_ts": 1784829154,
+      "count": 10,
+      "newest_ts": 1784841360,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784829019,
+      "count": 3,
+      "newest_ts": 1784840428,
       "error": ""
     },
     {
@@ -139,7 +139,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 8,
-      "newest_ts": 1784829154,
+      "newest_ts": 1784841127,
       "error": ""
     },
     {
@@ -147,7 +147,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784829161,
+      "newest_ts": 1784842191,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784820706,
+      "newest_ts": 1784833512,
       "error": ""
     },
     {
@@ -216,29 +216,29 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 9,
+  "posts_today": 11,
   "cap": null,
   "claude": {
-    "items_today": 241,
-    "items_cap": 340,
-    "items_this_hour": 0,
-    "items_cap_hour": 28,
-    "spent_usd": 0.1157,
-    "budget_usd": 0.1632,
+    "items_today": 337,
+    "items_cap": 500,
+    "items_this_hour": 23,
+    "items_cap_hour": 41,
+    "spent_usd": 0.1618,
+    "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
   "insiders": [
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 19,
+      "last_poll_secs_ago": 2,
       "tweets_last_poll": 0,
       "watermark": "2080313772053352795"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 19,
+      "last_poll_secs_ago": 2,
       "tweets_last_poll": 0,
       "watermark": "2080350390285938735"
     }
