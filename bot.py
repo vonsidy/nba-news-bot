@@ -145,7 +145,13 @@ _NBA_TOKENS = sorted(
 _NBA_RE = re.compile(r"(?i)\b(nba|" + "|".join(re.escape(x) for x in _NBA_TOKENS) + r")\b")
 # Cities are shared between leagues ("Miami" is Heat and Dolphins), so a strong
 # NBA signal is the word NBA or a team NICKNAME, never a city alone.
-_NBA_NICKS = sorted({v[0].lower() for v in card.TEAMS.values()}, key=len, reverse=True)
+# Short forms count too. The set was built from TEAMS values, which hold the
+# full name ("TRAIL BLAZERS"), so "Blazers New HC Micah Nori" carried no strong
+# signal and rode in on the city alone — as did Cavs, Mavs, Sixers and Wolves.
+_NBA_SHORT_NICKS = ["blazers", "cavs", "mavs", "sixers", "wolves", "t-wolves",
+                    "pels", "nugs", "dubs"]
+_NBA_NICKS = sorted({v[0].lower() for v in card.TEAMS.values()} | set(_NBA_SHORT_NICKS),
+                    key=len, reverse=True)
 _NBA_STRONG_RE = re.compile(
     r"(?i)\b(nba|" + "|".join(re.escape(x) for x in _NBA_NICKS) + r")\b")
 
@@ -382,7 +388,22 @@ def _worth_composing(item: sources.NewsItem) -> bool:
     # Bradley Beal", real NBA news naming no team and never saying NBA. One miss
     # in 49 to close the category permanently is the right trade for an account
     # whose entire premise is being NBA-only.
-    if not _NBA_RE.search(t):
+    # A NICKNAME or the word NBA — a city name alone is not proof. Cities are
+    # shared with every other league and with the local university, and on
+    # 2026-07-23 that put "Minnesota extends head coach Niko Medved" on the
+    # timeline: University of Minnesota basketball, matched on "Minnesota",
+    # posted as NBA news. No keyword list would have caught it, because the
+    # headline says nothing about college — the only wrong thing in it is the
+    # assumption that a city means the NBA team.
+    #
+    # Measured on 143 live items: 15 rest on a city alone, and 13 of those are
+    # the Blackhawks, the Cubs, Ole Miss, HBCU football, the Raiders, the
+    # Cowboys, Washington Huskies, a soccer roundup, college recruiting and
+    # this Medved story. The 2 real ones are a "red flags emerge over rumored
+    # reunion" chatter piece and a podcast episode, both of which the no-facts
+    # rule drops later anyway. Thirteen wrong leagues for two items that were
+    # not going to post is the trade.
+    if not _NBA_STRONG_RE.search(t):
         return False
     # Kept as a second gate: an item can name an NBA city and still be another
     # league's story ("Miami Dolphins", "New York Rangers").
