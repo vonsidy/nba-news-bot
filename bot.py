@@ -911,6 +911,19 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
             print(f"  {result.get('category')} with no source named, skipping: "
                   f"{text[:88]}")
             return False
+    # A transaction the composer chose to leave uncited must EARN that: it can
+    # only come from an insider timeline, which is real-time and IS the source.
+    # The composer is now told to drop a minor local source and mark a done deal
+    # "official" — good for a live Shams tweet, but it also lets a stale Google
+    # News trade shed its (absent) attribution and slip through as "official",
+    # which is exactly how the fake Alvarado trade got out. So an RSS-sourced
+    # transaction with no reporter named is still blocked, whatever its category.
+    elif (result.get("is_trade") or result.get("deal_amount")
+          or result.get("deal_years")):
+        if not item.source.startswith("@") and not _names_a_source(text):
+            print(f"  uncited transaction from a non-insider feed "
+                  f"({item.source}), skipping: {text[:80]}")
+            return False
 
     if item.link and config.INCLUDE_SOURCE_LINK:
         text = f"{text}\n{item.link}"

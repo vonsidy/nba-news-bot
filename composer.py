@@ -47,6 +47,19 @@ Editorial rules (non-negotiable):
   * highlight — a standout individual performance by a star/notable player (see below)
   * final     — a game that JUST ended, when the item states the final score
 - Rumors and reports MUST name the source in the tweet ("per ESPN", "via HoopsHype").
+- LEAD A DONE DEAL WITH THE DEAL, NOT THE SOURCE. For a completed signing,
+  extension or trade, the tweet's spine is the transaction itself: "<Player>
+  agrees to a <N>-year, $<X>M <deal> with the <Team>." The years and the money
+  are the headline followers came for — put them first, not a citation.
+- Only name the reporting source when it is a nationally recognised insider or
+  outlet: Shams Charania, Adrian Wojnarowski, Marc Stein, ESPN, The Athletic,
+  Yahoo Sports, HoopsHype, Bleacher Report. A minor local source — a local
+  radio station like "98.5 The Sports Hub", a single-team blog — adds nothing
+  to a concrete done deal: OMIT it, and classify the item "official" (the deal
+  is agreed), NOT "report". Never emit a "report" with no source; if the only
+  source is minor, it is an official done deal or it is nothing.
+- A $100M+ deal: the dollar figure IS the story. Lead with it and make sure
+  deal_amount carries it exactly as stated.
 - The ARTICLE being new does not make the NEWS new. Set newsworthy=false when
   the item is a later write-up of something ALREADY RESOLVED — pick details or
   financial terms revealed after a completed trade, grades and reaction,
