@@ -1165,11 +1165,26 @@ def run_cycle(include_rss: bool = True) -> None:
                 continue
         pending.append(item)
 
-    # Trim to what the budget allows. Held-back items are deliberately NOT
-    # marked seen, so they return next hour instead of being dropped — the old
-    # code marked every item seen on entry and only then checked the budget, so
-    # a story that broke while the hourly allowance was spent was gone for good.
-    affordable = _affordable(pending)
+    # Insider scoops bypass the budget entirely. They are the highest-value,
+    # lowest-volume content the account carries (Shams, Stein — a handful of
+    # postable tweets a day), and holding one for budget did not defer it, it
+    # LOST it: insiders.py advances its read watermark the instant it reads a
+    # tweet, so a held insider item never comes back on a later cycle the way a
+    # held RSS item does. On 2026-07-23 a Shams tweet on Jordan Walsh's
+    # extension was read while the day's budget sat spent behind the evening
+    # reserve, and vanished. Exempting insiders costs pennies at their volume
+    # and is the whole point of paying to read the insiders at all.
+    #
+    # RSS items still pace against whatever budget insiders leave: _affordable
+    # reads the same daily counter insider composes increment, so the firehose
+    # gets the remainder, not a penny extra.
+    ins_pending = [i for i in pending if i.source.startswith("@")]
+    rss_pending = [i for i in pending if not i.source.startswith("@")]
+    affordable = _affordable(rss_pending)
+    if ins_pending:
+        if len(affordable) < len(rss_pending):
+            print(f"  {len(ins_pending)} insider item(s) bypass the spent budget")
+        affordable = ins_pending + affordable
     for item in affordable:
         state.mark_seen(item.id)
 
