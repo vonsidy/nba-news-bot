@@ -1,20 +1,30 @@
 # NBA Bot Dashboard (Vercel)
 
-## Why there are no crons in `vercel.json`
+## The daily X snapshot
 
 `/api/cron/snapshot` is the only thing in this system that READS from X, and
 reads are billed per resource returned. Its OAuth 2.0 client secret was
-regenerated on 2026-07-21 and deliberately not redeployed, so the sync can no
-longer authenticate; dropping the schedule stops it retrying daily.
+regenerated on 2026-07-21 and deliberately not redeployed, so the sync could
+no longer authenticate; the schedule was dropped to stop it retrying daily.
 
-To turn stats back on: set `X_CLIENT_SECRET` in Vercel to the new value,
-reconnect X on the dashboard, and restore the schedule:
+The schedule is now back (2026-07-23, owner's call — the account stats had
+been frozen for two days and the shared dashboard was showing them as live).
+**It will keep failing until the secret is restored**, which costs one failed
+invocation a day and nothing else. Two steps, both requiring a login, finish
+the job:
 
-```json
-{ "crons": [{ "path": "/api/cron/snapshot", "schedule": "0 13 * * *" }] }
-```
+1. Vercel → the `nba-news-bot` project → Settings → Environment Variables →
+   set `X_CLIENT_SECRET` to the regenerated value, then redeploy.
+2. Open the dashboard and reconnect X (the OAuth flow writes the token the
+   snapshot uses).
 
-Be aware that re-enables the read cost.
+Once those land, the cron writes `x:user` / `x:tweets` / `x:history` to the
+shared Upstash Redis, `dashboard_data.publish()` picks them up on its next
+hourly run, and the "as of Nd ago" labels on the shared dashboard disappear on
+their own — nothing further to change.
+
+Be aware this re-enables the read cost that switching it off was meant to
+avoid. Delete the `crons` block to stop it again.
 
 > This note lives here rather than in `vercel.json` because that file is
 > schema-validated: a `$comment` key fails the build with *"should NOT have
