@@ -926,7 +926,7 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
             home_team=result.get("home_team") or "",
             away_score=int(result.get("away_score") or 0),
             home_score=int(result.get("home_score") or 0),
-            source=item.source,
+            source=_reported_by(text, ""),
             photo=photo,
             credit=credit,
         )
@@ -953,7 +953,7 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
             player=result["player"],
             to_team=result["to_team"],
             from_team=result.get("from_team") or None,
-            source=item.source,
+            source=_reported_by(text, ""),
             photo=photo,
             credit=credit,
         )
@@ -996,8 +996,12 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
                 # is fine — the card falls back to a neutral league wash rather
                 # than returning None, which is what was losing the post.
                 teams=story_teams,
-                # Whoever the tweet credits, not whichever feed carried it.
-                source=_reported_by(text, item.source),
+                # Whoever the tweet credits, or nothing. Falling back to the
+                # feed stamped VIA REALGM / VIA GOOGLE NEWS on announcements
+                # nobody "reported" — crediting an aggregator for a signing the
+                # club posted itself. The line is optional by design; when no
+                # reporter is named the honest card carries no credit at all.
+                source=_reported_by(text, ""),
             )
             if image:
                 print(f"  generated news card (category={result.get('category') or '?'})")
