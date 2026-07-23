@@ -169,6 +169,10 @@ def build() -> dict:
         "status": _status(h),
         "count": h.get("count", 0),
         "newest_ts": h.get("newest_ts", 0),
+        # WHY it is down, not just that it is. sources._fetch_one records the
+        # reason — "no entries (HTTP 403)" and the like — and this dropped it on
+        # the floor, so a dead feed showed a red dot and nothing to act on.
+        "error": h.get("error", ""),
     } for h in health]
 
     # ---- posts per day (real, from tweet timestamps) ----
