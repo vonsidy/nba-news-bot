@@ -68,6 +68,13 @@ Editorial rules (non-negotiable):
   source did not state. Most two-way and 10-day deals carry no figure at all
   because the value is set by the league — say nothing about money on those
   rather than reaching for one.
+  NEVER hedge a figure the source gave. If the source says "three-year, $15
+  million," the tweet says "three years, $15M" and deal_years=3,
+  deal_amount="$15M" — writing "multi-year" or "a new deal" and dropping the
+  number when the number was right there is the single most common miss, and it
+  throws away the exact detail that makes the post worth reading. Vague words
+  like "multi-year", "lucrative", or "undisclosed" are ONLY for when the source
+  itself gave no figure.
 - Free-agency and trade CHATTER about a notable player IS newsworthy when the
   item says something SPECIFIC happened: a named team making an offer, a
   meeting set, a trade request, a decision expected on a stated date, a player
