@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-22T20:46:32Z",
+  "updated": "2026-07-23T06:38:30Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,30 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: Pelicans exploring trade market for Jordan Hawkins; Grizzlies interested, per The Stein Line.",
+      "cat": "Report",
+      "ts": 1784787508.5783203,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Hawks will hold off on extension talks with Lu Dort, per The Stein Line. Dort enters final year of $18M deal.",
+      "cat": "Report",
+      "ts": 1784787502.360306,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Clippers looking to re-sign Bennedict Mathurin, per The Stein Line. A sign-and-trade is possible but less likely.",
+      "cat": "Report",
+      "ts": 1784787496.7853014,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: D'Angelo Russell and Grizzlies expected to work toward buyout or trade, per RealGM.",
+      "cat": "Report",
+      "ts": 1784779314.6815147,
+      "media": true
+    },
     {
       "text": "\ud83d\udc40 RUMOR: LeBron free agency rumors swirl after Heat YouTube post, via Roundtable.",
       "cat": "Rumor",
@@ -75,30 +99,6 @@
       "cat": "Official",
       "ts": 1784599998.263211,
       "media": false
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Lakers sign Arthur Kaluma to a two-way contract.",
-      "cat": "Official",
-      "ts": 1784599529.1908321,
-      "media": false
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Nets and Michael Porter Jr. are set to engage in contract extension talks, per roundtable.io",
-      "cat": "Report",
-      "ts": 1784583612.8112798,
-      "media": false
-    },
-    {
-      "text": "\ud83d\udc40 LeBron James hasn't made a decision yet on his future. Cleveland remains in the race per Fear The Sword.",
-      "cat": "Rumor",
-      "ts": 1784583608.0575142,
-      "media": false
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Ryan Nembhard traded to the Hawks after his rookie season with Dallas, per SWX Local Sports.",
-      "cat": "Report",
-      "ts": 1784583587.173965,
-      "media": true
     }
   ],
   "sources": [
@@ -107,49 +107,49 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784751086
+      "newest_ts": 1784785800
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784752389
+      "count": 2,
+      "newest_ts": 1784787252
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 11,
-      "newest_ts": 1784751211
+      "count": 2,
+      "newest_ts": 1784785932
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1784752474
+      "count": 3,
+      "newest_ts": 1784786466
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1784751965
+      "count": 7,
+      "newest_ts": 1784786933
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1784752320
+      "count": 14,
+      "newest_ts": 1784786205
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784747928
+      "newest_ts": 1784786525
     },
     {
       "label": "ESPN",
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 5,
+  "posts_today": 4,
   "cap": null,
   "claude": {
-    "items_today": 335,
+    "items_today": 73,
     "items_cap": 340,
-    "items_this_hour": 21,
+    "items_this_hour": 11,
     "items_cap_hour": 28,
-    "spent_usd": 0.1608,
+    "spent_usd": 0.035,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
@@ -223,16 +223,16 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 12,
+      "last_poll_secs_ago": 1041,
       "tweets_last_poll": 0,
-      "watermark": "2079918137613373547"
+      "watermark": "2080042715765469571"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 12,
+      "last_poll_secs_ago": 1041,
       "tweets_last_poll": 0,
-      "watermark": "2079975158505230758"
+      "watermark": "2080167825004535914"
     }
   ]
 }
