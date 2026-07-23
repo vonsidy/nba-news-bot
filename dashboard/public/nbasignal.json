@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-23T12:16:09Z",
+  "updated": "2026-07-23T16:26:15Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Minnesota extends head coach Niko Medved after a promising first season.",
+      "cat": "Official",
+      "ts": 1784817541.7218904,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: The Rockets have re-signed Isaiah Crawford.",
+      "cat": "Official",
+      "ts": 1784811624.063873,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 Bulls acquire Nic Claxton in a three-team trade with the Nets and Timberwolves.",
       "cat": "Report",
@@ -87,18 +99,6 @@
       "cat": "Report",
       "ts": 1784672082.9859884,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Jamarion Sharp signs two-way deal with the Clippers. The G League Defensive Player of the Year went undrafted out of Ole Miss in 2024.",
-      "cat": "Official",
-      "ts": 1784668688.6464584,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: NBA investigating Gary Trent Jr.'s $64M contract with the Bucks. Via AOL.",
-      "cat": "Report",
-      "ts": 1784635283.2778478,
-      "media": true
     }
   ],
   "sources": [
@@ -107,56 +107,64 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784808248
+      "newest_ts": 1784823543,
+      "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1784808136
+      "count": 12,
+      "newest_ts": 1784823320,
+      "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784808763
+      "count": 15,
+      "newest_ts": 1784823429,
+      "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1784808395
+      "count": 8,
+      "newest_ts": 1784823429,
+      "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784808589
+      "count": 9,
+      "newest_ts": 1784822618,
+      "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784808589
+      "newest_ts": 1784823428,
+      "error": ""
     },
     {
       "label": "RealGM",
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784786525
+      "newest_ts": 1784820706,
+      "error": ""
     },
     {
       "label": "ESPN",
       "publisher": "ESPN",
       "status": "down",
       "count": 0,
-      "newest_ts": 0.0
+      "newest_ts": 0.0,
+      "error": "no entries (HTTP 202)"
     }
   ],
   "content": [],
@@ -208,14 +216,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 7,
+  "posts_today": 9,
   "cap": null,
   "claude": {
-    "items_today": 170,
+    "items_today": 241,
     "items_cap": 340,
-    "items_this_hour": 10,
+    "items_this_hour": 0,
     "items_cap_hour": 28,
-    "spent_usd": 0.0816,
+    "spent_usd": 0.1157,
     "budget_usd": 0.1632,
     "day_resets": "midnight ET"
   },
@@ -225,7 +233,7 @@
       "ok": true,
       "last_poll_secs_ago": 22,
       "tweets_last_poll": 0,
-      "watermark": "2080042715765469571"
+      "watermark": "2080313772053352795"
     },
     {
       "handle": "TheSteinLine",
