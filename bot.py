@@ -286,6 +286,35 @@ _SOURCE_RE = re.compile(
     r"(?:\b(?:per|via|according to)\b|\bsources?\b|\breports?\b|@\w)", re.I)
 
 
+# Case folded on the preposition only — the NAME must stay case-sensitive so
+# the capitals are what mark where it ends. A dot is deliberately NOT part of a
+# word: "per The Stein Line. Dort enters..." must stop at "Line", and it did
+# not when the class included one — it swallowed the full stop and took the
+# first word of the next sentence with it. A trailing lowercase TLD is allowed
+# back in so "Sportsnet.ca" survives.
+_WORD = r"[A-Z][\w'’&-]*(?:\.[a-z]{2,4})?"
+_REPORTED_BY_RE = re.compile(
+    r"\b(?:[Pp]er|[Vv]ia|[Aa]ccording to)\s+"
+    rf"(@\w+|{_WORD}(?:\s+{_WORD}){{0,3}})")
+
+
+def _reported_by(text: str, fallback: str) -> str:
+    """Who the TWEET credits, falling back to the feed that carried the item.
+
+    item.source is the feed, and the feed is often an aggregator: RealGM's
+    wiretap republishes other outlets and credits them, so a story Marc Stein
+    broke arrives on the RealGM feed. The tweet said "per The Stein Line" while
+    the card stamped VIA REALGM underneath it — one post, two different
+    sources, and the card crediting the middleman over the reporter.
+
+    The tweet's attribution is the better of the two: the model read the
+    article and named who actually reported it."""
+    m = _REPORTED_BY_RE.search(text)
+    if not m:
+        return fallback
+    return m.group(1).strip(" .,:;'\"") or fallback
+
+
 def _names_a_source(text: str) -> bool:
     """True if the tweet credits somebody for the claim.
 
@@ -967,7 +996,8 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
                 # is fine — the card falls back to a neutral league wash rather
                 # than returning None, which is what was losing the post.
                 teams=story_teams,
-                source=item.source,
+                # Whoever the tweet credits, not whichever feed carried it.
+                source=_reported_by(text, item.source),
             )
             if image:
                 print(f"  generated news card (category={result.get('category') or '?'})")
