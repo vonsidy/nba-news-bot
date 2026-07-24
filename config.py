@@ -363,7 +363,14 @@ FEEDS = [
     # dropped RSS. It had been silently contributing zero items while still
     # showing up as a source in the dashboard's health view, which is worse
     # than being absent: it looked like coverage that wasn't there.
-    ("ESPN", "https://www.espn.com/espn/rss/nba/news"),
+    # ESPN direct feed removed 2026-07-23. It returns ZERO entries to the
+    # GitHub Actions runner — a datacenter-IP block, the same family as the
+    # Google News one — while serving 16 items to a laptop on a home IP. The
+    # browser-header attempt did not defeat it. It sat "down" in the dashboard
+    # contributing nothing, and ESPN's reporting reaches the bot through the
+    # Google News queries above anyway (their <source> resolves to "ESPN"), so
+    # this is dead weight, not lost coverage.
+    # ("ESPN", "https://www.espn.com/espn/rss/nba/news"),
     # dropped 2026-07-21 — 3 paid calls, 0 transactions — opinion and recaps
     # ("Yahoo Sports", "https://sports.yahoo.com/nba/rss.xml"),
     # dropped 2026-07-21 — 0 paid, 0 transactions
