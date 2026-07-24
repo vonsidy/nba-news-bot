@@ -70,7 +70,14 @@ def fake_create(**kw):
         r = blank(); r["index"] = n
         # Only LeBron is newsworthy — proves the verdict tracks the headline.
         if "LeBron" in h:
-            r.update(newsworthy=True, category="report", tweet="LeBron to GSW",
+            # Names a source on purpose. These fixtures arrive on an RSS feed,
+            # and a "report" off a feed must credit somebody or the attribution
+            # guard drops it — the rule that stopped two five-month-old trades
+            # going out as bare assertions. The subject of THIS test is
+            # batching, so the tweet just has to be one the bot would really
+            # publish; an insider-sourced item is exempt and does not need this.
+            r.update(newsworthy=True, category="report",
+                     tweet="LeBron to GSW, per ESPN",
                      player="LeBron James")
         else:
             r.update(newsworthy=False, category="skip", tweet="")
@@ -88,7 +95,7 @@ print("--- 1. normal cycle: all 6 items, one call ---")
 bot.run_cycle()
 assert len(CALLS) == 1, f"expected 1 batched call, got {len(CALLS)}"
 assert CALLS[0]["messages"][0]["content"].count("Headline:") == 6
-assert POSTS == ["LeBron to GSW"], POSTS
+assert POSTS == ["LeBron to GSW, per ESPN"], POSTS
 assert BUDGET["day"] == 6, BUDGET
 print(f"OK 1 call for 6 items | posted {POSTS} | budget charged {BUDGET['day']} items\n")
 

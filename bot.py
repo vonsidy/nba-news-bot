@@ -187,6 +187,15 @@ _EVENT_RE = re.compile(
     # highest-engagement content. "Bradley Beal Drawing Interest From Heat,
     # Celtics, Clippers" was dying on the verb alone.
     r"|\bdrawing interest\b|\binterest (from|in)\b|\blinked to\b|\bpursu(e|ing|it)\b"
+    # Present participles, added 2026-07-24 — the same tense hole as "hired",
+    # and this one costs SPEED rather than coverage. On the LeBron-to-Sixers
+    # break, Sportsnet led at 15:35 with "LeBron James joining 76ers on a
+    # two-year, $8M deal" and was dropped on the verb; the bot waited for CBS
+    # to phrase it "signs with" at 15:36 and posted ~10 minutes late. Wires
+    # reach for the participle first because it is the fastest way to write a
+    # deal that is agreed but unsigned, so these are the EARLIEST reports of
+    # exactly the news this account exists to break.
+    r"|\b(sign|trad|acquir|waiv|releas|extend|hir|join|agree|convert|claim)ing\b"
     r"|\bparts? ways\b|\bout for\b|\bruled out\b|\binjur(y|ed)\b|\bsuspend"
     r"|\bsurgery\b|free agen|\brumor|\breportedly\b|\bsources? say\b"
     r"|\bdecision\b|\btimetable\b|\bmeeting with\b|\bin talks\b|\bsuitors?\b"
@@ -920,8 +929,20 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
     # into. We cannot verify the date (Google News hides the publisher URL
     # behind an opaque redirect, so there is no article date to read), but we
     # can refuse to publish an unsourced claim, and that catches this case.
+    #
+    # The insider exemption on this branch was missing until 2026-07-24, and it
+    # cost the biggest scoop of the summer. Shams tweeted LeBron-to-the-Sixers
+    # at 15:30:51; the bot READ it (his watermark advanced to that exact tweet)
+    # and then binned it here, because the composer had followed the "lead a
+    # done deal with the deal, not the source" rule and named nobody, and the
+    # verdict came back category="report". The story went out 8 minutes later
+    # off an ESPN feed instead — the aggregator beating the insider we pay for.
+    # A tweet FROM the reporter does not need to cite the reporter: the timeline
+    # is the attribution, which is the same reasoning the transaction branch
+    # below already used. And the watermark advances whether or not the item
+    # survives, so a scoop dropped here is never reconsidered — it is lost.
     if result.get("category") in ("rumor", "report"):
-        if not _names_a_source(text):
+        if not item.source.startswith("@") and not _names_a_source(text):
             print(f"  {result.get('category')} with no source named, skipping: "
                   f"{text[:88]}")
             return False
