@@ -172,7 +172,21 @@ _EVENT_RE = re.compile(
     r"\bsigns?\b|\bsigned\b|\bsigning\b|\bwaives?\b|\bwaived\b|\bre-?signs?\b"
     r"|\btrades?\b|\btraded\b|\bacquires?\b|\bdealt\b|\bagree[sd]?\b|\bclaims?\b"
     r"|\bextension\b|\bextends?\b|\bbuyout\b|\bdeclines?\b|\bpicks? up\b"
-    r"|\breleases?d?\b|\bconverts?\b|\bguarantee\b|\bhires?\b|\bfired\b|\bnamed\b"
+    r"|\breleases?d?\b|\bconverts?\b|\bguarantee\b|\bhire[sd]?\b|\bfired\b|\bnamed\b"
+    # Added 2026-07-24 after an 18-hour blackout. "hires?" matched "hire" and
+    # "hires" but NOT "hired" — the past tense a headline actually uses — so
+    # "Chip Engelland Hired By Rockets As Assistant Coach" was dropped for free,
+    # before Claude ever saw it. The same tense gap hid joined/promoted/
+    # exercised/opted, and "turned down" and "connected to" cover the two
+    # commonest ways a contract story is written when it is not a plain signing.
+    r"|\bjoin(s|ed)?\b|\bpromot(es?|ed)\b|\bexercis(es?|ed)\b|\bopts? (in|out)\b"
+    r"|\bturn(s|ed)? down\b|\bconnected to\b|\bwithdraws?\b|\bpromotion\b"
+    # Free-agency interest, in the words the wires actually use. "suitors" was
+    # already here; these are the same story told three other ways, and the junk
+    # filter deliberately keeps free-agency chatter because it is the account's
+    # highest-engagement content. "Bradley Beal Drawing Interest From Heat,
+    # Celtics, Clippers" was dying on the verb alone.
+    r"|\bdrawing interest\b|\binterest (from|in)\b|\blinked to\b|\bpursu(e|ing|it)\b"
     r"|\bparts? ways\b|\bout for\b|\bruled out\b|\binjur(y|ed)\b|\bsuspend"
     r"|\bsurgery\b|free agen|\brumor|\breportedly\b|\bsources? say\b"
     r"|\bdecision\b|\btimetable\b|\bmeeting with\b|\bin talks\b|\bsuitors?\b"
@@ -918,8 +932,16 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
     # News trade shed its (absent) attribution and slip through as "official",
     # which is exactly how the fake Alvarado trade got out. So an RSS-sourced
     # transaction with no reporter named is still blocked, whatever its category.
-    elif (result.get("is_trade") or result.get("deal_amount")
-          or result.get("deal_years")):
+    #
+    # Narrowed 2026-07-24. It used to fire on deal_amount and deal_years too,
+    # which put it in direct contradiction with the composer rule added the same
+    # day: "a minor local source adds nothing to a concrete done deal — OMIT it,
+    # and classify the item official". The composer was being instructed to
+    # produce exactly the tweet this guard then threw away, so every signing and
+    # extension off a non-marquee feed was composed at full price and binned.
+    # A signing was never the failure mode; both stale posts were multi-team
+    # TRADES, which is what this now covers.
+    elif result.get("is_trade"):
         if not item.source.startswith("@") and not _names_a_source(text):
             print(f"  uncited transaction from a non-insider feed "
                   f"({item.source}), skipping: {text[:80]}")
