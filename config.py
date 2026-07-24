@@ -30,7 +30,7 @@ ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 INSIDER_X_ENABLED = os.getenv("INSIDER_X_ENABLED", "1").strip().lower() in ("1", "true", "yes")
 INSIDER_X_ACCOUNTS = [
     h.strip().lstrip("@") for h in
-    os.getenv("INSIDER_X_ACCOUNTS", "ShamsCharania,TheSteinLine").split(",")
+    os.getenv("INSIDER_X_ACCOUNTS", "ShamsCharania,TheSteinLine,ChrisBHaynes").split(",")
     if h.strip()
 ]
 # Ceiling on tweets pulled per account per poll. A thread-storm is the only way
