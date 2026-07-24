@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-23T21:40:22Z",
+  "updated": "2026-07-24T02:58:01Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -107,23 +107,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784838168,
+      "newest_ts": 1784861580,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1784842334,
+      "count": 2,
+      "newest_ts": 1784861040,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1784841360,
+      "count": 9,
+      "newest_ts": 1784860796,
       "error": ""
     },
     {
@@ -131,23 +131,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 3,
-      "newest_ts": 1784840428,
+      "newest_ts": 1784861216,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784841127,
+      "count": 5,
+      "newest_ts": 1784859720,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1784842191,
+      "count": 18,
+      "newest_ts": 1784860796,
       "error": ""
     },
     {
@@ -157,14 +157,6 @@
       "count": 20,
       "newest_ts": 1784833512,
       "error": ""
-    },
-    {
-      "label": "ESPN",
-      "publisher": "ESPN",
-      "status": "down",
-      "count": 0,
-      "newest_ts": 0.0,
-      "error": "no entries (HTTP 202)"
     }
   ],
   "content": [],
@@ -219,11 +211,11 @@
   "posts_today": 11,
   "cap": null,
   "claude": {
-    "items_today": 337,
+    "items_today": 501,
     "items_cap": 500,
-    "items_this_hour": 23,
+    "items_this_hour": 12,
     "items_cap_hour": 41,
-    "spent_usd": 0.1618,
+    "spent_usd": 0.2405,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -231,16 +223,23 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 2,
+      "last_poll_secs_ago": 14,
       "tweets_last_poll": 0,
       "watermark": "2080313772053352795"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 2,
+      "last_poll_secs_ago": 14,
       "tweets_last_poll": 0,
       "watermark": "2080350390285938735"
+    },
+    {
+      "handle": "ChrisBHaynes",
+      "ok": true,
+      "last_poll_secs_ago": 13,
+      "tweets_last_poll": 0,
+      "watermark": "2080313684321329586"
     }
   ]
 }
