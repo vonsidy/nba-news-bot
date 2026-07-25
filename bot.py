@@ -825,6 +825,16 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
         print(f"  COMPOSE FAILED (paid, no verdict): {item.title[:66]}")
         return False
     if not result.get("newsworthy"):
+        # Remember this verdict by CONTENT, not just by this item's id. Google
+        # News re-indexes the same evergreen take ("Biggest offseason
+        # overreaction isn't justified") under a fresh opaque id and a fresh
+        # index-timestamp every few hours; the id-only seen-mark never catches
+        # the re-index, so the identical non-story was being re-sent to Claude
+        # and re-judged junk all day. Keying on the title's content_key collapses
+        # them. mark_seen auto-expires in ~30h, so a headline whose meaning
+        # genuinely changes still gets one fresh evaluation a day.
+        if sig:
+            state.mark_seen(f"nn:{sig}")
         print(f"  not newsworthy [{result.get('category') or '?'}]: {item.title[:60]}")
         return False
     if not result.get("tweet"):
@@ -1211,6 +1221,13 @@ def run_cycle(include_rss: bool = True) -> None:
         if sig and state.is_seen(f"sig:{sig}"):
             state.mark_seen(item.id)
             print(f"  duplicate story, skipping: {item.title[:60]}")
+            continue
+        # Claude already judged this exact content not newsworthy within the last
+        # ~30h. Skip the re-indexed copy for FREE instead of paying to hear the
+        # same verdict — this is where most of the "spend with no post" went.
+        if sig and state.is_seen(f"nn:{sig}"):
+            state.mark_seen(item.id)
+            print(f"  re-indexed non-story, skipping before Claude: {item.title[:60]}")
             continue
         if config.SKIP_COVERED_SUBJECTS:
             covered = _covered_subject_in(item.title)
