@@ -128,7 +128,15 @@ _ACTION_CONCEPTS = (
 # championship parade or a charity appearance is the opposite of "on the job".
 _OFFDUTY_WORDS = ("parade", "celebration", "rally", "ceremony", "ring night",
                   "red carpet", "charity", "gala", "award", "premiere",
-                  "signing autographs", "visit", "white house")
+                  "signing autographs", "visit", "white house",
+                  # Social/alumni gatherings, added 2026-07-25. These are shot
+                  # in groups and tagged loosely, so a file named for the player
+                  # often shows someone ELSE at the table. "Forever Badgers
+                  # Brunch (John Tonje).jpg" — a Wisconsin alumni event — put an
+                  # older donor's face on Tonje's Blazers signing card.
+                  "brunch", "banquet", "luncheon", "reunion", "alumni",
+                  "dinner", "fundraiser", "hall of fame", "meet and greet",
+                  "golf", "foundation")
 # "cropped" is deliberately NOT here — it is REWARDED below instead. It used to
 # cost -6, which sank every candidate Zion Williamson has (all six are
 # "(cropped)"), but on Commons a "(cropped)" derivative exists precisely because
@@ -441,6 +449,17 @@ def get_player_photo(name: str, width: int = 1000, teams=None, strict=False):
             meta = info.get("extmetadata", {})
             if strict and _wrong_uniform(fname, meta, story):
                 continue          # let the caller retry with the headshot
+            # Wrong OCCASION, not just wrong jersey. A social/alumni event photo
+            # is the single most dangerous kind: it can be the wrong PERSON, not
+            # merely a stale uniform, because these albums are group shots with
+            # loose per-file name tags. On the strict pass we reject them so a
+            # fringe player falls through to the official headshot — a posed
+            # photo of the RIGHT man beats a candid of the wrong one. The
+            # non-strict last resort can still use it when there is no headshot
+            # at all (some coaches/execs), where the alternative is no image.
+            if strict and any(w in _haystack(fname, meta) for w in _OFFDUTY_WORDS):
+                print(f"  off-duty/event photo, skipping on strict pass: {fname[:50]}")
+                continue
             lic = (
                 meta.get("LicenseShortName", {}).get("value", "") + " "
                 + meta.get("License", {}).get("value", "")
