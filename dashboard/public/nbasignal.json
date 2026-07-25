@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-25T14:50:55Z",
+  "updated": "2026-07-25T18:11:36Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: Spencer Jones agrees to 2-year, $12M offer sheet with the Thunder, per @ShamsCharania. The Nuggets' restricted free agent hit an NBA-best 69% from 3-point range last season.",
+      "cat": "Report",
+      "ts": 1784996894.341936,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: The Portland Trail Blazers are signing guard John Tonje on a two-way contract, per @ShamsCharania. The former Celtics rookie appeared in six games last season.",
       "cat": "Report",
@@ -93,12 +99,6 @@
       "cat": "Report",
       "ts": 1784779314.6815147,
       "media": true
-    },
-    {
-      "text": "\ud83d\udc40 RUMOR: LeBron free agency rumors swirl after Heat YouTube post, via Roundtable.",
-      "cat": "Rumor",
-      "ts": 1784739666.0050726,
-      "media": true
     }
   ],
   "sources": [
@@ -107,39 +107,39 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784990640,
+      "newest_ts": 1785000485,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1784990172,
+      "count": 2,
+      "newest_ts": 1785001050,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 14,
-      "newest_ts": 1784990806,
+      "count": 5,
+      "newest_ts": 1785001805,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1784990223,
+      "count": 4,
+      "newest_ts": 1785001050,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1784989800,
+      "count": 5,
+      "newest_ts": 1785000783,
       "error": ""
     },
     {
@@ -147,7 +147,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784990806,
+      "newest_ts": 1785002400,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1784987206,
+      "newest_ts": 1784997161,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 1,
   "cap": null,
   "claude": {
-    "items_today": 393,
+    "items_today": 415,
     "items_cap": 500,
-    "items_this_hour": 43,
+    "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.1886,
+    "spent_usd": 0.1992,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 29,
+      "last_poll_secs_ago": 1,
       "tweets_last_poll": 0,
-      "watermark": "2080787411819208948"
+      "watermark": "2081056966500069704"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 28,
+      "last_poll_secs_ago": 0,
       "tweets_last_poll": 0,
       "watermark": "2080710942761902133"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 28,
+      "last_poll_secs_ago": 0,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
