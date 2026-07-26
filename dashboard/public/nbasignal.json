@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26T11:50:17Z",
+  "updated": "2026-07-26T15:47:46Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -107,31 +107,31 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785065108,
+      "newest_ts": 1785079894,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785064418,
+      "count": 6,
+      "newest_ts": 1785078929,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 1,
-      "newest_ts": 1785063857,
+      "count": 4,
+      "newest_ts": 1785078714,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785065100,
+      "count": 4,
+      "newest_ts": 1785078971,
       "error": ""
     },
     {
@@ -139,15 +139,15 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 2,
-      "newest_ts": 1785062143,
+      "newest_ts": 1785077054,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 14,
-      "newest_ts": 1785065467,
+      "count": 20,
+      "newest_ts": 1785080671,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785036973,
+      "newest_ts": 1785074171,
       "error": ""
     }
   ],
@@ -211,11 +211,11 @@
   "posts_today": 0,
   "cap": null,
   "claude": {
-    "items_today": 139,
+    "items_today": 262,
     "items_cap": 500,
-    "items_this_hour": 16,
+    "items_this_hour": 28,
     "items_cap_hour": 41,
-    "spent_usd": 0.0667,
+    "spent_usd": 0.1258,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 25,
+      "last_poll_secs_ago": 19,
       "tweets_last_poll": 0,
       "watermark": "2081130666935332877"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 25,
+      "last_poll_secs_ago": 19,
       "tweets_last_poll": 0,
       "watermark": "2080710942761902133"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 25,
+      "last_poll_secs_ago": 19,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
