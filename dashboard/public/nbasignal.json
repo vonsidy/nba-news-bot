@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26T07:56:32Z",
+  "updated": "2026-07-26T11:50:17Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -107,23 +107,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785051571,
+      "newest_ts": 1785065108,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785051055,
+      "count": 5,
+      "newest_ts": 1785064418,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1785051055,
+      "count": 1,
+      "newest_ts": 1785063857,
       "error": ""
     },
     {
@@ -131,23 +131,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 2,
-      "newest_ts": 1785052255,
+      "newest_ts": 1785065100,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785052255,
+      "count": 2,
+      "newest_ts": 1785062143,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1785052255,
+      "count": 14,
+      "newest_ts": 1785065467,
       "error": ""
     },
     {
@@ -211,11 +211,11 @@
   "posts_today": 0,
   "cap": null,
   "claude": {
-    "items_today": 77,
+    "items_today": 139,
     "items_cap": 500,
-    "items_this_hour": 23,
+    "items_this_hour": 16,
     "items_cap_hour": 41,
-    "spent_usd": 0.037,
+    "spent_usd": 0.0667,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 28,
+      "last_poll_secs_ago": 25,
       "tweets_last_poll": 0,
       "watermark": "2081130666935332877"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 28,
+      "last_poll_secs_ago": 25,
       "tweets_last_poll": 0,
       "watermark": "2080710942761902133"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 27,
+      "last_poll_secs_ago": 25,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
