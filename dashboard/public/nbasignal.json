@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26T15:47:46Z",
+  "updated": "2026-07-26T20:16:56Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: EuroLeague star Mario Hezonja has agreed to a one-year, $2.8M deal with the Cavaliers, per ESPN.",
+      "cat": "Report",
+      "ts": 1785085944.0074978,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: Kentavious Caldwell-Pope agrees to buyout and will sign with the 76ers, per FantasyPros.",
       "cat": "Report",
@@ -93,12 +99,6 @@
       "cat": "Report",
       "ts": 1784787508.5783203,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Hawks will hold off on extension talks with Lu Dort, per The Stein Line. Dort enters final year of $18M deal.",
-      "cat": "Report",
-      "ts": 1784787502.360306,
-      "media": true
     }
   ],
   "sources": [
@@ -107,23 +107,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785079894,
+      "newest_ts": 1785094800,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1785078929,
+      "count": 5,
+      "newest_ts": 1785095986,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785078714,
+      "count": 6,
+      "newest_ts": 1785096261,
       "error": ""
     },
     {
@@ -131,15 +131,15 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 4,
-      "newest_ts": 1785078971,
+      "newest_ts": 1785094686,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785077054,
+      "count": 3,
+      "newest_ts": 1785091831,
       "error": ""
     },
     {
@@ -147,7 +147,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785080671,
+      "newest_ts": 1785096298,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785074171,
+      "newest_ts": 1785086417,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 1,
   "cap": null,
   "claude": {
-    "items_today": 262,
+    "items_today": 374,
     "items_cap": 500,
-    "items_this_hour": 28,
+    "items_this_hour": 8,
     "items_cap_hour": 41,
-    "spent_usd": 0.1258,
+    "spent_usd": 0.1795,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 19,
+      "last_poll_secs_ago": 8,
       "tweets_last_poll": 0,
-      "watermark": "2081130666935332877"
+      "watermark": "2081427681258700922"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 19,
+      "last_poll_secs_ago": 8,
       "tweets_last_poll": 0,
-      "watermark": "2080710942761902133"
+      "watermark": "2081429431936020961"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 19,
+      "last_poll_secs_ago": 7,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
