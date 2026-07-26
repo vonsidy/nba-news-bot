@@ -16,6 +16,7 @@ import composer
 import config
 import engage
 import insiders
+import opinion
 import photos
 import sources
 import state
@@ -493,6 +494,61 @@ def maybe_post_engagement() -> None:
         state.mark_seen(f"engage:{day}")
         state.record_post(post["caption"], "debate", True)
         print(f"  posted daily debate card: {' '.join(post['title'])}")
+
+
+def maybe_post_opinion(items) -> None:
+    """Post one opinion a day, built from today's real headlines.
+
+    The account's problem is that it reprints news Shams broke minutes earlier,
+    which gives a reader no reason to follow — the same fact is upstream, free
+    and faster. An argument is the one thing an aggregator can offer that the
+    wire cannot, so this is the only post type here that is genuinely original.
+
+    Capped at one a day by a Redis day-key and held until the evening ET window,
+    for the same reason the debate card was: a take nobody is awake to argue
+    with has burned the day's single slot.
+
+    The day-key is claimed BEFORE posting, not after. A crash between the tweet
+    going out and the key being written would otherwise let the next cycle post
+    a second take, and two opinions in a day from a news account reads as a bot
+    with nothing to say. Losing a day to a failed render is the cheaper mistake.
+    """
+    if not config.ENABLE_OPINION_POSTS:
+        return
+    day = state.today_key()
+    if state.is_seen(f"opinion:{day}"):
+        return
+    if _et_hour() < config.OPINION_HOUR_ET:
+        return
+
+    take = opinion.pick_take(items)
+    if not take:
+        return
+
+    # Claim the slot now — see the docstring. A day with no take is fine; two
+    # takes in one day is not.
+    state.mark_seen(f"opinion:{day}")
+
+    player = (take.get("player") or "").strip()
+    teams = take.get("teams") or []
+    photo = credit = None
+    if player:
+        res = photos.get_any_photo(player, teams=teams)
+        if res:
+            photo, credit = res
+    # banner="HOT TAKE", never BREAKING NEWS. The card's frame is the only thing
+    # telling a scrolling reader what KIND of post this is, and labelling an
+    # opinion as breaking news is the one mistake a news account cannot make.
+    image = card.make_news_card(
+        take["take"], teams=teams, photo=photo, credit=credit,
+        label=(take.get("card_line") or "").strip() or None,
+        banner="HOT TAKE",
+    )
+    if image and tweeter.post(take["take"], image=image):
+        state.record_post(take["take"], "opinion", True)
+        print(f"  posted daily take: {take['take'][:80]}")
+    else:
+        print("  opinion: card render or post failed; slot burned for today")
 
 
 # Generational suffixes aren't part of the identifying name.
@@ -1181,6 +1237,17 @@ def run_cycle(include_rss: bool = True) -> None:
             state.set_feed_health(sources.LAST_HEALTH)
         except Exception as e:
             print(f"feed-health snapshot error (continuing): {e}")
+    # The daily take, built from the headlines just fetched. Deliberately fed
+    # all_items rather than `fresh` below: by the evening window almost every
+    # story of the day is already marked seen, so the fresh list is nearly empty
+    # and a take built from it would be about whatever trickled in after 6pm
+    # rather than about the day's actual news.
+    if include_rss:
+        try:
+            maybe_post_opinion(all_items)
+        except Exception as e:
+            print(f"opinion post error (continuing): {e}")
+
     fresh = [i for i in all_items
              if sources.is_fresh(i, candidate_age) and not state.is_seen(i.id)]
 

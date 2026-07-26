@@ -266,6 +266,17 @@ MAX_POSTS_PER_PLAYER = int(os.getenv("MAX_POSTS_PER_PLAYER", "1"))
 # untouched — set ENABLE_DEBATE_POSTS=1 to bring them back.
 ENABLE_DEBATE_POSTS = os.getenv("ENABLE_DEBATE_POSTS", "0").strip().lower() in ("1", "true", "yes")
 
+# One opinion post a day, built from the day's real headlines (see opinion.py).
+# ON by default, unlike the canned debate cards above: reprinting news Shams
+# broke minutes earlier gives nobody a reason to follow, and an argument is the
+# one thing this account can offer that the wire does not. Costs one Claude call
+# a day (~$0.0005) and is capped at a single post by a Redis day-key.
+ENABLE_OPINION_POSTS = os.getenv("ENABLE_OPINION_POSTS", "1").strip().lower() in ("1", "true", "yes")
+# Hour (ET) the take is allowed to go out. Evening, when NBA Twitter is awake
+# and arguing — the same reasoning as the debate window. A take posted at 4am
+# is read by nobody and burns the day's one slot.
+OPINION_HOUR_ET = int(os.getenv("OPINION_HOUR_ET") or 18)
+
 # Append the source article's link to each tweet. OFF by default, because X
 # prices a post containing ANY url at $0.20 against one at $0.010 — appending
 # the link made every post 20x more expensive, and at 10 posts/day that was

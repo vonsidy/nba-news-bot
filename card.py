@@ -236,11 +236,16 @@ def _cover(im, size, focus_y=0.5, max_top_frac=None):
     return im.crop((x, y, x + tw, y + th))
 
 
-def _breaking_box(d, W, y_top, source=None):
+def _breaking_box(d, W, y_top, source=None, text="BREAKING NEWS"):
     """ESPN-style BREAKING NEWS: white text inside a red outline frame, with an
-    optional 'VIA <source>' credit line underneath (their 'FROM SHAMS')."""
+    optional 'VIA <source>' credit line underneath (their 'FROM SHAMS').
+
+    `text` is a parameter so the same frame can label an opinion post "HOT TAKE"
+    instead. The banner is the card's one claim about what KIND of thing this
+    is, and stamping BREAKING NEWS on a subjective take would be a lie about
+    exactly the thing a news account cannot lie about."""
     bn_font = _font(90)
-    bn = "BREAKING NEWS"
+    bn = text
     box = d.textbbox((0, 0), bn, font=bn_font)
     bw, th = box[2] - box[0], box[3] - box[1]
     pad_x, pad_y = 48, 30
@@ -908,7 +913,8 @@ def _wrap_headline(text: str, max_chars: int = 26, max_lines: int = 4) -> list[s
 def make_news_card(headline: str, teams: list | None = None,
                    source: str | None = None, photo: bytes | None = None,
                    credit: str | None = None,
-                   label: str | None = None) -> bytes | None:
+                   label: str | None = None,
+                   banner: str | None = None) -> bytes | None:
     """A card for news that is neither a final score nor a player move.
 
     This generator did not exist, and REQUIRE_IMAGE is on — so every item that
@@ -1039,7 +1045,7 @@ def make_news_card(headline: str, teams: list | None = None,
     # bottom edge. _breaking_box hangs VIA just under the box and _credit_line
     # bottom-anchors the credit, which left the two stranded far apart with
     # dead space between them.
-    box_bottom = _breaking_box(d, W, NEWS_BOX_TOP)
+    box_bottom = _breaking_box(d, W, NEWS_BOX_TOP, text=banner or "BREAKING NEWS")
     lines = []
     if source:
         lines.append((f"VIA {source.upper()}", _font(SOURCE_SIZE), (232, 232, 236)))
