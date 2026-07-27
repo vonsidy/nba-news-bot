@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26T20:16:56Z",
+  "updated": "2026-07-27T10:52:06Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "LeBron signed with Philly without a no-trade clause. That's not a power move, it's a red flag. He's either confident this roster wins now or he doesn't care where he goes next. Neither should make Sixers fans comfortable.",
+      "cat": "Opinion",
+      "ts": 1785112753.3990455,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: 76ers waive Dalen Terry.",
+      "cat": "Official",
+      "ts": 1785103290.9704974,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: EuroLeague star Mario Hezonja has agreed to a one-year, $2.8M deal with the Cavaliers, per ESPN.",
       "cat": "Report",
@@ -87,18 +99,6 @@
       "cat": "Report",
       "ts": 1784805199.905724,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: David Jones Garcia signs two-way deal with the Spurs.",
-      "cat": "Official",
-      "ts": 1784791478.5704846,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Pelicans exploring trade market for Jordan Hawkins; Grizzlies interested, per The Stein Line.",
-      "cat": "Report",
-      "ts": 1784787508.5783203,
-      "media": true
     }
   ],
   "sources": [
@@ -107,15 +107,15 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785094800,
+      "newest_ts": 1785131820,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785095986,
+      "count": 2,
+      "newest_ts": 1785130507,
       "error": ""
     },
     {
@@ -123,31 +123,31 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 6,
-      "newest_ts": 1785096261,
+      "newest_ts": 1785131871,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785094686,
+      "count": 2,
+      "newest_ts": 1785131593,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1785091831,
+      "count": 8,
+      "newest_ts": 1785130025,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1785096298,
+      "count": 12,
+      "newest_ts": 1785131014,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785086417,
+      "newest_ts": 1785131966,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 1,
+  "posts_today": 0,
   "cap": null,
   "claude": {
-    "items_today": 374,
+    "items_today": 84,
     "items_cap": 500,
-    "items_this_hour": 8,
+    "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.1795,
+    "spent_usd": 0.0403,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 8,
+      "last_poll_secs_ago": 16395,
       "tweets_last_poll": 0,
-      "watermark": "2081427681258700922"
+      "watermark": "2081580788026319154"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 8,
+      "last_poll_secs_ago": 16395,
       "tweets_last_poll": 0,
-      "watermark": "2081429431936020961"
+      "watermark": "2081613096095772849"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 7,
+      "last_poll_secs_ago": 16395,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
