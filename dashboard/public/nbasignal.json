@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-27T21:51:43Z",
+  "updated": "2026-07-28T07:48:19Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,30 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: Dave Joerger has agreed to become lead assistant coach for the Denver Nuggets under head coach David Adelman, per ESPN.",
+      "cat": "Report",
+      "ts": 1785202741.1662629,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Heat, Nuggets and Cavaliers among teams interested in DeMar DeRozan, per Shams Charania.",
+      "cat": "Rumor",
+      "ts": 1785194265.7486331,
+      "media": true
+    },
+    {
+      "text": "LeBron took less money to maybe commute by helicopter between New York and Philadelphia. That's not sacrifice, that's ego. A real max player signs the full deal and figures out logistics later.",
+      "cat": "Opinion",
+      "ts": 1785189733.1513479,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Dereck Lively and the Mavericks are in extension talks, per HoopsHype.",
+      "cat": "Report",
+      "ts": 1785189635.0557306,
+      "media": true
+    },
     {
       "text": "LeBron signed with Philly without a no-trade clause. That's not a power move, it's a red flag. He's either confident this roster wins now or he doesn't care where he goes next. Neither should make Sixers fans comfortable.",
       "cat": "Opinion",
@@ -75,30 +99,6 @@
       "cat": "Official",
       "ts": 1784833458.7474995,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Minnesota extends head coach Niko Medved after a promising first season.",
-      "cat": "Official",
-      "ts": 1784817541.7218904,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: The Rockets have re-signed Isaiah Crawford.",
-      "cat": "Official",
-      "ts": 1784811624.063873,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udea8 Bulls acquire Nic Claxton in a three-team trade with the Nets and Timberwolves.",
-      "cat": "Report",
-      "ts": 1784805206.7683642,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udea8 Pelicans trade Jose Alvarado to the Knicks for Dalen Terry and two second-round picks.",
-      "cat": "Report",
-      "ts": 1784805199.905724,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785188759,
+      "newest_ts": 1785212226,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785186000,
+      "count": 3,
+      "newest_ts": 1785211608,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1785188683,
+      "count": 4,
+      "newest_ts": 1785212226,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1785188400,
+      "count": 2,
+      "newest_ts": 1785212700,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1785187721,
+      "count": 10,
+      "newest_ts": 1785210600,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1785188624,
+      "count": 17,
+      "newest_ts": 1785213675,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785181979,
+      "newest_ts": 1785193721,
       "error": ""
     }
   ],
@@ -211,11 +211,11 @@
   "posts_today": 0,
   "cap": null,
   "claude": {
-    "items_today": 403,
+    "items_today": 41,
     "items_cap": 500,
-    "items_this_hour": 20,
+    "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.1934,
+    "spent_usd": 0.0197,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 30,
+      "last_poll_secs_ago": 10578,
       "tweets_last_poll": 0,
-      "watermark": "2081580788026319154"
+      "watermark": "2081917077515108385"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 30,
+      "last_poll_secs_ago": 10578,
       "tweets_last_poll": 0,
-      "watermark": "2081847268815053230"
+      "watermark": "2081942902393954804"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 30,
+      "last_poll_secs_ago": 10579,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
