@@ -171,22 +171,50 @@ def player_posts_today(pkey: str) -> int:
     return (d.get("players") or {}).get(_player_key_name(pkey), 0)
 
 
-def _subject_names_key() -> str:
-    return f"bot:subject_names:{_today()}"
+def _yesterday() -> str:
+    """The ET date before _today(), in the same YYYY-MM-DD form."""
+    try:
+        from zoneinfo import ZoneInfo
+        now = datetime.now(ZoneInfo("America/New_York"))
+    except Exception:
+        now = datetime.now(timezone.utc) - timedelta(hours=4)
+    return (now - timedelta(days=1)).date().isoformat()
+
+
+def _subject_names_key(day: str | None = None) -> str:
+    return f"bot:subject_names:{day or _today()}"
 
 
 def posted_names_today() -> set[str]:
-    """Raw player names posted today, e.g. {"LeBron James", "Jett Howard"}.
+    """Raw player names posted recently, e.g. {"LeBron James", "Jett Howard"}.
 
     Kept alongside the hashed per-player counters because those are one-way:
     you can ask "have I posted about key X" but you cannot ask "which players
     have I posted about", and the pre-compose check needs the second question
-    so it can scan a headline before paying to understand it."""
+    so it can scan a headline before paying to understand it.
+
+    Reads TODAY AND YESTERDAY, not today alone. The write side has always kept
+    these for ~30h (see the expire below), but the read only ever asked for
+    today's bucket, so at midnight ET the memory of every player posted the
+    previous evening became unreachable while still sitting in Redis. On
+    2026-07-27 that posted Dereck Lively's extension talks at 6:00pm ET and
+    again at 3:49am ET — the same story, 9h49m apart, straddling the rollover.
+
+    This is the second time this boundary has bitten: _today() moved from UTC to
+    ET precisely because a reset mid-news-cycle let "one player be posted about
+    twice in a single evening". That moved the discontinuity from 8pm to
+    midnight rather than removing it. Unioning the two buckets removes it, and
+    the union is bounded by the same 30h TTL, so nothing grows without limit.
+    """
     if _redis:
-        vals = _redis.smembers(_subject_names_key())
-        return {str(v) for v in (vals or [])}
+        vals = set()
+        for day in (_today(), _yesterday()):
+            got = _redis.smembers(_subject_names_key(day))
+            vals |= {str(v) for v in (got or [])}
+        return vals
     d = _local_load()
-    return set((d.get("subject_names") or {}).get(_today(), []))
+    names = d.get("subject_names") or {}
+    return set(names.get(_today(), [])) | set(names.get(_yesterday(), []))
 
 
 def record_posted_name(name: str) -> None:
@@ -202,7 +230,14 @@ def record_posted_name(name: str) -> None:
     today = names.get(_today(), [])
     if name not in today:
         today.append(name)
-    d["subject_names"] = {_today(): today}  # keep only today
+    # Keep yesterday as well as today, to match the Redis path's ~30h window —
+    # posted_names_today() reads both, and dropping yesterday here would leave
+    # the local fallback with the exact midnight blind spot being fixed. Older
+    # days are still discarded, so this stays bounded at two buckets.
+    d["subject_names"] = {_today(): today}
+    prev = names.get(_yesterday())
+    if prev:
+        d["subject_names"][_yesterday()] = prev
     _local_save(d)
 
 
