@@ -8,6 +8,9 @@ import config
 
 _client = None  # v2 Client for creating tweets
 _api_v1 = None  # v1.1 API, needed only for media upload
+# Whether the LAST post() call actually attached media. Read by bot.py so the
+# dashboard records what X received, not what the card generator produced.
+LAST_POST_HAD_MEDIA = False
 
 
 def _get_client() -> tweepy.Client:
@@ -90,7 +93,16 @@ def _upload_media_v2(image: bytes) -> str | None:
 
 def post(text: str, image: bytes | None = None) -> bool:
     """Post a tweet, optionally with a PNG image. Returns True on success
-    (or in dry-run mode)."""
+    (or in dry-run mode).
+
+    Also sets LAST_POST_HAD_MEDIA, so the caller can record what ACTUALLY went
+    out rather than what it hoped would. The dashboard used to log
+    has_media=bool(image) — true whenever a card was generated — so a run where
+    every upload silently failed still reported a full set of illustrated posts,
+    and the one number that would have exposed the outage instead concealed it.
+    """
+    global LAST_POST_HAD_MEDIA
+    LAST_POST_HAD_MEDIA = False
     if len(text) > 280:
         text = text[:277] + "..."
 
@@ -101,33 +113,50 @@ def post(text: str, image: bytes | None = None) -> bool:
             with open("sample_card.png", "wb") as f:
                 f.write(image)
             print("[DRY RUN] wrote the graphic to sample_card.png\n")
+        LAST_POST_HAD_MEDIA = bool(image)
         return True
 
     media_ids = None
     if image:
-        # tweepy's media_upload targets upload.twitter.com/1.1, and X has been
-        # retiring v1.1 for pay-per-use tiers — posting via v2 (create_tweet)
-        # keeps working while the upload 403s, which shows up as cards being
-        # generated and then silently never appearing on the timeline. Try
-        # v1.1, fall back to POST /2/media/upload with the same OAuth 1.0
-        # credentials, and only then give up.
-        try:
-            media = _get_api_v1().media_upload(
-                filename="trade.png", file=io.BytesIO(image)
-            )
-            media_ids = [media.media_id]
-        except tweepy.TweepyException as e:
-            print(f"  v1.1 media upload failed ({e}); trying v2")
-            mid = _upload_media_v2(image)
-            media_ids = [mid] if mid else None
-            if mid:
-                print("  v2 media upload succeeded")
-            else:
-                print("  v2 media upload also failed; posting text-only")
+        # v2 FIRST, v1.1 only as a fallback. This order was reversed until
+        # 2026-07-29, and the reversal was silently dropping every image.
+        #
+        # The failure is nastier than a 403. v1.1 media_upload still returns
+        # 200 and a media_id, so nothing raised, nothing was logged, and the
+        # bot printed "Posted + image" — while the tweet that landed on the
+        # timeline had no picture at all. The id v1.1 hands back is simply not
+        # honoured by v2 create_tweet, which accepts it without complaint and
+        # posts text-only. Confirmed on 2026-07-29: "76ers hire Mike Gansey"
+        # logged a generated card and "+ image", and the post has no media.
+        #
+        # Trying v2 first is strictly safer than the old order: when it works
+        # the image attaches, and when it fails we land exactly where we were.
+        mid = _upload_media_v2(image)
+        if mid:
+            media_ids = [str(mid)]
+        else:
+            try:
+                media = _get_api_v1().media_upload(
+                    filename="trade.png", file=io.BytesIO(image)
+                )
+                # str(): X media ids are 64-bit and the API documents them as
+                # strings. tweepy exposes media_id_string for exactly this.
+                media_ids = [getattr(media, "media_id_string", None)
+                             or str(media.media_id)]
+                print("  v2 upload unavailable; fell back to v1.1")
+            except tweepy.TweepyException as e:
+                print(f"  both media uploads failed ({e}); posting text-only")
+                media_ids = None
 
     try:
         _get_client().create_tweet(text=text, media_ids=media_ids)
-        print(f"\nPosted ({len(text)} chars){' + image' if media_ids else ''}:\n{text}\n")
+        LAST_POST_HAD_MEDIA = bool(media_ids)
+        if image and not media_ids:
+            # Loud on purpose: a card was rendered and the tweet went out
+            # without it. This is the exact silent failure that put bare
+            # text on the timeline for a day before anyone noticed.
+            print("  WARNING: card was generated but the tweet posted WITHOUT it")
+        print(f"\nPosted ({len(text)} chars){' + image' if media_ids else ' (NO IMAGE)'}:\n{text}\n")
         return True
     except tweepy.TooManyRequests:
         print("X API rate limited — will retry items next cycle")

@@ -1175,7 +1175,12 @@ def process_item(item: sources.NewsItem, result: dict | None) -> bool:
               f"    from: {item.title[:110]}\n"
               f"    link: {item.link[:110]}")
         state.incr_posts()
-        state.record_post(result["tweet"].strip(), result.get("category", ""), bool(image))
+        # What X actually attached, not what the card generator produced. These
+        # differ exactly when an upload fails silently, which is the case this
+        # flag exists to surface — bool(image) reported a clean sheet of
+        # illustrated posts straight through a day-long image outage.
+        state.record_post(result["tweet"].strip(), result.get("category", ""),
+                          tweeter.LAST_POST_HAD_MEDIA)
         if is_highlight:
             state.incr_highlights()
         if sig:
