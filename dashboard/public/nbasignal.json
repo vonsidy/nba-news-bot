@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-29T10:59:42Z",
+  "updated": "2026-07-29T16:12:13Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: 76ers hire Mike Gansey as President of Basketball Operations.",
+      "cat": "Official",
+      "ts": 1785323104.6624162,
+      "media": true
+    },
     {
       "text": "\ud83d\udc40 Jalen Duren and the Pistons remain in stalemate on a contract extension, with talks expected to continue deep into August, per Shams Charania. Both sides dug in on their positions.",
       "cat": "Rumor",
@@ -93,12 +99,6 @@
       "cat": "Report",
       "ts": 1785085944.0074978,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Kentavious Caldwell-Pope agrees to buyout and will sign with the 76ers, per FantasyPros.",
-      "cat": "Report",
-      "ts": 1785020091.4454343,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785315660,
+      "newest_ts": 1785339937,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785315151,
+      "count": 17,
+      "newest_ts": 1785340935,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785315780,
+      "count": 17,
+      "newest_ts": 1785341262,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785315780,
+      "count": 4,
+      "newest_ts": 1785341094,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785313620,
+      "count": 9,
+      "newest_ts": 1785340803,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 11,
-      "newest_ts": 1785315946,
+      "count": 20,
+      "newest_ts": 1785341219,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785304786,
+      "newest_ts": 1785333588,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 1,
   "cap": null,
   "claude": {
-    "items_today": 77,
+    "items_today": 279,
     "items_cap": 500,
-    "items_this_hour": 0,
+    "items_this_hour": 15,
     "items_cap_hour": 41,
-    "spent_usd": 0.037,
+    "spent_usd": 0.1339,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 6502,
+      "last_poll_secs_ago": 11,
       "tweets_last_poll": 0,
       "watermark": "2082203980495778159"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 6502,
+      "last_poll_secs_ago": 10,
       "tweets_last_poll": 0,
       "watermark": "2082314857110450318"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 6502,
+      "last_poll_secs_ago": 10,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
