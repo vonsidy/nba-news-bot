@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-28T20:38:04Z",
+  "updated": "2026-07-29T00:13:19Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udc40 Jalen Duren and the Pistons remain in stalemate on a contract extension, with talks expected to continue deep into August, per Shams Charania. Both sides dug in on their positions.",
+      "cat": "Rumor",
+      "ts": 1785277083.9636328,
+      "media": true
+    },
+    {
+      "text": "Draymond Green re-signing with Golden State while LeBron James didn't join proves the Warriors still have enough to compete. But a 1-year deal screams uncertainty about whether this core can actually win a title. Golden State is betting on hope, not a championship roster.",
+      "cat": "Opinion",
+      "ts": 1785276280.1777773,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: Mavericks have opened extension talks with Dereck Lively II.",
       "cat": "Report",
@@ -87,18 +99,6 @@
       "cat": "Report",
       "ts": 1785020091.4454343,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Harrison Ingram has signed with the Jazz, per HoopsHype.",
-      "cat": "Report",
-      "ts": 1785016932.3368068,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Spencer Jones agrees to 2-year, $12M offer sheet with the Thunder, per @ShamsCharania. The Nuggets' restricted free agent hit an NBA-best 69% from 3-point range last season.",
-      "cat": "Report",
-      "ts": 1784996894.341936,
-      "media": true
     }
   ],
   "sources": [
@@ -107,39 +107,39 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785267421,
+      "newest_ts": 1785282116,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 12,
-      "newest_ts": 1785269770,
+      "count": 9,
+      "newest_ts": 1785282839,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 18,
-      "newest_ts": 1785270737,
+      "count": 8,
+      "newest_ts": 1785283692,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 12,
-      "newest_ts": 1785269926,
+      "count": 1,
+      "newest_ts": 1785280510,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 14,
-      "newest_ts": 1785270737,
+      "count": 7,
+      "newest_ts": 1785279840,
       "error": ""
     },
     {
@@ -147,7 +147,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785269587,
+      "newest_ts": 1785282116,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785265373,
+      "newest_ts": 1785274116,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 5,
+  "posts_today": 6,
   "cap": null,
   "claude": {
-    "items_today": 380,
+    "items_today": 469,
     "items_cap": 500,
-    "items_this_hour": 22,
+    "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.1824,
+    "spent_usd": 0.2251,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 17,
+      "last_poll_secs_ago": 7,
       "tweets_last_poll": 0,
-      "watermark": "2082186284458811597"
+      "watermark": "2082203980495778159"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 17,
+      "last_poll_secs_ago": 7,
       "tweets_last_poll": 0,
       "watermark": "2082185641517846757"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 17,
+      "last_poll_secs_ago": 7,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
