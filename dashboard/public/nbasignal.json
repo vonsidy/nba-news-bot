@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-29T16:12:13Z",
+  "updated": "2026-07-29T20:32:37Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Spurs target Kroupi out 3-4 months with foot injury.",
+      "cat": "Official",
+      "ts": 1785347346.5385237,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: 76ers hire Mike Gansey as President of Basketball Operations.",
       "cat": "Official",
@@ -93,12 +99,6 @@
       "cat": "Official",
       "ts": 1785103290.9704974,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: EuroLeague star Mario Hezonja has agreed to a one-year, $2.8M deal with the Cavaliers, per ESPN.",
-      "cat": "Report",
-      "ts": 1785085944.0074978,
-      "media": true
     }
   ],
   "sources": [
@@ -107,31 +107,31 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785339937,
+      "newest_ts": 1785355787,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 17,
-      "newest_ts": 1785340935,
+      "count": 10,
+      "newest_ts": 1785356079,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 17,
-      "newest_ts": 1785341262,
+      "count": 10,
+      "newest_ts": 1785355787,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785341094,
+      "count": 6,
+      "newest_ts": 1785356009,
       "error": ""
     },
     {
@@ -139,7 +139,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 9,
-      "newest_ts": 1785340803,
+      "newest_ts": 1785355942,
       "error": ""
     },
     {
@@ -147,7 +147,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785341219,
+      "newest_ts": 1785356646,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785333588,
+      "newest_ts": 1785355489,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 1,
+  "posts_today": 2,
   "cap": null,
   "claude": {
-    "items_today": 279,
+    "items_today": 395,
     "items_cap": 500,
-    "items_this_hour": 15,
+    "items_this_hour": 12,
     "items_cap_hour": 41,
-    "spent_usd": 0.1339,
+    "spent_usd": 0.1896,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 11,
+      "last_poll_secs_ago": 26,
       "tweets_last_poll": 0,
-      "watermark": "2082203980495778159"
+      "watermark": "2082548151425335351"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 10,
+      "last_poll_secs_ago": 26,
       "tweets_last_poll": 0,
-      "watermark": "2082314857110450318"
+      "watermark": "2082543734869098936"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 10,
+      "last_poll_secs_ago": 26,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
