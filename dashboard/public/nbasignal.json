@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-30T10:04:09Z",
+  "updated": "2026-07-30T16:07:11Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Neemias Queta signs a $56M extension with the Celtics.",
+      "cat": "Official",
+      "ts": 1785416548.2427318,
+      "media": true
+    },
     {
       "text": "The Cavs had LeBron in the building once and still couldn't close. Cleveland's front office failed when it mattered most. Warriors came closer to landing him than the team that drafted him.\n\nTell me I'm wrong.",
       "cat": "Opinion",
@@ -93,12 +99,6 @@
       "cat": "Report",
       "ts": 1785189635.0557306,
       "media": true
-    },
-    {
-      "text": "LeBron signed with Philly without a no-trade clause. That's not a power move, it's a red flag. He's either confident this roster wins now or he doesn't care where he goes next. Neither should make Sixers fans comfortable.",
-      "cat": "Opinion",
-      "ts": 1785112753.3990455,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785390719,
+      "newest_ts": 1785424595,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1785391975,
+      "count": 10,
+      "newest_ts": 1785425636,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785392559,
+      "count": 9,
+      "newest_ts": 1785426060,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785393012,
+      "count": 7,
+      "newest_ts": 1785425909,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785392094,
+      "count": 10,
+      "newest_ts": 1785422648,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 14,
-      "newest_ts": 1785392700,
+      "count": 19,
+      "newest_ts": 1785425880,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785356746,
+      "newest_ts": 1785421013,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 1,
   "cap": null,
   "claude": {
-    "items_today": 52,
+    "items_today": 195,
     "items_cap": 500,
     "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.025,
+    "spent_usd": 0.0936,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 11588,
+      "last_poll_secs_ago": 1058,
       "tweets_last_poll": 0,
       "watermark": "2082548151425335351"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 11588,
+      "last_poll_secs_ago": 1058,
       "tweets_last_poll": 0,
       "watermark": "2082543734869098936"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 11588,
+      "last_poll_secs_ago": 1058,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
