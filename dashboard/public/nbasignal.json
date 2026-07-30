@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-30T16:07:11Z",
+  "updated": "2026-07-30T20:40:11Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Jamir Watkins underwent successful ACL reconstruction surgery on his left knee, sustained during Summer League. The 2025 43rd overall pick is sidelined for recovery.",
+      "cat": "Official",
+      "ts": 1785442661.268989,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Neemias Queta signs a $56M extension with the Celtics.",
       "cat": "Official",
@@ -93,12 +99,6 @@
       "cat": "Opinion",
       "ts": 1785189733.1513479,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Dereck Lively and the Mavericks are in extension talks, per HoopsHype.",
-      "cat": "Report",
-      "ts": 1785189635.0557306,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785424595,
+      "newest_ts": 1785441952,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1785425636,
+      "count": 12,
+      "newest_ts": 1785443018,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1785426060,
+      "count": 10,
+      "newest_ts": 1785443620,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1785425909,
+      "count": 6,
+      "newest_ts": 1785443432,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1785422648,
+      "count": 1,
+      "newest_ts": 1785436235,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 19,
-      "newest_ts": 1785425880,
+      "count": 20,
+      "newest_ts": 1785442823,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785421013,
+      "newest_ts": 1785441973,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 1,
+  "posts_today": 2,
   "cap": null,
   "claude": {
-    "items_today": 195,
+    "items_today": 300,
     "items_cap": 500,
-    "items_this_hour": 0,
+    "items_this_hour": 8,
     "items_cap_hour": 41,
-    "spent_usd": 0.0936,
+    "spent_usd": 0.144,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 1058,
+      "last_poll_secs_ago": 2,
       "tweets_last_poll": 0,
       "watermark": "2082548151425335351"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 1058,
+      "last_poll_secs_ago": 1,
       "tweets_last_poll": 0,
-      "watermark": "2082543734869098936"
+      "watermark": "2082927569049952357"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 1058,
+      "last_poll_secs_ago": 1,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
