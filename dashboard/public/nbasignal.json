@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-29T20:32:37Z",
+  "updated": "2026-07-30T00:15:48Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "The Cavs had LeBron in the building once and still couldn't close. Cleveland's front office failed when it mattered most. Warriors came closer to landing him than the team that drafted him.\n\nTell me I'm wrong.",
+      "cat": "Opinion",
+      "ts": 1785362493.9069715,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Spurs target Kroupi out 3-4 months with foot injury.",
       "cat": "Official",
@@ -93,12 +99,6 @@
       "cat": "Opinion",
       "ts": 1785112753.3990455,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: 76ers waive Dalen Terry.",
-      "cat": "Official",
-      "ts": 1785103290.9704974,
-      "media": true
     }
   ],
   "sources": [
@@ -107,23 +107,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785355787,
+      "newest_ts": 1785367342,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1785356079,
+      "count": 4,
+      "newest_ts": 1785369976,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1785355787,
+      "count": 5,
+      "newest_ts": 1785369867,
       "error": ""
     },
     {
@@ -131,23 +131,23 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 6,
-      "newest_ts": 1785356009,
+      "newest_ts": 1785369601,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1785355942,
+      "count": 7,
+      "newest_ts": 1785366600,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1785356646,
+      "count": 18,
+      "newest_ts": 1785369867,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785355489,
+      "newest_ts": 1785356746,
       "error": ""
     }
   ],
@@ -211,11 +211,11 @@
   "posts_today": 2,
   "cap": null,
   "claude": {
-    "items_today": 395,
+    "items_today": 457,
     "items_cap": 500,
-    "items_this_hour": 12,
+    "items_this_hour": 4,
     "items_cap_hour": 41,
-    "spent_usd": 0.1896,
+    "spent_usd": 0.2194,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 26,
+      "last_poll_secs_ago": 24,
       "tweets_last_poll": 0,
       "watermark": "2082548151425335351"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 26,
+      "last_poll_secs_ago": 23,
       "tweets_last_poll": 0,
       "watermark": "2082543734869098936"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 26,
+      "last_poll_secs_ago": 23,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
