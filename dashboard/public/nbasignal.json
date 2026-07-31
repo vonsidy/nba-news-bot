@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-30T20:40:11Z",
+  "updated": "2026-07-31T08:11:07Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: The Hornets have waived forward Mouhamadou Gueye.",
+      "cat": "Official",
+      "ts": 1785464072.6353648,
+      "media": true
+    },
+    {
+      "text": "Steve Kerr calling the Warriors' do-nothing offseason wise is the biggest cope in basketball. Steph Curry is in his mid-30s and the window is closing. Instead of making moves, Golden State made Draymond's deal official and called it a day. Tell me I'm wrong.",
+      "cat": "Opinion",
+      "ts": 1785448870.6403842,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Jamir Watkins underwent successful ACL reconstruction surgery on his left knee, sustained during Summer League. The 2025 43rd overall pick is sidelined for recovery.",
       "cat": "Official",
@@ -87,18 +99,6 @@
       "cat": "Report",
       "ts": 1785202741.1662629,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Heat, Nuggets and Cavaliers among teams interested in DeMar DeRozan, per Shams Charania.",
-      "cat": "Rumor",
-      "ts": 1785194265.7486331,
-      "media": true
-    },
-    {
-      "text": "LeBron took less money to maybe commute by helicopter between New York and Philadelphia. That's not sacrifice, that's ego. A real max player signs the full deal and figures out logistics later.",
-      "cat": "Opinion",
-      "ts": 1785189733.1513479,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785441952,
+      "newest_ts": 1785465240,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 12,
-      "newest_ts": 1785443018,
+      "count": 1,
+      "newest_ts": 1785466293,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1785443620,
+      "count": 6,
+      "newest_ts": 1785468265,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1785443432,
+      "count": 2,
+      "newest_ts": 1785466947,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
-      "status": "ok",
-      "count": 1,
-      "newest_ts": 1785436235,
-      "error": ""
+      "status": "down",
+      "count": 0,
+      "newest_ts": 0.0,
+      "error": "no entries (HTTP 200)"
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1785442823,
+      "count": 10,
+      "newest_ts": 1785468698,
       "error": ""
     },
     {
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 2,
+  "posts_today": 0,
   "cap": null,
   "claude": {
-    "items_today": 300,
+    "items_today": 0,
     "items_cap": 500,
-    "items_this_hour": 8,
+    "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.144,
+    "spent_usd": 0.0,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 2,
+      "last_poll_secs_ago": 16308,
       "tweets_last_poll": 0,
       "watermark": "2082548151425335351"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 1,
+      "last_poll_secs_ago": 16308,
       "tweets_last_poll": 0,
       "watermark": "2082927569049952357"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 1,
+      "last_poll_secs_ago": 16308,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
