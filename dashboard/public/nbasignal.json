@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-31T16:16:30Z",
+  "updated": "2026-07-31T20:51:07Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udc40 RUMOR: Mavericks and Bucks added to list of teams pursuing Bennedict Mathurin, per ClutchPoints.",
+      "cat": "Rumor",
+      "ts": 1785514629.8819644,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udcf0 REPORT: Nets complete signing of Moe Wagner, per @TheSteinLine. Brooklyn now has $4.5M in available cap space.",
+      "cat": "Report",
+      "ts": 1785514624.136668,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: The Hornets have waived forward Mouhamadou Gueye.",
       "cat": "Official",
@@ -87,18 +99,6 @@
       "cat": "Report",
       "ts": 1785224961.7682192,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Bucks viewed as favorites to land Peyton Watson in sign-and-trade, per Jake Fischer. Nuggets seeking at least two first-round picks.",
-      "cat": "Report",
-      "ts": 1785224954.3537345,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Dave Joerger has agreed to become lead assistant coach for the Denver Nuggets under head coach David Adelman, per ESPN.",
-      "cat": "Report",
-      "ts": 1785202741.1662629,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785505641,
+      "newest_ts": 1785528225,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 16,
-      "newest_ts": 1785504888,
+      "count": 6,
+      "newest_ts": 1785530700,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1785505641,
+      "count": 6,
+      "newest_ts": 1785530517,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1785504775,
+      "count": 4,
+      "newest_ts": 1785530366,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785503040,
+      "count": 7,
+      "newest_ts": 1785529575,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1785505236,
+      "count": 18,
+      "newest_ts": 1785530368,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785503715,
+      "newest_ts": 1785520136,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 2,
   "cap": null,
   "claude": {
-    "items_today": 111,
+    "items_today": 278,
     "items_cap": 500,
-    "items_this_hour": 0,
+    "items_this_hour": 29,
     "items_cap_hour": 41,
-    "spent_usd": 0.0533,
+    "spent_usd": 0.1334,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 8405,
+      "last_poll_secs_ago": 34,
       "tweets_last_poll": 0,
-      "watermark": "2082548151425335351"
+      "watermark": "2083225099872751985"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 8405,
+      "last_poll_secs_ago": 33,
       "tweets_last_poll": 0,
-      "watermark": "2082927569049952357"
+      "watermark": "2083257741292736622"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 8404,
+      "last_poll_secs_ago": 33,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
