@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-01T16:32:14Z",
+  "updated": "2026-08-01T20:28:10Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 REPORT: Gary Payton II re-signing with the Warriors, per @TheSteinLine. Deal on course to be finalized this weekend.",
+      "cat": "Report",
+      "ts": 1785614538.0687294,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: Dwane Casey has turned down a head coaching job with BC Roma SPQR and will remain with the Pistons as an adviser, per Marc Stein.",
       "cat": "Report",
@@ -93,12 +99,6 @@
       "cat": "Report",
       "ts": 1785224982.1558063,
       "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: 76ers looking to trade Johni Broome to create roster space for Kentavious Caldwell-Pope signing, per Jake Fischer.",
-      "cat": "Report",
-      "ts": 1785224975.77898,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785601614,
+      "newest_ts": 1785614516,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1785600363,
+      "count": 4,
+      "newest_ts": 1785614527,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785601538,
+      "count": 3,
+      "newest_ts": 1785614880,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785600792,
+      "count": 5,
+      "newest_ts": 1785615747,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785597035,
+      "count": 3,
+      "newest_ts": 1785614766,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 12,
-      "newest_ts": 1785601538,
+      "count": 9,
+      "newest_ts": 1785615840,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785565881,
+      "newest_ts": 1785606143,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 1,
+  "posts_today": 2,
   "cap": null,
   "claude": {
-    "items_today": 109,
+    "items_today": 189,
     "items_cap": 500,
-    "items_this_hour": 4,
+    "items_this_hour": 20,
     "items_cap_hour": 41,
-    "spent_usd": 0.0523,
+    "spent_usd": 0.0907,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -225,19 +225,19 @@
       "ok": true,
       "last_poll_secs_ago": 10,
       "tweets_last_poll": 0,
-      "watermark": "2083225099872751985"
+      "watermark": "2083644765065584762"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 10,
+      "last_poll_secs_ago": 9,
       "tweets_last_poll": 0,
-      "watermark": "2083257741292736622"
+      "watermark": "2083644308817674319"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 10,
+      "last_poll_secs_ago": 9,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
