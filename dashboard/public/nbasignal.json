@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-03T21:52:51Z",
+  "updated": "2026-08-04T07:48:54Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udcf0 REPORT: Will Barton joins Timberwolves coaching staff in player development role, per HoopsHype.",
+      "cat": "Report",
+      "ts": 1785796549.061148,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Stephen Curry signs a 10-year endorsement deal with Li-Ning.",
       "cat": "Official",
@@ -93,12 +99,6 @@
       "cat": "Opinion",
       "ts": 1785362493.9069715,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Spurs target Kroupi out 3-4 months with foot injury.",
-      "cat": "Official",
-      "ts": 1785347346.5385237,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785790320,
+      "newest_ts": 1785815536,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 8,
-      "newest_ts": 1785792665,
+      "count": 5,
+      "newest_ts": 1785817620,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785793416,
+      "count": 5,
+      "newest_ts": 1785817862,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 6,
-      "newest_ts": 1785793080,
+      "count": 7,
+      "newest_ts": 1785818280,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1785788639,
+      "count": 5,
+      "newest_ts": 1785817441,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 20,
-      "newest_ts": 1785792780,
+      "count": 9,
+      "newest_ts": 1785816915,
       "error": ""
     },
     {
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 1,
+  "posts_today": 0,
   "cap": null,
   "claude": {
-    "items_today": 273,
+    "items_today": 12,
     "items_cap": 500,
-    "items_this_hour": 18,
+    "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.131,
+    "spent_usd": 0.0058,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 24,
+      "last_poll_secs_ago": 10870,
       "tweets_last_poll": 0,
       "watermark": "2084010048292807141"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 24,
+      "last_poll_secs_ago": 10870,
       "tweets_last_poll": 0,
-      "watermark": "2084328242623009001"
+      "watermark": "2084489080805671185"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 24,
+      "last_poll_secs_ago": 10870,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
