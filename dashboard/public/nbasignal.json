@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-04T16:21:23Z",
+  "updated": "2026-08-04T21:03:58Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Portland Trail Blazers are not pursuing DeMar DeRozan and have no plans for a Jrue Holiday buyout.",
+      "cat": "Official",
+      "ts": 1785860534.648788,
+      "media": true
+    },
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Free agent center Trey Jemison agrees to a two-way contract with the Toronto Raptors.",
+      "cat": "Official",
+      "ts": 1785860529.8062618,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Ameer Bahhur hired as head coach of the Blazers' G League affiliate Rip City Remix. Bahhur spent the last two seasons as an assistant with the Magic.",
       "cat": "Official",
@@ -87,18 +99,6 @@
       "cat": "Opinion",
       "ts": 1785448870.6403842,
       "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Jamir Watkins underwent successful ACL reconstruction surgery on his left knee, sustained during Summer League. The 2025 43rd overall pick is sidelined for recovery.",
-      "cat": "Official",
-      "ts": 1785442661.268989,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udea8 OFFICIAL: Neemias Queta signs a $56M extension with the Celtics.",
-      "cat": "Official",
-      "ts": 1785416548.2427318,
-      "media": true
     }
   ],
   "sources": [
@@ -107,39 +107,39 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785850057,
+      "newest_ts": 1785871800,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 3,
-      "newest_ts": 1785849780,
+      "count": 10,
+      "newest_ts": 1785876338,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 11,
-      "newest_ts": 1785850529,
+      "count": 14,
+      "newest_ts": 1785876807,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 2,
-      "newest_ts": 1785850057,
+      "count": 4,
+      "newest_ts": 1785876415,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 10,
-      "newest_ts": 1785850091,
+      "count": 4,
+      "newest_ts": 1785874543,
       "error": ""
     },
     {
@@ -147,7 +147,7 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 11,
-      "newest_ts": 1785850135,
+      "newest_ts": 1785876068,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785849094,
+      "newest_ts": 1785857724,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 1,
+  "posts_today": 3,
   "cap": null,
   "claude": {
-    "items_today": 117,
+    "items_today": 247,
     "items_cap": 500,
     "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.0562,
+    "spent_usd": 0.1186,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,23 +223,23 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 9511,
+      "last_poll_secs_ago": 28,
       "tweets_last_poll": 0,
       "watermark": "2084010048292807141"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 9510,
+      "last_poll_secs_ago": 28,
       "tweets_last_poll": 0,
       "watermark": "2084489080805671185"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 9510,
+      "last_poll_secs_ago": 28,
       "tweets_last_poll": 0,
-      "watermark": "2080866521694535812"
+      "watermark": "2084657814086226314"
     }
   ]
 }
