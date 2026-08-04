@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-04T07:48:54Z",
+  "updated": "2026-08-04T16:21:23Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,12 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Ameer Bahhur hired as head coach of the Blazers' G League affiliate Rip City Remix. Bahhur spent the last two seasons as an assistant with the Magic.",
+      "cat": "Official",
+      "ts": 1785830312.9011307,
+      "media": true
+    },
     {
       "text": "\ud83d\udcf0 REPORT: Will Barton joins Timberwolves coaching staff in player development role, per HoopsHype.",
       "cat": "Report",
@@ -93,12 +99,6 @@
       "cat": "Official",
       "ts": 1785416548.2427318,
       "media": true
-    },
-    {
-      "text": "The Cavs had LeBron in the building once and still couldn't close. Cleveland's front office failed when it mattered most. Warriors came closer to landing him than the team that drafted him.\n\nTell me I'm wrong.",
-      "cat": "Opinion",
-      "ts": 1785362493.9069715,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785815536,
+      "newest_ts": 1785850057,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785817620,
+      "count": 3,
+      "newest_ts": 1785849780,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785817862,
+      "count": 11,
+      "newest_ts": 1785850529,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 7,
-      "newest_ts": 1785818280,
+      "count": 2,
+      "newest_ts": 1785850057,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785817441,
+      "count": 10,
+      "newest_ts": 1785850091,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 9,
-      "newest_ts": 1785816915,
+      "count": 11,
+      "newest_ts": 1785850135,
       "error": ""
     },
     {
@@ -155,7 +155,7 @@
       "publisher": "RealGM",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785771565,
+      "newest_ts": 1785849094,
       "error": ""
     }
   ],
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 1,
   "cap": null,
   "claude": {
-    "items_today": 12,
+    "items_today": 117,
     "items_cap": 500,
     "items_this_hour": 0,
     "items_cap_hour": 41,
-    "spent_usd": 0.0058,
+    "spent_usd": 0.0562,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 10870,
+      "last_poll_secs_ago": 9511,
       "tweets_last_poll": 0,
       "watermark": "2084010048292807141"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 10870,
+      "last_poll_secs_ago": 9510,
       "tweets_last_poll": 0,
       "watermark": "2084489080805671185"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 10870,
+      "last_poll_secs_ago": 9510,
       "tweets_last_poll": 0,
       "watermark": "2080866521694535812"
     }
