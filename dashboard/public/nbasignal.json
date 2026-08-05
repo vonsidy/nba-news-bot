@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-05T19:05:17Z",
+  "updated": "2026-08-05T22:42:22Z",
   "handle": "TheNBASignal",
   "account": {
     "followers": 0,
@@ -10,6 +10,18 @@
     "engagement_rate": 0
   },
   "recent": [
+    {
+      "text": "\ud83d\udea8 OFFICIAL: Rockets waive G JD Davison.",
+      "cat": "Official",
+      "ts": 1785967924.9026253,
+      "media": true
+    },
+    {
+      "text": "Draymond Green saying he's never wanted to stay where he's not wanted is a shot at Warriors ownership, not a flex. If you have to announce you won't be a prisoner, the relationship is already dead. The Warriors' dynasty era is over.",
+      "cat": "Opinion",
+      "ts": 1785967270.8268485,
+      "media": true
+    },
     {
       "text": "\ud83d\udea8 OFFICIAL: Cole Anthony signs with Melbourne United.",
       "cat": "Official",
@@ -87,18 +99,6 @@
       "cat": "Opinion",
       "ts": 1785535241.5301273,
       "media": true
-    },
-    {
-      "text": "\ud83d\udc40 RUMOR: Mavericks and Bucks added to list of teams pursuing Bennedict Mathurin, per ClutchPoints.",
-      "cat": "Rumor",
-      "ts": 1785514629.8819644,
-      "media": true
-    },
-    {
-      "text": "\ud83d\udcf0 REPORT: Nets complete signing of Moe Wagner, per @TheSteinLine. Brooklyn now has $4.5M in available cap space.",
-      "cat": "Report",
-      "ts": 1785514624.136668,
-      "media": true
     }
   ],
   "sources": [
@@ -107,47 +107,47 @@
       "publisher": "Google News",
       "status": "ok",
       "count": 20,
-      "newest_ts": 1785955144,
+      "newest_ts": 1785969117,
       "error": ""
     },
     {
       "label": "Injuries & availability",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785955440,
+      "count": 10,
+      "newest_ts": 1785969433,
       "error": ""
     },
     {
       "label": "Extensions & buyouts",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785955144,
+      "count": 7,
+      "newest_ts": 1785969120,
       "error": ""
     },
     {
       "label": "Coaching & front office",
       "publisher": "Google News",
       "status": "ok",
-      "count": 4,
-      "newest_ts": 1785955966,
+      "count": 2,
+      "newest_ts": 1785968956,
       "error": ""
     },
     {
       "label": "Insider bylines",
       "publisher": "Google News",
       "status": "ok",
-      "count": 5,
-      "newest_ts": 1785955906,
+      "count": 6,
+      "newest_ts": 1785968956,
       "error": ""
     },
     {
       "label": "Free agency & rumors",
       "publisher": "Google News",
       "status": "ok",
-      "count": 12,
-      "newest_ts": 1785955966,
+      "count": 20,
+      "newest_ts": 1785968956,
       "error": ""
     },
     {
@@ -208,14 +208,14 @@
     0.8
   ],
   "growth": [],
-  "posts_today": 0,
+  "posts_today": 1,
   "cap": null,
   "claude": {
-    "items_today": 175,
+    "items_today": 297,
     "items_cap": 500,
-    "items_this_hour": 4,
+    "items_this_hour": 38,
     "items_cap_hour": 41,
-    "spent_usd": 0.084,
+    "spent_usd": 0.1426,
     "budget_usd": 0.24,
     "day_resets": "midnight ET"
   },
@@ -223,21 +223,21 @@
     {
       "handle": "ShamsCharania",
       "ok": true,
-      "last_poll_secs_ago": 19,
+      "last_poll_secs_ago": 22,
       "tweets_last_poll": 0,
       "watermark": "2084010048292807141"
     },
     {
       "handle": "TheSteinLine",
       "ok": true,
-      "last_poll_secs_ago": 20,
+      "last_poll_secs_ago": 22,
       "tweets_last_poll": 0,
-      "watermark": "2084489080805671185"
+      "watermark": "2085129280242233463"
     },
     {
       "handle": "ChrisBHaynes",
       "ok": true,
-      "last_poll_secs_ago": 20,
+      "last_poll_secs_ago": 22,
       "tweets_last_poll": 0,
       "watermark": "2084657814086226314"
     }
